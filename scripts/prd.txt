@@ -1,0 +1,113 @@
+# Overview
+This document outlines the Product Requirements for the "Research Context MCP" (MCP - My Context Provider). The project aims to create a system that enhances AI coding agents by providing them with relevant context extracted from a user-specified collection of research reports. Currently, AI agents like Context7 excel at understanding programming documents. This project will extend similar capabilities to research-oriented documents, enabling AI agents to leverage detailed research findings, methodologies, and data to generate more accurate, precise, and contextually relevant code, answers, and analyses. The primary beneficiaries are developers, researchers, and analysts who utilize AI coding agents and need them to understand and incorporate insights from specialized research domains.
+
+# Core Features
+1.  **Folder Selection Interface:**
+    *   **What it does:** Allows users to specify a local directory on their system that contains research reports (e.g., PDFs, text files, Markdown files).
+    *   **Why it's important:** Provides a simple mechanism for users to define the corpus of research documents the MCP should process.
+    *   **How it works:** The MCP will provide a mechanism (e.g., a configuration setting or a UI element if applicable) for the user to input or select the path to the desired folder.
+
+2.  **Document Ingestion and Preprocessing:**
+    *   **What it does:** Scans the selected folder for supported document types, extracts text content, and preprocesses it for analysis.
+    *   **Why it's important:** Converts diverse document formats into a consistent textual representation that the MCP can understand and index.
+    *   **How it works:** The system will identify files (initially focusing on .txt, .md, and potentially .pdf). It will extract raw text, clean it (e.g., remove irrelevant artifacts), and possibly segment it into manageable chunks.
+
+3.  **Intelligent Context Extraction Engine:**
+    *   **What it does:** Analyzes the ingested research documents to identify key concepts, summaries, methodologies, data points, and relationships relevant to potential user queries or coding tasks.
+    *   **Why it's important:** This is the core intelligence of the MCP. It moves beyond simple keyword search to understand the semantic content of the research.
+    *   **How it works:** This will likely involve Natural Language Processing (NLP) techniques such as semantic search, named entity recognition, summarization, and topic modeling. The engine will build an index or knowledge base from the documents.
+
+4.  **Contextual Query Interface for AI Agents:**
+    *   **What it does:** Provides an API or interface through which AI coding agents can query the MCP for context relevant to a specific task, question, or piece of code they are working on.
+    *   **Why it's important:** Enables seamless integration with AI agents, allowing them to request and receive contextual information programmatically.
+    *   **How it works:** The AI agent will send a query (e.g., a natural language question, code snippet, or keywords) to the MCP. The MCP's extraction engine will search its knowledge base and return the most relevant snippets, summaries, or pointers to information within the research reports.
+
+5.  **Dynamic Context Retrieval:**
+    *   **What it does:** The MCP intelligently decides what context is needed and where to get it from within the specified research folder based on the AI agent's query.
+    *   **Why it's important:** Ensures that the AI agent receives precise and targeted information, rather than overwhelming or irrelevant data.
+    *   **How it works:** The system will use the agent's query to identify the most relevant documents and sections within those documents. It might employ ranking algorithms to prioritize information.
+
+# User Experience
+*   **User Persona 1: AI-Assisted Developer/Researcher:**
+    *   **Needs:** Wants their AI coding assistant to understand the nuances of research papers relevant to their current project (e.g., implementing an algorithm described in a paper, using a dataset detailed in a report).
+    *   **Flow:**
+        1.  User configures the Research Context MCP by pointing it to their project's research folder.
+        2.  User interacts with their AI coding agent as usual.
+        3.  The AI agent, when needing information potentially in the research, queries the Research Context MCP.
+        4.  The MCP provides relevant snippets/summaries.
+        5.  The AI agent uses this context to provide a more informed response or generate better code.
+*   **Key UI/UX Considerations (for configuration, if any):**
+    *   Simplicity in specifying the research folder.
+    *   Clear feedback on whether the folder was processed successfully.
+    *   (Optional) Basic status information about the indexed document set.
+
+# Technical Architecture
+*   **System Components:**
+    1.  **Configuration Manager:** Handles user settings, primarily the path to the research folder.
+    2.  **File System Monitor/Scanner:** Detects and reads files from the specified folder.
+    3.  **Document Parser/Text Extractor:** Extracts text from various file formats (initially .txt, .md; .pdf as a stretch goal).
+    4.  **NLP Processing Core:**
+        *   Text cleaning and normalization.
+        *   Indexing engine (e.g., using embeddings for semantic search).
+        *   Modules for specific NLP tasks (summarization, NER, etc. - potentially evolving).
+    5.  **Query Handler API:** Receives requests from AI agents and returns contextual information.
+    6.  **(Optional) Knowledge Base/Index Storage:** A persistent store for the processed document information/index.
+*   **Data Models:**
+    *   `Document`: {id, filePath, title (extracted), rawText, processedText, metadata (e.g., lastModified)}
+    *   `IndexEntry`: {documentId, contentSnippet, embeddingVector, keywords, topic} (details depend on NLP techniques chosen)
+*   **APIs and Integrations:**
+    *   Internal API for AI agents to query the MCP. This API will accept a query (string) and return a structured response containing relevant context (e.g., list of text snippets with source document references).
+*   **Infrastructure Requirements:**
+    *   Standard server environment capable of running Node.js/Python (or chosen backend tech).
+    *   Sufficient disk space for storing indexed data (if not purely in-memory for small datasets).
+    *   Computational resources for NLP processing (especially if done locally and not via cloud APIs for core NLP).
+
+# Development Roadmap
+*   **MVP Requirements:**
+    1.  Basic folder selection mechanism (e.g., config file).
+    2.  Ingestion and text extraction for `.txt` and `.md` files.
+    3.  Core semantic search capability: AI agent can send a query string, MCP returns relevant text snippets from the documents.
+    4.  Simple API for AI agents to make these queries.
+    5.  Focus on demonstrating the core benefit: providing more relevant context than a simple file search.
+*   **Future Enhancements (Post-MVP):**
+    1.  Support for PDF document ingestion.
+    2.  More advanced NLP features:
+        *   Automated summarization of relevant sections.
+        *   Named Entity Recognition to identify key terms, technologies, etc.
+        *   Topic modeling to categorize documents/sections.
+    3.  More sophisticated query understanding (e.g., handling complex questions).
+    4.  Ability to "refresh" the index if documents in the folder change.
+    5.  (Optional) A simple UI for managing the watched folder and viewing basic stats.
+    6.  Integration with more sophisticated vector databases for indexing if the scale requires it.
+
+# Logical Dependency Chain
+1.  **Foundation (Core Data Handling):**
+    *   Implement configuration for folder selection.
+    *   Develop file scanning and reading for `.txt` and `.md` files.
+    *   Basic text extraction.
+2.  **Core Intelligence (Semantic Search MVP):**
+    *   Implement text chunking/segmentation.
+    *   Generate embeddings for text chunks.
+    *   Build a simple in-memory vector index (or use a lightweight library).
+    *   Develop the query mechanism: embed query, find similar chunks via vector similarity.
+3.  **Integration (Agent API):**
+    *   Define and implement the API endpoint for AI agents.
+    *   Ensure the API can receive a query and return ranked text snippets with source references.
+4.  **Refinement & Advanced Features (Post-MVP):**
+    *   PDF processing.
+    *   Advanced NLP modules (summarization, NER).
+    *   Persistent indexing solutions.
+
+# Risks and Mitigations
+*   **Technical Challenges:**
+    *   **Accurate Text Extraction from PDFs:** PDFs can be complex. Mitigation: Start with simpler formats (.txt, .md), use robust libraries for PDF, and accept that initial PDF support might be imperfect.
+    *   **NLP Model Selection/Performance:** Choosing the right models/techniques for semantic search and other NLP tasks. Mitigation: Start with well-established models/libraries, iterate based on performance, and allow for model swapping.
+    *   **Scalability:** Handling very large folders or very large individual documents. Mitigation: For MVP, focus on moderate sizes. Plan for future optimizations like out-of-process indexing, streaming, and more robust data stores.
+*   **Determining "Relevance":** Defining what constitutes "relevant" context can be subjective. Mitigation: Start with semantic similarity. Gather feedback and iterate on ranking algorithms. Allow AI agents to potentially provide feedback on the usefulness of context.
+*   **Resource Constraints (Compute for NLP):** Heavy NLP tasks can be resource-intensive. Mitigation: Optimize NLP pipelines. Explore cloud-based NLP services for specific tasks if local processing is too slow/heavy for the target deployment environment (though the goal is local processing if feasible).
+
+# Appendix
+*   **Research Findings:** (To be populated as project progresses)
+*   **Technical Specifications:** (To be populated as project progresses)
+    *   Initial supported file types: `.txt`, `.md`
+    *   Potential NLP libraries: (e.g., spaCy, Transformers, Sentence-Transformers for Python; or equivalent in other languages)

@@ -1,0 +1,190 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Setup Project Structure and Configuration Manager",
+      "description": "Create the initial project structure and implement the Configuration Manager component that handles user settings, primarily the path to the research folder.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "high",
+      "details": "Create a Node.js/Python project with appropriate directory structure. Implement a Configuration Manager class that can read/write configuration settings from a file (e.g., JSON or YAML). The primary configuration setting will be the path to the research folder. Include validation to ensure the specified folder exists and is accessible. Provide a simple interface for updating this configuration.",
+      "testStrategy": "Write unit tests to verify the Configuration Manager can correctly read, validate, and write folder paths. Test edge cases like invalid paths, permission issues, and empty values.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Initialize Project and Create Directory Structure",
+          "description": "Set up the initial project with appropriate directory structure and package management for either Node.js or Python, following modern project organization principles.",
+          "dependencies": [],
+          "details": "1. Create the root project directory\n2. Initialize version control with Git\n3. For Python: Create a virtual environment, requirements.txt, and setup.py\n   - Use `python -m venv venv` for environment creation\n   - Include essential packages like pydantic for validation\n4. For Node.js: Initialize npm with package.json\n   - Run `npm init -y`\n   - Add dependencies like dotenv and config\n5. Create the following directory structure:\n   ```\n   project_root/\n   ├── src/\n   │   ├── config/\n   │   │   └── __init__.py (or index.js)\n   │   ├── utils/\n   │   │   └── __init__.py (or index.js)\n   │   └── __init__.py (or index.js)\n   ├── tests/\n   │   └── __init__.py (or index.js)\n   ├── docs/\n   ├── .gitignore\n   └── README.md\n   ```\n6. Create a comprehensive .gitignore file using templates from gitignore.io\n7. Document the project structure in README.md\n\n<info added on 2025-05-08T22:09:32.068Z>\n## Enhanced Project Initialization Details\n\n### Python Project Setup\n\n1. **Advanced Virtual Environment Configuration**:\n   ```bash\n   # Create and activate virtual environment\n   python -m venv venv\n   source venv/bin/activate  # On Windows: venv\\Scripts\\activate\n   \n   # Install development packages\n   pip install pytest pytest-cov black isort mypy\n   ```\n\n2. **Comprehensive `setup.py` Configuration**:\n   ```python\n   from setuptools import setup, find_packages\n\n   setup(\n       name=\"research_context_mcp\",\n       version=\"0.1.0\",\n       description=\"Research Context Management Control Program\",\n       author=\"Your Name\",\n       author_email=\"your.email@example.com\",\n       packages=find_packages(where=\"src\"),\n       package_dir={\"\": \"src\"},\n       python_requires=\">=3.8\",\n       install_requires=[\n           \"pydantic>=2.0.0\",\n           \"python-dotenv>=1.0.0\",\n       ],\n       extras_require={\n           \"dev\": [\n               \"pytest>=7.0.0\",\n               \"pytest-cov>=4.0.0\",\n               \"black>=23.0.0\",\n               \"isort>=5.12.0\",\n               \"mypy>=1.0.0\",\n           ]\n       },\n       classifiers=[\n           \"Development Status :: 3 - Alpha\",\n           \"Intended Audience :: Developers\",\n           \"Programming Language :: Python :: 3\",\n           \"Programming Language :: Python :: 3.8\",\n           \"Programming Language :: Python :: 3.9\",\n           \"Programming Language :: Python :: 3.10\",\n       ],\n   )\n   ```\n\n3. **Configuration Management Setup**:\n   ```python\n   # src/config/__init__.py\n   from pathlib import Path\n   from pydantic import BaseModel\n   from typing import Optional, Dict, Any\n   import os\n   import json\n   \n   class AppConfig(BaseModel):\n       app_name: str = \"ResearchContextMCP\"\n       debug_mode: bool = False\n       log_level: str = \"INFO\"\n       data_dir: Optional[Path] = None\n       \n       @classmethod\n       def from_env(cls) -> \"AppConfig\":\n           \"\"\"Load configuration from environment variables\"\"\"\n           return cls(\n               app_name=os.getenv(\"APP_NAME\", \"ResearchContextMCP\"),\n               debug_mode=os.getenv(\"DEBUG_MODE\", \"False\").lower() == \"true\",\n               log_level=os.getenv(\"LOG_LEVEL\", \"INFO\"),\n               data_dir=Path(os.getenv(\"DATA_DIR\", \"./data\")) if os.getenv(\"DATA_DIR\") else None\n           )\n   \n   # Default config instance\n   config = AppConfig.from_env()\n   ```\n\n4. **Additional Project Structure Elements**:\n   ```\n   project_root/\n   ├── .github/                    # GitHub workflows and templates\n   │   └── workflows/\n   │       └── python-tests.yml    # CI workflow for running tests\n   ├── data/                       # Data directory for application\n   │   └── .gitkeep                # Ensures directory is tracked by git\n   ├── scripts/                    # Utility scripts for development/deployment\n   │   └── setup_dev.sh            # Script to set up development environment\n   ├── src/\n   │   ├── models/                 # Data models directory\n   │   │   └── __init__.py\n   │   ├── services/               # Business logic services\n   │   │   └── __init__.py\n   │   └── main.py                 # Application entry point\n   ├── .pre-commit-config.yaml     # Pre-commit hooks configuration\n   ├── pyproject.toml              # Modern Python project configuration\n   └── CHANGELOG.md                # Project changelog\n   ```\n\n5. **Pre-commit Configuration**:\n   ```yaml\n   # .pre-commit-config.yaml\n   repos:\n   - repo: https://github.com/pre-commit/pre-commit-hooks\n     rev: v4.4.0\n     hooks:\n     - id: trailing-whitespace\n     - id: end-of-file-fixer\n     - id: check-yaml\n     - id: check-added-large-files\n   \n   - repo: https://github.com/psf/black\n     rev: 23.3.0\n     hooks:\n     - id: black\n   \n   - repo: https://github.com/pycqa/isort\n     rev: 5.12.0\n     hooks:\n     - id: isort\n   ```\n</info added on 2025-05-08T22:09:32.068Z>",
+          "status": "done",
+          "parentTaskId": 1
+        },
+        {
+          "id": 2,
+          "title": "Design and Implement Configuration Schema",
+          "description": "Create a configuration schema that defines the structure and validation rules for application settings, with a focus on the research folder path.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Create a configuration schema file in src/config/\n   - For Python: Use pydantic models or dataclasses\n   - For Node.js: Use JSON Schema or TypeScript interfaces\n2. Define the schema with the following properties:\n   - research_folder_path (string, required)\n   - app_name (string, optional)\n   - debug_mode (boolean, optional, default: false)\n3. Implement validation rules:\n   - research_folder_path must be a valid directory path\n   - Include type checking for all properties\n4. Example Python implementation using pydantic:\n   ```python\n   # src/config/schema.py\n   from pydantic import BaseModel, validator\n   import os\n   \n   class ConfigSchema(BaseModel):\n       research_folder_path: str\n       app_name: str = \"Research Manager\"\n       debug_mode: bool = False\n       \n       @validator('research_folder_path')\n       def validate_research_path(cls, v):\n           if not os.path.isdir(v):\n               raise ValueError(f\"Directory does not exist: {v}\")\n           if not os.access(v, os.R_OK | os.W_OK):\n               raise ValueError(f\"Directory is not accessible: {v}\")\n           return v\n   ```\n5. Write unit tests for the schema validation",
+          "status": "pending",
+          "parentTaskId": 1
+        },
+        {
+          "id": 3,
+          "title": "Implement Configuration Manager Class",
+          "description": "Create a Configuration Manager class that implements the Singleton pattern to ensure a single source of truth for application settings.",
+          "dependencies": [
+            2
+          ],
+          "details": "1. Create the Configuration Manager class in src/config/\n2. Implement the Singleton pattern to ensure only one instance exists\n3. Add methods for loading, accessing, and modifying configuration\n4. Include environment variable support for overriding file-based settings\n5. Example Python implementation:\n   ```python\n   # src/config/manager.py\n   import os\n   import json\n   from .schema import ConfigSchema\n   \n   class ConfigurationManager:\n       _instance = None\n       \n       def __new__(cls, config_path=None):\n           if cls._instance is None:\n               cls._instance = super(ConfigurationManager, cls).__new__(cls)\n               cls._instance._config = None\n               cls._instance._config_path = config_path or os.path.join(\n                   os.path.expanduser(\"~\"), \".research_app_config.json\"\n               )\n               cls._instance._load_config()\n           return cls._instance\n       \n       def _load_config(self):\n           # Try to load from file\n           try:\n               if os.path.exists(self._config_path):\n                   with open(self._config_path, 'r') as f:\n                       config_data = json.load(f)\n               else:\n                   config_data = {}\n           except Exception as e:\n               print(f\"Error loading config: {e}\")\n               config_data = {}\n               \n           # Override with environment variables if present\n           if os.environ.get(\"RESEARCH_FOLDER_PATH\"):\n               config_data[\"research_folder_path\"] = os.environ.get(\"RESEARCH_FOLDER_PATH\")\n           \n           # Use default if still missing\n           if \"research_folder_path\" not in config_data:\n               config_data[\"research_folder_path\"] = os.path.join(\n                   os.path.expanduser(\"~\"), \"research\"\n               )\n               \n           # Validate through schema\n           try:\n               self._config = ConfigSchema(**config_data)\n           except Exception as e:\n               raise ValueError(f\"Invalid configuration: {e}\")\n       \n       def get_research_folder(self):\n           return self._config.research_folder_path\n       \n       def get_config(self):\n           return self._config\n   ```\n6. Write unit tests with mocking for file operations",
+          "status": "pending",
+          "parentTaskId": 1
+        },
+        {
+          "id": 4,
+          "title": "Implement Configuration Persistence",
+          "description": "Create functionality to save and load configuration settings to/from a file, ensuring settings persist between application runs.",
+          "dependencies": [
+            3
+          ],
+          "details": "1. Extend the Configuration Manager with save functionality\n2. Implement error handling for file operations\n3. Add atomic file writing to prevent corruption\n4. Include backup of previous configuration\n5. Example Python implementation:\n   ```python\n   # Add to src/config/manager.py\n   import tempfile\n   import shutil\n   \n   def save_config(self):\n       \"\"\"Save configuration to file atomically\"\"\"\n       config_dict = self._config.dict()\n       \n       # Create backup if file exists\n       if os.path.exists(self._config_path):\n           backup_path = f\"{self._config_path}.bak\"\n           shutil.copy2(self._config_path, backup_path)\n       \n       # Write to temporary file first\n       fd, temp_path = tempfile.mkstemp()\n       try:\n           with os.fdopen(fd, 'w') as temp_file:\n               json.dump(config_dict, temp_file, indent=2)\n           \n           # Atomic replacement\n           shutil.move(temp_path, self._config_path)\n           return True\n       except Exception as e:\n           print(f\"Error saving configuration: {e}\")\n           if os.path.exists(temp_path):\n               os.unlink(temp_path)\n           return False\n   \n   def set_research_folder(self, path):\n       \"\"\"Update research folder path and save configuration\"\"\"\n       # Validate path exists and is accessible\n       if not os.path.isdir(path):\n           raise ValueError(f\"Directory does not exist: {path}\")\n       if not os.access(path, os.R_OK | os.W_OK):\n           raise ValueError(f\"Directory is not accessible: {path}\")\n       \n       # Update config and save\n       self._config.research_folder_path = path\n       return self.save_config()\n   ```\n6. Test file operations with temporary directories\n7. Implement recovery from backup if save fails",
+          "status": "pending",
+          "parentTaskId": 1
+        },
+        {
+          "id": 5,
+          "title": "Create Configuration Interface and CLI",
+          "description": "Develop a simple interface for viewing and updating configuration settings, including both programmatic API and command-line interface.",
+          "dependencies": [
+            4
+          ],
+          "details": "1. Create a high-level API for configuration access\n2. Implement a CLI for configuration management\n3. Add input validation and user-friendly error messages\n4. Include help text and examples\n5. Example Python implementation:\n   ```python\n   # src/config/interface.py\n   from .manager import ConfigurationManager\n   \n   def get_config():\n       \"\"\"Get the current configuration\"\"\"\n       return ConfigurationManager().get_config()\n   \n   def set_research_folder(path):\n       \"\"\"Set the research folder path\"\"\"\n       return ConfigurationManager().set_research_folder(path)\n   \n   # src/cli.py\n   import argparse\n   import sys\n   from config.interface import get_config, set_research_folder\n   \n   def main():\n       parser = argparse.ArgumentParser(description=\"Research App Configuration\")\n       subparsers = parser.add_subparsers(dest=\"command\", help=\"Command to run\")\n       \n       # Get config command\n       get_parser = subparsers.add_parser(\"get\", help=\"Get configuration\")\n       \n       # Set research folder command\n       set_parser = subparsers.add_parser(\"set-folder\", help=\"Set research folder path\")\n       set_parser.add_argument(\"path\", help=\"Path to research folder\")\n       \n       args = parser.parse_args()\n       \n       try:\n           if args.command == \"get\":\n               config = get_config()\n               print(f\"Research folder: {config.research_folder_path}\")\n               print(f\"App name: {config.app_name}\")\n               print(f\"Debug mode: {config.debug_mode}\")\n           elif args.command == \"set-folder\":\n               if set_research_folder(args.path):\n                   print(f\"Research folder set to: {args.path}\")\n               else:\n                   print(\"Failed to set research folder\")\n                   sys.exit(1)\n           else:\n               parser.print_help()\n       except Exception as e:\n           print(f\"Error: {e}\")\n           sys.exit(1)\n   \n   if __name__ == \"__main__\":\n       main()\n   ```\n6. Add entry point in setup.py for CLI access\n7. Create integration tests for the CLI\n8. Document the API and CLI usage in README.md",
+          "status": "pending",
+          "parentTaskId": 1
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Implement File System Scanner",
+      "description": "Develop the File System Monitor/Scanner component that detects and reads files from the specified folder, focusing on .txt and .md files.",
+      "status": "pending",
+      "dependencies": [
+        1
+      ],
+      "priority": "high",
+      "details": "Create a module that can scan a directory (and optionally its subdirectories) to identify .txt and .md files. Implement functions to read these files and extract their raw content. Store basic metadata about each file (path, size, last modified date, etc.). Design the scanner to be extensible for future file types (e.g., PDF). Consider implementing a simple caching mechanism to avoid re-processing unchanged files.",
+      "testStrategy": "Test with various folder structures containing different file types. Verify all .txt and .md files are correctly identified and their content is properly extracted. Test edge cases like empty files, large files, and files with unusual characters."
+    },
+    {
+      "id": 3,
+      "title": "Build Document Parser and Text Extractor",
+      "description": "Create the Document Parser/Text Extractor component that processes raw file content into clean, normalized text suitable for NLP processing.",
+      "status": "pending",
+      "dependencies": [
+        2
+      ],
+      "priority": "high",
+      "details": "Implement text cleaning and normalization functions to process the raw content from files. This should include removing irrelevant artifacts, handling special characters, normalizing whitespace, and potentially segmenting text into paragraphs or sections. Create a Document data model as specified in the PRD to store both raw and processed text along with metadata. Focus on .txt and .md files for the MVP, with extensibility in mind for future file types.",
+      "testStrategy": "Test with various text formats and styles to ensure proper cleaning and normalization. Verify the Document model correctly stores all required information. Use sample documents with known artifacts to verify cleaning effectiveness."
+    },
+    {
+      "id": 4,
+      "title": "Implement Text Chunking and Segmentation",
+      "description": "Develop functionality to break down processed documents into manageable chunks for more effective semantic analysis and retrieval.",
+      "status": "pending",
+      "dependencies": [
+        3
+      ],
+      "priority": "medium",
+      "details": "Create algorithms to segment document text into logical chunks (e.g., paragraphs, sections, or fixed-size chunks with overlap). Ensure chunks maintain context and are sized appropriately for the embedding models that will be used later. Implement strategies for handling edge cases like very short documents or extremely long sections. Store the relationship between chunks and their source documents to maintain traceability.",
+      "testStrategy": "Test chunking with various document types and structures. Verify chunks are sized appropriately and maintain logical coherence. Check that the relationship between chunks and source documents is preserved."
+    },
+    {
+      "id": 5,
+      "title": "Develop Embedding Generation System",
+      "description": "Create the core NLP component that generates vector embeddings for text chunks to enable semantic search capabilities.",
+      "status": "pending",
+      "dependencies": [
+        4
+      ],
+      "priority": "high",
+      "details": "Select and integrate an appropriate embedding model (e.g., Sentence-Transformers for Python or equivalent). Implement functionality to generate vector embeddings for each text chunk. Optimize the embedding process for performance, potentially using batching or parallel processing for larger document sets. Store embeddings alongside their corresponding text chunks in the IndexEntry data model as specified in the PRD.",
+      "testStrategy": "Verify embeddings are generated correctly by testing with known similar and dissimilar text chunks. Measure embedding generation performance and optimize if necessary. Test with edge cases like very short or unusual text."
+    },
+    {
+      "id": 6,
+      "title": "Build In-Memory Vector Index",
+      "description": "Implement a simple in-memory vector index to store and efficiently query document embeddings.",
+      "status": "pending",
+      "dependencies": [
+        5
+      ],
+      "priority": "high",
+      "details": "Create an in-memory data structure to store and index the vector embeddings. Implement vector similarity search functionality (e.g., cosine similarity) to find relevant text chunks based on a query embedding. Include ranking mechanisms to sort results by relevance. Design the index to be efficient for the MVP while keeping in mind future scalability needs. Consider using existing libraries for vector search if appropriate.",
+      "testStrategy": "Test search performance with various index sizes. Verify search results match expected relevance patterns. Benchmark memory usage and query response times to ensure they meet requirements."
+    },
+    {
+      "id": 7,
+      "title": "Implement Query Processing System",
+      "description": "Develop the system that processes incoming queries from AI agents, converts them to embeddings, and retrieves relevant context.",
+      "status": "pending",
+      "dependencies": [
+        6
+      ],
+      "priority": "high",
+      "details": "Create a query processing pipeline that takes a natural language query from an AI agent, preprocesses it similarly to document text, generates an embedding for the query, searches the vector index for similar content, and returns ranked results. Implement result formatting to include both the relevant text snippets and references to their source documents. Design the system to handle various query types and lengths effectively.",
+      "testStrategy": "Test with a variety of query types (questions, code snippets, keywords). Verify the system returns relevant results for each query type. Test edge cases like very short queries, very specific queries, and queries with no relevant matches in the index."
+    },
+    {
+      "id": 8,
+      "title": "Create API for AI Agent Integration",
+      "description": "Develop the API endpoint that allows AI agents to query the MCP for contextual information.",
+      "status": "pending",
+      "dependencies": [
+        7
+      ],
+      "priority": "high",
+      "details": "Implement a RESTful API endpoint that accepts query requests from AI agents. The API should receive a query string, process it through the query processing system, and return a structured response containing relevant text snippets with source document references. Include appropriate error handling, request validation, and response formatting. Document the API for integration by AI agent developers.",
+      "testStrategy": "Test API functionality with various valid and invalid requests. Verify correct response formats and error handling. Perform basic load testing to ensure the API can handle expected query volumes."
+    },
+    {
+      "id": 9,
+      "title": "Implement End-to-End System Integration",
+      "description": "Connect all components into a cohesive system and implement the main application flow from configuration to query response.",
+      "status": "pending",
+      "dependencies": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "priority": "medium",
+      "details": "Integrate all previously developed components into a complete system. Implement the main application flow: reading configuration, scanning the specified folder, processing documents, building the index, and serving queries through the API. Ensure proper error handling and logging throughout the system. Create a simple startup/initialization process that prepares the system for use.",
+      "testStrategy": "Perform end-to-end testing with real documents and queries. Verify the entire pipeline works correctly from configuration to query response. Test system behavior with various folder configurations and document sets."
+    },
+    {
+      "id": 10,
+      "title": "Create Basic Status Information Interface",
+      "description": "Implement a simple interface to provide feedback on system status, including whether the folder was processed successfully and basic information about the indexed document set.",
+      "status": "pending",
+      "dependencies": [
+        9
+      ],
+      "priority": "low",
+      "details": "Develop a simple status reporting mechanism that provides information about the system's state. Include details such as the number of documents processed, file types found, index size, and any processing errors encountered. This could be implemented as an additional API endpoint, a log file, or a simple command-line interface depending on the deployment context. Focus on providing clear feedback about whether the specified folder was processed successfully.",
+      "testStrategy": "Verify the status interface correctly reports system state in various scenarios (successful processing, errors, empty folders, etc.). Test that all relevant metrics are accurately reported."
+    }
+  ],
+  "metadata": {
+    "projectName": "Research Context MCP Implementation",
+    "totalTasks": 10,
+    "sourceFile": "/Users/devon/Documents/Cursor/Projects/scripts/prd.txt",
+    "generatedAt": "2023-11-10"
+  }
+}

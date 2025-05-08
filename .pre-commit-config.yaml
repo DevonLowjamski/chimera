@@ -1,0 +1,33 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0 # Use the latest version
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files
+    -   id: detect-private-key
+
+-   repo: https://github.com/psf/black
+    rev: 23.12.0 # Specify a recent stable version
+    hooks:
+    -   id: black
+        args: [--line-length=88]
+
+-   repo: https://github.com/pycqa/isort
+    rev: 5.12.0 # Specify a recent stable version
+    hooks:
+    -   id: isort
+        args: ["--profile", "black"]
+
+-   repo: https://github.com/pycqa/flake8
+    rev: '6.0.0' # Specify a recent stable version
+    hooks:
+    -   id: flake8
+
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v1.5.1'  # Specify the latest version if possible
+    hooks:
+    -   id: mypy
+        args: [--ignore-missing-imports, --follow-imports=silent]
+        additional_dependencies: [pydantic]
