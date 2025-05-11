@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from memory_profiler import profile
 
 from src.chunking.text_chunk import TextChunk
 from src.services.vector_index import InMemoryVectorIndex
@@ -230,3 +231,48 @@ def test_workflow_add_search_remove_readd():
     idx.add([1, 0], "x")
     results3 = idx.search([1, 0], top_k=2)
     assert results3[0]["chunk_id"] == "x"
+
+
+@pytest.mark.benchmark
+def test_benchmark_search_performance(benchmark):
+    """
+    Benchmark search performance for 10k vectors (embedding_dim=384).
+    Run with: pytest -k 'benchmark' --benchmark-only
+    """
+    dim = 384
+    n = 10000
+    idx = InMemoryVectorIndex(embedding_dim=dim)
+    # Add 10k random normalized vectors
+    for i in range(n):
+        vec = np.random.rand(dim)
+        vec = vec / np.linalg.norm(vec)
+        idx.add(vec.tolist(), f"chunk_{i}")
+    query = np.random.rand(dim)
+    query = query / np.linalg.norm(query)
+    # Benchmark the search
+    result = benchmark(lambda: idx.search(query.tolist(), top_k=10))
+    assert len(result) == 10
+    # Optionally, check timing (adjust threshold for your hardware)
+    # assert benchmark.stats['mean'] < 0.1  # 100ms
+
+
+@profile
+def build_and_measure_index(size=10000, dim=384):
+    """
+    Build an InMemoryVectorIndex with `size` random vectors and measure memory usage.
+    Run with: python -m memory_profiler tests/services/test_vector_index.py
+    """
+    idx = InMemoryVectorIndex(embedding_dim=dim)
+    for i in range(size):
+        vec = np.random.rand(dim)
+        vec = vec / np.linalg.norm(vec)
+        idx.add(vec.tolist(), f"chunk_{i}")
+    return idx
+
+
+if __name__ == "__main__":
+    import sys
+
+    size = int(sys.argv[1]) if len(sys.argv) > 1 else 10000
+    dim = int(sys.argv[2]) if len(sys.argv) > 2 else 384
+    build_and_measure_index(size, dim)
