@@ -153,3 +153,80 @@ def test_search_sorted_by_score(index):
     results = index.search([1, 0, 0], top_k=3)
     scores = [r["score"] for r in results]
     assert scores == sorted(scores, reverse=True)
+
+
+def test_get_embedding_nonexistent(index):
+    assert index.get_embedding("not-there") is None
+
+
+def test_get_chunk_ref_nonexistent(index):
+    assert index.get_chunk_ref("not-there") is None
+
+
+def test_remove_with_string_chunk_ref(index, sample_embedding):
+    chunk_id = "string-id"
+    index.add(sample_embedding, chunk_id)
+    assert index.remove(chunk_id)
+    assert index.get_embedding(chunk_id) is None
+    assert index.get_chunk_ref(chunk_id) is None
+
+
+def test_high_dimensional_vectors():
+    dim = 1000
+    idx = InMemoryVectorIndex(embedding_dim=dim)
+    vec = np.random.rand(dim).tolist()
+    idx.add(vec, "hi-dim")
+    results = idx.search(vec, top_k=1)
+    assert results[0]["chunk_id"] == "hi-dim"
+    assert results[0]["score"] == pytest.approx(1.0)
+
+
+def test_non_normalized_vectors():
+    idx = InMemoryVectorIndex(embedding_dim=3)
+    idx.add([10, 0, 0], "a")
+    idx.add([0, 5, 0], "b")
+    results = idx.search([2, 0, 0], top_k=1)
+    assert results[0]["chunk_id"] == "a"
+
+
+def test_large_index_add_search_remove():
+    idx = InMemoryVectorIndex(embedding_dim=5)
+    for i in range(200):
+        idx.add([i, i + 1, i + 2, i + 3, i + 4], f"c{i}")
+    results = idx.search([1, 2, 3, 4, 5], top_k=10)
+    assert len(results) == 10
+    # Remove 50 chunks
+    for i in range(50):
+        assert idx.remove(f"c{i}")
+    assert len(idx) == 150
+    # Search again
+    results2 = idx.search([1, 2, 3, 4, 5], top_k=10)
+    assert len(results2) == 10
+
+
+def test_mixed_chunk_refs():
+    idx = InMemoryVectorIndex(embedding_dim=3)
+    chunk = TextChunk(content="foo", source_document_id="doc")
+    idx.add([1, 0, 0], chunk)
+    idx.add([0, 1, 0], "bar")
+    # Both refs should be accessible
+    assert isinstance(idx.get_chunk_ref(chunk.chunk_id), TextChunk)
+    assert idx.get_chunk_ref("bar") == "bar"
+    # Search returns both
+    results = idx.search([1, 0, 0], top_k=2)
+    ids = {r["chunk_id"] for r in results}
+    assert chunk.chunk_id in ids and "bar" in ids
+
+
+def test_workflow_add_search_remove_readd():
+    idx = InMemoryVectorIndex(embedding_dim=2)
+    idx.add([1, 0], "x")
+    idx.add([0, 1], "y")
+    results1 = idx.search([1, 0], top_k=2)
+    assert results1[0]["chunk_id"] == "x"
+    idx.remove("x")
+    results2 = idx.search([1, 0], top_k=2)
+    assert all(r["chunk_id"] != "x" for r in results2)
+    idx.add([1, 0], "x")
+    results3 = idx.search([1, 0], top_k=2)
+    assert results3[0]["chunk_id"] == "x"
