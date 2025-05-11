@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 
@@ -106,16 +106,30 @@ class InMemoryVectorIndex:
         """Return the number of vectors in the index."""
         return len(self.chunk_refs)
 
-    def search(
-        self, query: List[float], top_k: int = 5
-    ) -> List[Tuple[float, Union[TextChunk, str]]]:
+    def _format_result(self, score: float, chunk_ref: Union[TextChunk, str]) -> dict:
+        if isinstance(chunk_ref, TextChunk):
+            return {
+                "score": score,
+                "chunk_id": chunk_ref.chunk_id,
+                "content": chunk_ref.content,
+                "metadata": chunk_ref.metadata,
+            }
+        else:
+            return {
+                "score": score,
+                "chunk_id": chunk_ref,
+                "content": None,
+                "metadata": {},
+            }
+
+    def search(self, query: List[float], top_k: int = 5) -> List[dict]:
         """
         Search for the top_k most similar embeddings to the query using cosine similarity.
         Args:
             query (List[float]): The query embedding vector.
             top_k (int): Number of top results to return.
         Returns:
-            List of (score, chunk_ref) tuples, sorted by descending similarity.
+            List of dicts with keys: score, chunk_id, content, metadata, sorted by descending similarity.
         """
         if len(query) != self.embedding_dim:
             raise ValueError(
@@ -129,11 +143,10 @@ class InMemoryVectorIndex:
         if query_norm == 0:
             raise ValueError("Query vector must not be zero.")
         emb_norms = np.linalg.norm(self.embeddings, axis=1)
-        # Avoid division by zero
         emb_norms[emb_norms == 0] = 1e-10
-        # Cosine similarity
         sims = np.dot(self.embeddings, query_vec) / (emb_norms * query_norm)
-        # Get top_k indices
         top_indices = np.argsort(-sims)[:top_k]
-        results = [(float(sims[i]), self.chunk_refs[i]) for i in top_indices]
+        results = [
+            self._format_result(float(sims[i]), self.chunk_refs[i]) for i in top_indices
+        ]
         return results

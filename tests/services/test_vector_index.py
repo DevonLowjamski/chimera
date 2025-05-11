@@ -66,13 +66,13 @@ def test_search_basic(index, sample_chunk, sample_embedding):
     index.add([1, 0, 0], "d")
     # Query identical to [1, 0, 0]
     results = index.search([1, 0, 0], top_k=2)
-    assert results[0][1] in ("a", "d")
-    assert results[1][1] in ("a", "d")
-    assert results[0][0] == pytest.approx(1.0)
+    assert results[0]["chunk_id"] in ("a", "d")
+    assert results[1]["chunk_id"] in ("a", "d")
+    assert results[0]["score"] == pytest.approx(1.0)
     # Query orthogonal to all but one
     results = index.search([0, 1, 0], top_k=1)
-    assert results[0][1] == "b"
-    assert results[0][0] == pytest.approx(1.0)
+    assert results[0]["chunk_id"] == "b"
+    assert results[0]["score"] == pytest.approx(1.0)
 
 
 def test_search_empty_index():
@@ -126,3 +126,30 @@ def test_remove_after_duplicate_attempt(index, sample_chunk, sample_embedding):
     removed = index.remove(sample_chunk.chunk_id)
     assert removed
     assert index.get_embedding(sample_chunk.chunk_id) is None
+
+
+def test_search_result_format(index, sample_chunk, sample_embedding):
+    index.add([1, 0, 0], sample_chunk)
+    index.add([0, 1, 0], "b")
+    results = index.search([1, 0, 0], top_k=2)
+    assert isinstance(results, list)
+    assert all(isinstance(r, dict) for r in results)
+    for r in results:
+        assert "score" in r and "chunk_id" in r and "content" in r and "metadata" in r
+    # Check correct content/metadata for TextChunk
+    assert results[0]["chunk_id"] == sample_chunk.chunk_id
+    assert results[0]["content"] == sample_chunk.content
+    assert results[0]["metadata"] == sample_chunk.metadata
+    # Check correct content/metadata for string chunk_ref
+    assert results[1]["chunk_id"] == "b"
+    assert results[1]["content"] is None
+    assert results[1]["metadata"] == {}
+
+
+def test_search_sorted_by_score(index):
+    index.add([1, 0, 0], "a")
+    index.add([0.9, 0.1, 0], "b")
+    index.add([0, 1, 0], "c")
+    results = index.search([1, 0, 0], top_k=3)
+    scores = [r["score"] for r in results]
+    assert scores == sorted(scores, reverse=True)
