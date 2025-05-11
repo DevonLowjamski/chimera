@@ -1,28 +1,17 @@
-import os
-from pathlib import Path
-from typing import Optional
+from .interface import get_config, set_research_folder_path
+from .manager import ConfigurationManager
+from .schema import DEFAULT_CONFIG_DIR, DEFAULT_CONFIG_FILE, AppConfig, save_config
 
-from pydantic import BaseModel
+# --- Global config instance (uses imported AppConfig and DEFAULT_CONFIG_FILE) ---
+# This was a placeholder from an earlier stage and should likely be removed or handled by the ConfigurationManager
+# config = AppConfig.load()
 
-
-class AppConfig(BaseModel):
-    app_name: str = "ResearchContextMCP"
-    debug_mode: bool = False
-    log_level: str = "INFO"
-    data_dir: Optional[Path] = None
-
-    @classmethod
-    def from_env(cls) -> "AppConfig":
-        """Load configuration from environment variables"""
-        return cls(
-            app_name=os.getenv("APP_NAME", "ResearchContextMCP"),
-            debug_mode=os.getenv("DEBUG_MODE", "False").lower() == "true",
-            log_level=os.getenv("LOG_LEVEL", "INFO"),
-            data_dir=Path(os.getenv("DATA_DIR", "./data"))
-            if os.getenv("DATA_DIR")
-            else None,
-        )
-
-
-# Default config instance
-config = AppConfig.from_env()
+__all__ = [
+    "AppConfig",
+    "ConfigurationManager",
+    "DEFAULT_CONFIG_DIR",
+    "DEFAULT_CONFIG_FILE",
+    "save_config",
+    "get_config",
+    "set_research_folder_path",
+]

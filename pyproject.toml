@@ -1,21 +1,2 @@
-[build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[tool.black]
-line-length = 88
-
 [tool.isort]
-profile = "black"
-line_length = 88
-
-[tool.mypy]
-python_version = "3.8"
-warn_return_any = true
-warn_unused_configs = true
-ignore_missing_imports = true
-# Add other mypy settings as needed
-
-[[tool.mypy.overrides]]
-module = "tests.*"
-allow_untyped_defs = true
+line_length = 120
