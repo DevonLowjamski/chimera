@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99e303544a94b4747b94ce5f0be0b1ab, type: 3}
+  m_Name: Jack_Herer
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectChimera.Data.PlantStrainDefinition
+  strainName: Jack Herer
+  description: Energizing sativa with pine and spice
+  strainIcon: {fileID: 0}
+  strainType: 1
+  baseTraits: []
+  cultivationDifficulty: 1
+  optimalTemperature: 26
+  optimalHumidity: 55
+  optimalPH: 6.5
+  baseMarketValue: 200
+  rarityMultiplier: 1

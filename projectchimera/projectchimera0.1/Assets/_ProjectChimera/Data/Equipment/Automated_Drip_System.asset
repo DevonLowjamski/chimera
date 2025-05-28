@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9d078129db364b13963c47a45e522fb, type: 3}
+  m_Name: Automated_Drip_System
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectChimera.Data.EquipmentDefinition
+  equipmentName: Automated Drip System
+  description: Precision watering system
+  equipmentIcon: {fileID: 0}
+  equipmentPrefab: {fileID: 0}
+  equipmentType: 3
+  tier: 2
+  cost: 300
+  powerConsumption: 25
+  durability: 100
+  effects:
+  - effectType: 7
+    value: 40
+    isPercentage: 1
+  - effectType: 6
+    value: 25
+    isPercentage: 1
+  - effectType: 8
+    value: 15
+    isPercentage: 1
+  requiredLevel: 2
+  prerequisites: []
