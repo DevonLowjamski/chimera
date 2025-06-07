@@ -1,0 +1,23 @@
+{
+    "name": "ProjectChimera.Testing",
+    "rootNamespace": "ProjectChimera.Testing",
+    "references": [
+        "ProjectChimera.Core",
+        "ProjectChimera.Data",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

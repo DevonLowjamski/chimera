@@ -1,0 +1,23 @@
+{
+    "name": "ProjectChimera.UI",
+    "rootNamespace": "ProjectChimera.UI",
+    "references": [
+        "GUID:ProjectChimera.Core",
+        "GUID:ProjectChimera.Data",
+        "GUID:ProjectChimera.Genetics",
+        "GUID:ProjectChimera.Cultivation",
+        "GUID:ProjectChimera.Environment",
+        "GUID:ProjectChimera.Construction",
+        "GUID:ProjectChimera.Economy",
+        "GUID:ProjectChimera.Progression"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
