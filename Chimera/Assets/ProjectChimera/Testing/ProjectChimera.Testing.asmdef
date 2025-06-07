@@ -4,6 +4,7 @@
     "references": [
         "ProjectChimera.Core",
         "ProjectChimera.Data",
+        "ProjectChimera.Visuals",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

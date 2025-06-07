@@ -1,6 +1,6 @@
 {
-    "name": "ProjectChimera.Genetics",
-    "rootNamespace": "ProjectChimera.Genetics",
+    "name": "ProjectChimera.Visuals",
+    "rootNamespace": "ProjectChimera.Systems.Visuals",
     "references": [
         "ProjectChimera.Core",
         "ProjectChimera.Data"

@@ -13,14 +13,13 @@ OcclusionCullingSettings:
 --- !u!104 &2
 RenderSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 9
+  serializedVersion: 10
   m_Fog: 0
   m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_FogMode: 3
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientMode: 0
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
@@ -39,13 +38,12 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 12
-  m_GIWorkflowMode: 1
+  serializedVersion: 13
+  m_BakeOnSceneLoad: 0
   m_GISettings:
     serializedVersion: 2
     m_BounceScale: 1
@@ -68,9 +66,6 @@ LightmapSettings:
     m_LightmapParameters: {fileID: 0}
     m_LightmapsBakeMode: 1
     m_TextureCompression: 1
-    m_FinalGather: 0
-    m_FinalGatherFiltering: 1
-    m_FinalGatherRayCount: 256
     m_ReflectionCompression: 2
     m_MixedBakeMode: 2
     m_BakeBackend: 1
@@ -124,6 +119,58 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &348440500
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 348440502}
+  - component: {fileID: 348440501}
+  m_Layer: 0
+  m_Name: RuntimeSystemTester
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &348440501
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 348440500}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 300833bef53ec4273b3a1c1237e72d95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProjectChimera.Core::ProjectChimera.Core.RuntimeSystemTester
+  _componentID: 
+  _enableDebugLogging: 0
+  _runTestsOnStart: 1
+  _enableDetailedLogging: 1
+  _testDelay: 1
+  _onTestStarted: {fileID: 11400000, guid: d1a72056258b245d6b6625e61bb12906, type: 2}
+  _onTestCompleted: {fileID: 11400000, guid: 10d821c51178945dba44627be644b467, type: 2}
+  _onTestFailed: {fileID: 11400000, guid: 2c19ab74322cc4bec89a89be5d7df91f, type: 2}
+--- !u!4 &348440502
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 348440500}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -208,11 +255,210 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2089464039
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2089464046}
+  - component: {fileID: 2089464045}
+  - component: {fileID: 2089464044}
+  - component: {fileID: 2089464043}
+  - component: {fileID: 2089464042}
+  - component: {fileID: 2089464041}
+  - component: {fileID: 2089464040}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2089464040
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2089464039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6e2ded384c15454793101158351505c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProjectChimera.Core::ProjectChimera.Core.SettingsManager
+  _componentID: 
+  _enableDebugLogging: 0
+  _initializeOnAwake: 1
+  _persistAcrossScenes: 0
+  _config: {fileID: 0}
+  _autoApplySettings: 1
+  _validateSettings: 1
+  _onSettingChanged: {fileID: 0}
+  _onSettingsLoaded: {fileID: 0}
+  _onSettingsReset: {fileID: 0}
+  _onSettingsError: {fileID: 0}
+--- !u!114 &2089464041
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2089464039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1beb60976c414f46b8505d172b82eaa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProjectChimera.Core::ProjectChimera.Core.SaveManager
+  _componentID: 
+  _enableDebugLogging: 0
+  _initializeOnAwake: 1
+  _persistAcrossScenes: 0
+  _config: {fileID: 0}
+  _saveFilePrefix: ProjectChimera_Save_
+  _saveFileExtension: .json
+  _compresseSaveFiles: 1
+  _encryptSaveFiles: 0
+  _enableAutoSave: 1
+  _autoSaveInterval: 300
+  _maxAutoSaves: 5
+  _onSaveStarted: {fileID: 0}
+  _onSaveCompleted: {fileID: 0}
+  _onLoadStarted: {fileID: 0}
+  _onLoadCompleted: {fileID: 0}
+  _onSaveError: {fileID: 0}
+--- !u!114 &2089464042
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2089464039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99608a075032d4618abeebdfef1ab792, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProjectChimera.Core::ProjectChimera.Core.EventManager
+  _componentID: 
+  _enableDebugLogging: 0
+  _initializeOnAwake: 1
+  _persistAcrossScenes: 0
+  _config: {fileID: 0}
+  _enableEventLogging: 0
+  _enableEventMetrics: 1
+  _enableEventDebugging: 0
+  _maxEventsPerFrame: 100
+  _eventQueueWarningThreshold: 50
+  _onEventChannelRegistered: {fileID: 0}
+  _onEventRaised: {fileID: 0}
+  _onEventQueueOverflow: {fileID: 0}
+--- !u!114 &2089464043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2089464039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e9aa4481afa748e6b0e697b9812cc9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProjectChimera.Core::ProjectChimera.Core.DataManager
+  _componentID: 
+  _enableDebugLogging: 0
+  _initializeOnAwake: 1
+  _persistAcrossScenes: 0
+  _config: {fileID: 0}
+  _validateDataOnStartup: 1
+  _enableDataCaching: 1
+  _logDataOperations: 0
+  _onDataLoaded: {fileID: 0}
+  _onDataValidationComplete: {fileID: 0}
+  _onDataError: {fileID: 0}
+--- !u!114 &2089464044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2089464039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4444614099bbc471f90fbb8872fb1730, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProjectChimera.Core::ProjectChimera.Core.TimeManager
+  _componentID: 
+  _enableDebugLogging: 0
+  _initializeOnAwake: 1
+  _persistAcrossScenes: 0
+  _timeConfig: {fileID: 0}
+  _enableOfflineProgression: 1
+  _defaultTimeScale: 1
+  _maxTimeScale: 100
+  _minTimeScale: 0.1
+  _onTimeScaleChanged: {fileID: 0}
+  _onTimePaused: {fileID: 0}
+  _onTimeResumed: {fileID: 0}
+  _onOfflineProgressionCalculated: {fileID: 0}
+  _enableTimeDebug: 0
+--- !u!114 &2089464045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2089464039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4085d06090b7c4513a6dc6b8b9edc521, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ProjectChimera.Core::ProjectChimera.Core.GameManager
+  _componentID: 
+  _enableDebugLogging: 0
+  _initializeOnAwake: 1
+  _persistAcrossScenes: 0
+  _gameStateConfig: {fileID: 0}
+  _loadLastSaveOnStart: 1
+  _autoSaveEnabled: 1
+  _autoSaveInterval: 300
+  _timeManager: {fileID: 2089464044}
+  _dataManager: {fileID: 2089464043}
+  _eventManager: {fileID: 2089464042}
+  _saveManager: {fileID: 2089464041}
+  _settingsManager: {fileID: 2089464040}
+  _onGameInitialized: {fileID: 0}
+  _onGamePaused: {fileID: 0}
+  _onGameResumed: {fileID: 0}
+  _onGameShutdown: {fileID: 0}
+--- !u!4 &2089464046
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2089464039}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1660057539 &9223372036854775807
+SceneRoots:
+  m_ObjectHideFlags: 0
+  m_Roots:
+  - {fileID: 519420032}
+  - {fileID: 2089464046}
+  - {fileID: 348440502}

@@ -2,7 +2,7 @@
     "name": "ProjectChimera.Data",
     "rootNamespace": "ProjectChimera.Data",
     "references": [
-        "GUID:ProjectChimera.Core"
+        "ProjectChimera.Core"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
