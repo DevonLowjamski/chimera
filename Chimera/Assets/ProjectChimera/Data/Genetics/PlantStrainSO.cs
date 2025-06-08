@@ -74,6 +74,17 @@ namespace ProjectChimera.Data.Genetics
         [SerializeField] private bool _seedsAvailable = true;
         [SerializeField] private bool _clonesAvailable = false;
 
+        [Header("Cultivation System Properties")]
+        [SerializeField] private ProjectChimera.Data.Environment.GxE_ProfileSO _gxeProfile;
+        [SerializeField] private AnimationCurve _growthCurve;
+        [SerializeField, Range(0.5f, 2f)] private float _baseHealthModifier = 1f;
+        [SerializeField, Range(0.01f, 0.5f)] private float _healthRecoveryRate = 0.1f;
+        [SerializeField, Range(20f, 200f)] private float _baseYieldGrams = 100f;
+        [SerializeField, Range(0.5f, 2f)] private float _baseQualityModifier = 1f;
+        [SerializeField, Range(0.5f, 2f)] private float _basePotencyModifier = 1f;
+        [SerializeField, Range(40f, 120f)] private int _baseFloweringTime = 60;
+        [SerializeField, Range(0.3f, 5f)] private float _baseHeight = 1.5f;
+
         // Public Properties
         public PlantSpeciesSO BaseSpecies => _baseSpecies;
         public string StrainName => _strainName;
@@ -131,6 +142,17 @@ namespace ProjectChimera.Data.Genetics
         public bool SeedsAvailable => _seedsAvailable;
         public bool ClonesAvailable => _clonesAvailable;
 
+        // Cultivation System
+        public ProjectChimera.Data.Environment.GxE_ProfileSO GxEProfile => _gxeProfile;
+        public AnimationCurve GrowthCurve => _growthCurve;
+        public float BaseHealthModifier => _baseHealthModifier;
+        public float HealthRecoveryRate => _healthRecoveryRate;
+        public float BaseYieldGrams => _baseYieldGrams;
+        public float BaseQualityModifier => _baseQualityModifier;
+        public float BasePotencyModifier => _basePotencyModifier;
+        public int BaseFloweringTime => _baseFloweringTime;
+        public float BaseHeight => _baseHeight;
+
         /// <summary>
         /// Calculates the modified height range for this strain.
         /// </summary>
@@ -176,7 +198,7 @@ namespace ProjectChimera.Data.Genetics
         /// <summary>
         /// Gets the modified environmental suitability for this strain.
         /// </summary>
-        public float GetModifiedEnvironmentalSuitability(ProjectChimera.Core.EnvironmentalConditions conditions)
+        public float GetModifiedEnvironmentalSuitability(ProjectChimera.Data.Cultivation.EnvironmentalConditions conditions)
         {
             if (_baseSpecies == null) return 0f;
             
@@ -321,4 +343,57 @@ namespace ProjectChimera.Data.Genetics
         SeizureControl,
         GlaucomaTreatment
     }
+
+    /// <summary>
+    /// Represents a specific plant's genetic makeup including alleles and inheritance information.
+    /// </summary>
+    [System.Serializable]
+    public class PlantGenotype
+    {
+        public string GenotypeID;
+        public PlantStrainSO StrainOrigin;
+        public int Generation;
+        public bool IsFounder;
+        public System.DateTime CreationDate;
+        public Dictionary<string, AlleleCouple> Genotype = new Dictionary<string, AlleleCouple>();
+        public List<string> ParentIDs = new List<string>();
+        public float InbreedingCoefficient;
+        public List<GeneticMutation> Mutations = new List<GeneticMutation>();
+    }
+
+    /// <summary>
+    /// Represents a pair of alleles for a specific gene locus.
+    /// </summary>
+    [System.Serializable]
+    public class AlleleCouple
+    {
+        public AlleleSO Allele1;
+        public AlleleSO Allele2;
+        
+        public AlleleCouple(AlleleSO allele1, AlleleSO allele2)
+        {
+            Allele1 = allele1;
+            Allele2 = allele2;
+        }
+    }
+
+    /// <summary>
+    /// Represents a genetic mutation that occurred during breeding.
+    /// </summary>
+    [System.Serializable]
+    public class GeneticMutation
+    {
+        public string MutationID;
+        public string GeneLocusAffected;
+        public MutationType MutationType;
+        public string OriginalAlleleID;
+        public string MutatedAlleleID;
+        public float PhenotypicEffect;
+        public string Description;
+        public System.DateTime OccurrenceDate;
+        public bool IsBeneficial;
+        public bool IsHarmful;
+        public bool IsNeutral;
+    }
+
 }

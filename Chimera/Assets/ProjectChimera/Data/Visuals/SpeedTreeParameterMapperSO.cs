@@ -199,7 +199,7 @@ namespace ProjectChimera.Data.Visuals
         {
             if (strain?.BaseSpecies == null) return 1f;
             
-            return strain.BaseSpecies.EvaluateEnvironmentalSuitability(new ProjectChimera.Core.EnvironmentalConditions
+            return strain.BaseSpecies.EvaluateEnvironmentalSuitability(new ProjectChimera.Data.Cultivation.EnvironmentalConditions
             {
                 Temperature = conditions.Temperature,
                 Humidity = conditions.Humidity,

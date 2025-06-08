@@ -42,7 +42,7 @@ namespace ProjectChimera.Core
         /// Current environmental conditions affecting this entity.
         /// This would be populated by the environmental system.
         /// </summary>
-        public virtual EnvironmentalConditions CurrentEnvironment { get; protected set; }
+        public virtual IEnvironmentalConditions CurrentEnvironment { get; protected set; }
 
         /// <summary>
         /// Current nutrition status of this entity.
@@ -158,28 +158,7 @@ namespace ProjectChimera.Core
         }
     }
 
-    /// <summary>
-    /// Represents current environmental conditions affecting a cultivation entity.
-    /// This is a placeholder - full implementation would be in the Environment system.
-    /// </summary>
-    [System.Serializable]
-    public class EnvironmentalConditions
-    {
-        public float Temperature;
-        public float Humidity;
-        public float CO2Level;
-        public float LightIntensity;
-        public float AirFlow;
-        
-        public static EnvironmentalConditions Default => new EnvironmentalConditions
-        {
-            Temperature = 24.0f,  // 24°C
-            Humidity = 55.0f,     // 55% RH
-            CO2Level = 400.0f,    // 400 ppm
-            LightIntensity = 200.0f, // 200 PPFD
-            AirFlow = 1.0f        // Normalized airflow
-        };
-    }
+
 
     /// <summary>
     /// Represents the nutritional status of a cultivation entity.
@@ -221,5 +200,18 @@ namespace ProjectChimera.Core
             DrainageRate = 0.5f,
             WaterQuality = 1.0f
         };
+    }
+
+    /// <summary>
+    /// Interface for environmental conditions that affect cultivation entities.
+    /// Implemented by the comprehensive EnvironmentalConditions in Data.Cultivation.
+    /// </summary>
+    public interface IEnvironmentalConditions
+    {
+        float Temperature { get; }
+        float Humidity { get; }
+        float CO2Level { get; }
+        float LightIntensity { get; }
+        float AirFlow { get; }
     }
 }

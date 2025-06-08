@@ -71,5 +71,23 @@ namespace ProjectChimera.Core
         {
             // Base implementation - override in derived classes
         }
+
+        /// <summary>
+        /// Logs a warning message for this configuration asset.
+        /// </summary>
+        /// <param name="message">The warning message</param>
+        protected void LogWarning(string message)
+        {
+            Debug.LogWarning($"[Chimera][{GetType().Name}] {message}", this);
+        }
+
+        /// <summary>
+        /// Logs an error message for this configuration asset.
+        /// </summary>
+        /// <param name="message">The error message</param>
+        protected void LogError(string message)
+        {
+            Debug.LogError($"[Chimera][{GetType().Name}] {message}", this);
+        }
     }
 }

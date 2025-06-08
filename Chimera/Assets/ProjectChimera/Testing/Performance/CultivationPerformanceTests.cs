@@ -7,6 +7,7 @@ using ProjectChimera.Systems.Cultivation;
 using System;
 using System.Linq;
 using UnityEngine.Profiling;
+using DataEnvironmental = ProjectChimera.Data.Cultivation.EnvironmentalConditions;
 
 namespace ProjectChimera.Testing.Performance
 {
@@ -421,7 +422,7 @@ namespace ProjectChimera.Testing.Performance
                 // Update multiple environmental conditions per frame
                 for (int i = 0; i < 20; i++)
                 {
-                    var newEnvironment = EnvironmentalConditions.CreateIndoorDefault();
+                    var newEnvironment = DataEnvironmental.CreateIndoorDefault();
                     newEnvironment.Temperature = 20f + UnityEngine.Random.Range(-5f, 10f);
                     newEnvironment.Humidity = 50f + UnityEngine.Random.Range(-20f, 30f);
                     newEnvironment.LightIntensity = 500f + UnityEngine.Random.Range(-200f, 300f);
@@ -469,7 +470,7 @@ namespace ProjectChimera.Testing.Performance
                 // Simulate environmental changes affecting multiple systems
                 if (_cultivationManager != null)
                 {
-                    var newEnvironment = EnvironmentalConditions.CreateIndoorDefault();
+                    var newEnvironment = DataEnvironmental.CreateIndoorDefault();
                     newEnvironment.Temperature = 20f + Mathf.Sin(Time.time) * 10f;
                     newEnvironment.Humidity = 50f + Mathf.Cos(Time.time * 0.5f) * 20f;
                     newEnvironment.LightIntensity = 400f + Mathf.Sin(Time.time * 2f) * 200f;

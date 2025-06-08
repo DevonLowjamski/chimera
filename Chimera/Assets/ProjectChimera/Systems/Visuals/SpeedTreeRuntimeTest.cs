@@ -60,7 +60,7 @@ namespace ProjectChimera.Systems.Visuals
         {
             results += "Testing PlantVisualizationManager initialization...\n";
 
-            var manager = FindObjectOfType<PlantVisualizationManager>();
+            var manager = FindAnyObjectByType<PlantVisualizationManager>();
             if (manager == null)
             {
                 results += "❌ PlantVisualizationManager not found in scene!\n";
@@ -183,7 +183,7 @@ namespace ProjectChimera.Systems.Visuals
                     return false;
                 }
 
-                var testEnv = ProjectChimera.Core.EnvironmentalConditions.Default;
+                var testEnv = ProjectChimera.Data.Cultivation.EnvironmentalConditions.CreateIndoorDefault();
                 float suitability = _testSpecies.EvaluateEnvironmentalSuitability(testEnv);
                 
                 if (suitability < 0f || suitability > 1f)
@@ -210,7 +210,7 @@ namespace ProjectChimera.Systems.Visuals
         {
             Debug.Log("[SpeedTree Test] Testing mock instance creation...");
 
-            var manager = FindObjectOfType<PlantVisualizationManager>();
+            var manager = FindAnyObjectByType<PlantVisualizationManager>();
             if (manager == null || _testStrain == null)
             {
                 Debug.LogError("[SpeedTree Test] Manager or test strain not available!");

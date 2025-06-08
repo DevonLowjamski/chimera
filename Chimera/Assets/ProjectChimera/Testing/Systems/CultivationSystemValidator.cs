@@ -4,6 +4,7 @@ using ProjectChimera.Core;
 using ProjectChimera.Data.Cultivation;
 using ProjectChimera.Systems.Cultivation;
 using ProjectChimera.Data.Genetics;
+using DataEnvironmental = ProjectChimera.Data.Cultivation.EnvironmentalConditions;
 
 namespace ProjectChimera.Testing.Systems
 {
@@ -183,7 +184,7 @@ namespace ProjectChimera.Testing.Systems
                 // Test integration functionality
                 try
                 {
-                    var testEnvironment = EnvironmentalConditions.CreateIndoorDefault();
+                    var testEnvironment = DataEnvironmental.CreateIndoorDefault();
                     float vpdTest = _vpdSystem.CalculateVPD(testEnvironment.Temperature, testEnvironment.Humidity, testEnvironment.LeafSurfaceTemperature);
                     
                     AddValidationCheck("System Integration Test", vpdTest > 0f,

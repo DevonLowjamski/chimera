@@ -2,9 +2,9 @@
     "name": "ProjectChimera.Progression",
     "rootNamespace": "ProjectChimera.Progression",
     "references": [
-        "GUID:ProjectChimera.Core",
-        "GUID:ProjectChimera.Data",
-        "GUID:ProjectChimera.Economy"
+        "GUID:365498379ff0240e68a20a8f327e0755",
+        "GUID:6cca6c5303192494bbddc11201b0e867",
+        "GUID:50dda257fa5de44f3845d5ce0d1f0074"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

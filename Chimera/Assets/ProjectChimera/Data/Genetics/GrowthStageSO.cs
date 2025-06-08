@@ -121,7 +121,7 @@ namespace ProjectChimera.Data.Genetics
         /// <summary>
         /// Calculates the optimal daily growth for this stage under given conditions.
         /// </summary>
-        public float CalculateOptimalGrowthRate(ProjectChimera.Core.EnvironmentalConditions environment, ProjectChimera.Core.NutritionStatus nutrition, ProjectChimera.Core.WaterStatus water)
+        public float CalculateOptimalGrowthRate(ProjectChimera.Data.Cultivation.EnvironmentalConditions environment, ProjectChimera.Core.NutritionStatus nutrition, ProjectChimera.Core.WaterStatus water)
         {
             float envSuitability = EvaluateEnvironmentalSuitability(environment);
             float nutSuitability = EvaluateNutritionalSuitability(nutrition);
@@ -133,7 +133,7 @@ namespace ProjectChimera.Data.Genetics
         /// <summary>
         /// Evaluates how suitable the environmental conditions are for this growth stage.
         /// </summary>
-        public float EvaluateEnvironmentalSuitability(ProjectChimera.Core.EnvironmentalConditions environment)
+        public float EvaluateEnvironmentalSuitability(ProjectChimera.Data.Cultivation.EnvironmentalConditions environment)
         {
             float tempScore = CalculateRangeScore(environment.Temperature, _environmentalReqs.TemperatureRange);
             float humidityScore = CalculateRangeScore(environment.Humidity, _environmentalReqs.HumidityRange);

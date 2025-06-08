@@ -3,6 +3,17 @@ using UnityEngine;
 namespace ProjectChimera.Core
 {
     /// <summary>
+    /// Priority levels for manager initialization and update ordering.
+    /// </summary>
+    public enum ManagerPriority
+    {
+        Low = 0,
+        Normal = 1,
+        High = 2,
+        Critical = 3
+    }
+
+    /// <summary>
     /// Base class for all Project Chimera manager components.
     /// Managers coordinate major game systems and maintain singleton-like behavior.
     /// </summary>
@@ -21,6 +32,11 @@ namespace ProjectChimera.Core
         /// Whether this manager should persist across scene loads.
         /// </summary>
         public bool PersistAcrossScenes => _persistAcrossScenes;
+
+        /// <summary>
+        /// Priority of this manager for initialization and update ordering.
+        /// </summary>
+        public virtual ManagerPriority Priority => ManagerPriority.Normal;
 
         protected override void Awake()
         {

@@ -137,7 +137,7 @@ namespace ProjectChimera.Data.Genetics
         /// <param name="trait">The trait to calculate effect for</param>
         /// <param name="environment">Current environmental conditions</param>
         /// <returns>Phenotypic effect value</returns>
-        public float CalculateTraitEffect(PlantTrait trait, ProjectChimera.Core.EnvironmentalConditions environment = null)
+        public float CalculateTraitEffect(PlantTrait trait, ProjectChimera.Data.Cultivation.EnvironmentalConditions environment = default)
         {
             // Find the specific trait effect
             var traitEffect = _traitEffects.Find(te => te.AffectedTrait == trait);
@@ -155,7 +155,7 @@ namespace ProjectChimera.Data.Genetics
             }
 
             // Apply environmental modifiers if applicable
-            if (_environmentallySensitive && environment != null)
+            if (_environmentallySensitive && environment.IsInitialized())
             {
                 baseEffect *= CalculateEnvironmentalEffect(environment);
             }
@@ -166,7 +166,7 @@ namespace ProjectChimera.Data.Genetics
         /// <summary>
         /// Calculates the environmental effect on this allele's expression.
         /// </summary>
-        private float CalculateEnvironmentalEffect(ProjectChimera.Core.EnvironmentalConditions environment)
+        private float CalculateEnvironmentalEffect(ProjectChimera.Data.Cultivation.EnvironmentalConditions environment)
         {
             float modifier = 1f;
 
@@ -180,7 +180,7 @@ namespace ProjectChimera.Data.Genetics
             return modifier;
         }
 
-        private float GetEnvironmentalFactorValue(ProjectChimera.Core.EnvironmentalConditions environment, EnvironmentalFactor factor)
+        private float GetEnvironmentalFactorValue(ProjectChimera.Data.Cultivation.EnvironmentalConditions environment, EnvironmentalFactor factor)
         {
             switch (factor)
             {
@@ -243,7 +243,7 @@ namespace ProjectChimera.Data.Genetics
         /// <summary>
         /// Calculates the fitness contribution of this allele.
         /// </summary>
-        public float CalculateFitness(ProjectChimera.Core.EnvironmentalConditions environment)
+        public float CalculateFitness(ProjectChimera.Data.Cultivation.EnvironmentalConditions environment)
         {
             float fitness = 1f;
 

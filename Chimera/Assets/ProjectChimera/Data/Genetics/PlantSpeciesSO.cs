@@ -120,9 +120,9 @@ namespace ProjectChimera.Data.Genetics
         /// <summary>
         /// Calculates the optimal environmental conditions for this species.
         /// </summary>
-        public ProjectChimera.Core.EnvironmentalConditions GetOptimalEnvironment()
+        public ProjectChimera.Data.Cultivation.EnvironmentalConditions GetOptimalEnvironment()
         {
-            return new ProjectChimera.Core.EnvironmentalConditions
+            return new ProjectChimera.Data.Cultivation.EnvironmentalConditions
             {
                 Temperature = (_temperatureRange.x + _temperatureRange.y) * 0.5f,
                 Humidity = (_humidityRange.x + _humidityRange.y) * 0.5f,
@@ -137,7 +137,7 @@ namespace ProjectChimera.Data.Genetics
         /// </summary>
         /// <param name="conditions">Environmental conditions to evaluate</param>
         /// <returns>Suitability score from 0 (unsuitable) to 1 (optimal)</returns>
-        public float EvaluateEnvironmentalSuitability(ProjectChimera.Core.EnvironmentalConditions conditions)
+        public float EvaluateEnvironmentalSuitability(ProjectChimera.Data.Cultivation.EnvironmentalConditions conditions)
         {
             float tempScore = CalculateRangeScore(conditions.Temperature, _temperatureRange);
             float humidityScore = CalculateRangeScore(conditions.Humidity, _humidityRange);

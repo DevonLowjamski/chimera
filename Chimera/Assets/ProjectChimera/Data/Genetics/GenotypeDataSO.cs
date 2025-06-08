@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using ProjectChimera.Core;
+using ProjectChimera.Data.Cultivation;
 
 namespace ProjectChimera.Data.Genetics
 {
@@ -268,7 +269,7 @@ namespace ProjectChimera.Data.Genetics
         /// <summary>
         /// Calculates predicted phenotype values for all traits.
         /// </summary>
-        public void CalculatePhenotype(ProjectChimera.Core.EnvironmentalConditions environment = null)
+        public void CalculatePhenotype(EnvironmentalConditions environment = default)
         {
             _predictedTraits.Clear();
 
@@ -295,7 +296,7 @@ namespace ProjectChimera.Data.Genetics
         /// <summary>
         /// Calculates the predicted value for a specific trait.
         /// </summary>
-        public float CalculateTraitValue(PlantTrait trait, ProjectChimera.Core.EnvironmentalConditions environment = null)
+        public float CalculateTraitValue(PlantTrait trait, EnvironmentalConditions environment = default)
         {
             float totalValue = 0f;
             float totalWeight = 0f;
@@ -322,7 +323,7 @@ namespace ProjectChimera.Data.Genetics
         /// <summary>
         /// Calculates overall fitness of this genotype.
         /// </summary>
-        public void CalculateFitness(ProjectChimera.Core.EnvironmentalConditions environment = null)
+        public void CalculateFitness(EnvironmentalConditions environment = default)
         {
             float viability = 1f;
             float reproductive = 1f;
@@ -339,8 +340,9 @@ namespace ProjectChimera.Data.Genetics
                 }
 
                 // Calculate fitness contributions
-                float allele1Fitness = genePair.Allele1.CalculateFitness(environment ?? new EnvironmentalConditions());
-                float allele2Fitness = genePair.Allele2.CalculateFitness(environment ?? new EnvironmentalConditions());
+                var envConditions = environment.Temperature == 0f ? EnvironmentalConditions.CreateIndoorDefault() : environment;
+                float allele1Fitness = genePair.Allele1.CalculateFitness(envConditions);
+                float allele2Fitness = genePair.Allele2.CalculateFitness(envConditions);
                 
                 viability *= (allele1Fitness + allele2Fitness) * 0.5f;
             }
@@ -410,6 +412,47 @@ namespace ProjectChimera.Data.Genetics
                                       gp.Gene.InfluencedTraits.Any(ti => ti.TraitType == trait));
         }
 
+        /// <summary>
+        /// Gets the overall growth potential based on genetic factors.
+        /// </summary>
+        public float GetGrowthPotential()
+        {
+                        return CalculateTraitValue(PlantTrait.Height) * 0.6f +
+                   CalculateTraitValue(PlantTrait.FlowerYield) * 0.4f;
+        }
+        
+        /// <summary>
+        /// Gets the yield potential based on genetic factors.
+        /// </summary>
+        public float GetYieldPotential()
+        {
+            return CalculateTraitValue(PlantTrait.FlowerYield);
+        }
+        
+        /// <summary>
+        /// Gets the potency potential (THC/CBD) based on genetic factors.
+        /// </summary>
+        public float GetPotencyPotential()
+        {
+            float thcPotential = CalculateTraitValue(PlantTrait.THCContent);
+            float cbdPotential = CalculateTraitValue(PlantTrait.CBDContent);
+            return Mathf.Max(thcPotential, cbdPotential); // Return the higher potential
+        }
+        
+        /// <summary>
+        /// Gets the width to height ratio for plant structure.
+        /// </summary>
+        public float GetWidthToHeightRatio()
+        {
+            // Calculate based on plant structure traits, default to indica vs sativa tendency
+            float branchDensity = CalculateTraitValue(PlantTrait.BranchingDensity);
+            float nodeSpacing = CalculateTraitValue(PlantTrait.Internode);
+            
+            // Bushier plants (higher branch density, tighter nodes) have higher width ratio
+            float ratio = 0.4f + (branchDensity * 0.3f) + ((1f - nodeSpacing) * 0.2f);
+            return Mathf.Clamp(ratio, 0.3f, 0.9f);
+        }
+
         public override bool ValidateData()
         {
             bool isValid = base.ValidateData();
@@ -450,7 +493,7 @@ namespace ProjectChimera.Data.Genetics
         public bool IsHomozygous => Allele1.UniqueID == Allele2.UniqueID;
         public bool IsHeterozygous => !IsHomozygous;
 
-        public float GetCombinedEffect(PlantTrait trait, ProjectChimera.Core.EnvironmentalConditions environment = null)
+        public float GetCombinedEffect(PlantTrait trait, EnvironmentalConditions environment = default)
         {
             if (Gene == null) return 0f;
             return Gene.CalculatePhenotypicEffect(Allele1, Allele2, environment);

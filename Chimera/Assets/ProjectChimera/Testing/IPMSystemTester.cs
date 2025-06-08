@@ -283,7 +283,7 @@ namespace ProjectChimera.Testing
             }
             
             // Test biological control plan creation
-            var environment = EnvironmentalConditions.CreateIndoorDefault();
+            var environment = ProjectChimera.Data.Cultivation.EnvironmentalConditions.CreateIndoorDefault();
             var biologicalPlan = _ipmSystem.CreateBiologicalControlPlan(
                 PestType.Spider_Mites, 
                 _testZone, 
@@ -340,7 +340,7 @@ namespace ProjectChimera.Testing
             }
             
             // Test monitoring plan creation
-            var environment = EnvironmentalConditions.CreateIndoorDefault();
+            var environment = ProjectChimera.Data.Cultivation.EnvironmentalConditions.CreateIndoorDefault();
             var monitoringPlan = _ipmSystem.CreateMonitoringPlan(
                 _testZone,
                 _testPlants.ToArray(),
@@ -392,7 +392,7 @@ namespace ProjectChimera.Testing
             
             // Test integrated treatment plan creation
             var mockInfestations = CreateMockPestInfestations();
-            var environment = EnvironmentalConditions.CreateIndoorDefault();
+            var environment = ProjectChimera.Data.Cultivation.EnvironmentalConditions.CreateIndoorDefault();
             
             var treatmentPlan = _ipmSystem.CreateIntegratedTreatmentPlan(
                 mockInfestations,
@@ -446,7 +446,7 @@ namespace ProjectChimera.Testing
             }
             
             // Test environmental optimization for IPM
-            var currentEnvironment = EnvironmentalConditions.CreateIndoorDefault();
+            var currentEnvironment = ProjectChimera.Data.Cultivation.EnvironmentalConditions.CreateIndoorDefault();
             var mockBeneficials = CreateMockBeneficialOrganisms();
             var targetPests = new[] { PestType.Spider_Mites, PestType.Thrips };
             
@@ -483,7 +483,7 @@ namespace ProjectChimera.Testing
             }
             
             // Test complete IPM workflow from assessment to treatment
-            var environment = EnvironmentalConditions.CreateIndoorDefault();
+            var environment = ProjectChimera.Data.Cultivation.EnvironmentalConditions.CreateIndoorDefault();
             var mockMonitoringData = CreateMockMonitoringData();
             
             // Step 1: Assess pest pressure

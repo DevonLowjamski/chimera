@@ -1,10 +1,10 @@
 {
-    "name": "ProjectChimera.Cultivation",
-    "rootNamespace": "ProjectChimera.Cultivation",
+    "name": "ProjectChimera.Systems.Cultivation",
+    "rootNamespace": "ProjectChimera.Systems.Cultivation",
     "references": [
-        "GUID:ProjectChimera.Core",
-        "GUID:ProjectChimera.Data",
-        "GUID:ProjectChimera.Genetics"
+        "GUID:365498379ff0240e68a20a8f327e0755",
+        "GUID:6cca6c5303192494bbddc11201b0e867",
+        "GUID:f216e585e1ac245929697dcec54b93ae"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -15,4 +15,4 @@
     "defineConstraints": [],
     "versionDefines": [],
     "noEngineReferences": false
-}
+} 

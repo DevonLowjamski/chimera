@@ -6,6 +6,7 @@ using ProjectChimera.Data.Genetics;
 using ProjectChimera.Systems.Cultivation;
 using System;
 using System.Linq;
+using DataEnvironmental = ProjectChimera.Data.Cultivation.EnvironmentalConditions;
 
 namespace ProjectChimera.Testing
 {
@@ -24,6 +25,7 @@ namespace ProjectChimera.Testing
         [SerializeField] private VPDManagementSO _vpdSystem;
         [SerializeField] private EnvironmentalAutomationSO _environmentalSystem;
         [SerializeField] private FertigationSystemSO _fertigationSystem;
+        [SerializeField] private IPMSystemSO _ipmSystem;
         [SerializeField] private CultivationZoneSO _testZone;
         [SerializeField] private PlantStrainSO _testStrain;
         [SerializeField] private GenotypeDataSO _testGenotype;
@@ -73,6 +75,9 @@ namespace ProjectChimera.Testing
             // Test Fertigation System
             yield return StartCoroutine(TestFertigationSystem());
             
+            // Test IPM System
+            yield return StartCoroutine(TestIPMSystem());
+            
             // Test System Integration
             yield return StartCoroutine(TestSystemIntegration());
             
@@ -105,6 +110,7 @@ namespace ProjectChimera.Testing
             RunTest("VPD System Asset", _vpdSystem != null);
             RunTest("Environmental System Asset", _environmentalSystem != null);
             RunTest("Fertigation System Asset", _fertigationSystem != null);
+            RunTest("IPM System Asset", _ipmSystem != null);
             RunTest("Test Zone Asset", _testZone != null);
             RunTest("Test Strain Asset", _testStrain != null);
             
@@ -137,6 +143,14 @@ namespace ProjectChimera.Testing
                 _fertigationSystem = ScriptableObject.CreateInstance<FertigationSystemSO>();
                 _fertigationSystem.name = "Test_Fertigation_System";
                 LogTest("Created test Fertigation System");
+            }
+            
+            // Create IPM System if missing
+            if (_ipmSystem == null)
+            {
+                _ipmSystem = ScriptableObject.CreateInstance<IPMSystemSO>();
+                _ipmSystem.name = "Test_IPM_System";
+                LogTest("Created test IPM System");
             }
             
             // Create test zone if missing
@@ -236,7 +250,7 @@ namespace ProjectChimera.Testing
             if (_testPlants.Count > 0)
             {
                 var testPlant = _testPlants[0];
-                var environment = EnvironmentalConditions.CreateIndoorDefault();
+                var environment = DataEnvironmental.CreateIndoorDefault();
                 
                 float optimalVPD = _vpdSystem.GetOptimalVPD(testPlant, environment, 6f);
                 RunTest("Optimal VPD Calculation", optimalVPD > 0.2f && optimalVPD < 2f);
@@ -244,7 +258,7 @@ namespace ProjectChimera.Testing
             }
             
             // Test VPD adjustment recommendations
-            var currentEnvironment = EnvironmentalConditions.CreateIndoorDefault();
+            var currentEnvironment = DataEnvironmental.CreateIndoorDefault();
             var recommendation = _vpdSystem.GetVPDAdjustmentRecommendation(currentEnvironment, 1.0f);
             RunTest("VPD Adjustment Recommendation", recommendation != null);
             
@@ -272,7 +286,7 @@ namespace ProjectChimera.Testing
             }
             
             // Test optimal control calculation
-            var currentEnvironment = EnvironmentalConditions.CreateIndoorDefault();
+            var currentEnvironment = DataEnvironmental.CreateIndoorDefault();
             var plantsArray = _testPlants.ToArray();
             
             var controlPlan = _environmentalSystem.CalculateOptimalControl(
@@ -330,7 +344,7 @@ namespace ProjectChimera.Testing
             }
             
             // Test nutrient solution calculation
-            var environment = EnvironmentalConditions.CreateIndoorDefault();
+            var environment = DataEnvironmental.CreateIndoorDefault();
             var plantsArray = _testPlants.ToArray();
             var sourceWater = new ProjectChimera.Data.Cultivation.WaterQualityData { pH = 7.0f, TDS = 150f };
             
@@ -388,6 +402,123 @@ namespace ProjectChimera.Testing
             yield return new WaitForSeconds(0.1f);
         }
         
+        private System.Collections.IEnumerator TestIPMSystem()
+        {
+            LogTest("\n--- TESTING IPM SYSTEM ---");
+            
+            if (_ipmSystem == null)
+            {
+                LogTest("ERROR: IPM System not available");
+                yield break;
+            }
+            
+            // Test IPM system data validation
+            bool isValidData = _ipmSystem.ValidateData();
+            RunTest("IPM System Data Validation", isValidData);
+            
+            // Test pest assessment functionality
+            var environment = DataEnvironmental.CreateIndoorDefault();
+            var mockMonitoringData = new PestMonitoringData[]
+            {
+                new PestMonitoringData { Pest = PestType.Spider_Mites, Population = 2f, Date = DateTime.Now, Location = "Zone A" }
+            };
+            
+            var pestAssessment = _ipmSystem.AssessPestPressure(
+                _testZone,
+                _testPlants.ToArray(),
+                environment,
+                mockMonitoringData
+            );
+            
+            RunTest("IPM Pest Assessment", pestAssessment != null);
+            
+            if (pestAssessment != null)
+            {
+                LogTest($"Pest Assessment - Zone: {pestAssessment.ZoneID}, Risk Level: {pestAssessment.OverallRiskLevel}");
+                RunTest("Assessment Has Zone ID", !string.IsNullOrEmpty(pestAssessment.ZoneID));
+            }
+            
+            // Test biological control plan creation
+            var biologicalPlan = _ipmSystem.CreateBiologicalControlPlan(
+                PestType.Spider_Mites,
+                _testZone,
+                environment,
+                0.5f
+            );
+            
+            RunTest("IPM Biological Control Plan", biologicalPlan != null);
+            
+            if (biologicalPlan != null)
+            {
+                LogTest($"Biological Plan - Target: {biologicalPlan.TargetPest}, Success Probability: {biologicalPlan.SuccessProbability:F2}");
+            }
+            
+            // Test monitoring plan creation
+            var monitoringPlan = _ipmSystem.CreateMonitoringPlan(
+                _testZone,
+                _testPlants.ToArray(),
+                environment
+            );
+            
+            RunTest("IPM Monitoring Plan", monitoringPlan != null);
+            
+            if (monitoringPlan != null)
+            {
+                LogTest($"Monitoring Plan - Zone: {monitoringPlan.ZoneID}, Duration: {monitoringPlan.MonitoringDuration} days");
+            }
+            
+            // Test integrated treatment plan
+            var mockInfestations = new PestInfestation[]
+            {
+                new PestInfestation { Pest = PestType.Spider_Mites, Severity = 0.3f, AffectedAreas = new[] { "Lower canopy" } }
+            };
+            
+            var treatmentPlan = _ipmSystem.CreateIntegratedTreatmentPlan(
+                mockInfestations,
+                _testZone,
+                environment,
+                _testPlants.ToArray()
+            );
+            
+            RunTest("IPM Integrated Treatment Plan", treatmentPlan != null);
+            
+            if (treatmentPlan != null)
+            {
+                LogTest($"Treatment Plan - Zone: {treatmentPlan.ZoneID}, Infestations: {treatmentPlan.TargetInfestations?.Length ?? 0}");
+            }
+            
+            // Test environmental optimization for IPM
+            if (_vpdSystem != null)
+            {
+                var mockBeneficials = new BeneficialOrganism[]
+                {
+                    new BeneficialOrganism 
+                    { 
+                        OrganismName = "Phytoseiulus persimilis",
+                        TargetPests = new[] { "Spider mites" },
+                        OptimalTemperature = new Vector2(20f, 28f),
+                        ReleaseRate = 2f
+                    }
+                };
+                
+                var environmentalOptimization = _ipmSystem.OptimizeEnvironmentForIPM(
+                    environment,
+                    _vpdSystem,
+                    mockBeneficials,
+                    new[] { PestType.Spider_Mites }
+                );
+                
+                RunTest("IPM Environmental Optimization", environmentalOptimization != null);
+                
+                if (environmentalOptimization != null)
+                {
+                    LogTest($"Environmental Optimization - Beneficials: {environmentalOptimization.ActiveBeneficials?.Length ?? 0}");
+                }
+            }
+            
+            yield return new WaitForSeconds(0.1f);
+        }
+        
         private System.Collections.IEnumerator TestSystemIntegration()
         {
             LogTest("\n--- TESTING SYSTEM INTEGRATION ---");
@@ -396,7 +527,7 @@ namespace ProjectChimera.Testing
             if (_vpdSystem != null && _environmentalSystem != null && _testPlants.Count > 0)
             {
                 var testPlant = _testPlants[0];
-                var environment = EnvironmentalConditions.CreateIndoorDefault();
+                var environment = DataEnvironmental.CreateIndoorDefault();
                 
                 // Get VPD requirements
                 float optimalVPD = _vpdSystem.GetOptimalVPD(testPlant, environment);
@@ -411,7 +542,7 @@ namespace ProjectChimera.Testing
             // Test Fertigation + Environmental integration
             if (_fertigationSystem != null && _environmentalSystem != null)
             {
-                var environment = EnvironmentalConditions.CreateIndoorDefault();
+                var environment = DataEnvironmental.CreateIndoorDefault();
                 var waterQuality = new ProjectChimera.Data.Cultivation.WaterQualityData { pH = 7.0f, TDS = 200f };
                 
                 var nutrientSolution = _fertigationSystem.CalculateOptimalNutrientSolution(
@@ -425,11 +556,34 @@ namespace ProjectChimera.Testing
                 }
             }
             
+            // Test IPM + VPD integration
+            if (_ipmSystem != null && _vpdSystem != null)
+            {
+                var environment = DataEnvironmental.CreateIndoorDefault();
+                var mockBeneficials = new BeneficialOrganism[]
+                {
+                    new BeneficialOrganism { OrganismName = "Test Beneficial", OptimalTemperature = new Vector2(20f, 25f), ReleaseRate = 2f }
+                };
+                
+                var ipmOptimization = _ipmSystem.OptimizeEnvironmentForIPM(
+                    environment, _vpdSystem, mockBeneficials, new[] { PestType.Spider_Mites });
+                
+                RunTest("IPM-VPD Integration", ipmOptimization != null);
+                LogTest("IPM can optimize environment with VPD management for beneficial organisms");
+            }
+            
+            // Test IPM + Environmental Automation integration  
+            if (_ipmSystem != null && _environmentalSystem != null)
+            {
+                RunTest("IPM-Environmental Integration Available", true);
+                LogTest("IPM can coordinate with environmental automation for pest management");
+            }
+            
             // Test full system coordination
-            if (_vpdSystem != null && _environmentalSystem != null && _fertigationSystem != null)
+            if (_vpdSystem != null && _environmentalSystem != null && _fertigationSystem != null && _ipmSystem != null)
             {
                 RunTest("Full System Coordination Available", true);
-                LogTest("All three major systems are available for coordination");
+                LogTest("All four major systems are available for comprehensive cultivation coordination");
             }
             
             yield return new WaitForSeconds(0.1f);
@@ -440,7 +594,7 @@ namespace ProjectChimera.Testing
             LogTest("\n--- TESTING ADVANCED FEATURES ---");
             
             // Test environmental conditions calculations
-            var testConditions = EnvironmentalConditions.CreateIndoorDefault();
+            var testConditions = DataEnvironmental.CreateIndoorDefault();
             testConditions.CalculateDerivedValues();
             
             RunTest("Environmental Derived Values", testConditions.VPD > 0f && testConditions.DailyLightIntegral > 0f);

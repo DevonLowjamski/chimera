@@ -129,7 +129,7 @@ namespace ProjectChimera.Data.Genetics
         /// <param name="allele2">Second allele</param>
         /// <param name="environment">Environmental conditions</param>
         /// <returns>Phenotypic effect value</returns>
-        public float CalculatePhenotypicEffect(AlleleSO allele1, AlleleSO allele2, ProjectChimera.Core.EnvironmentalConditions environment = null)
+        public float CalculatePhenotypicEffect(AlleleSO allele1, AlleleSO allele2, ProjectChimera.Data.Cultivation.EnvironmentalConditions environment = default)
         {
             if (allele1 == null || allele2 == null) return 0f;
 
@@ -160,7 +160,7 @@ namespace ProjectChimera.Data.Genetics
             }
 
             // Apply environmental effects if applicable
-            if (_environmentallyRegulated && environment != null)
+            if (_environmentallyRegulated && environment.IsInitialized())
             {
                 baseEffect *= CalculateEnvironmentalModifier(environment);
             }
@@ -212,7 +212,7 @@ namespace ProjectChimera.Data.Genetics
             }
         }
 
-        private float CalculateEnvironmentalModifier(ProjectChimera.Core.EnvironmentalConditions environment)
+        private float CalculateEnvironmentalModifier(ProjectChimera.Data.Cultivation.EnvironmentalConditions environment)
         {
             float modifier = 1f;
 
