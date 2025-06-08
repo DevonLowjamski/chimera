@@ -4,13 +4,16 @@
     "references": [
         "ProjectChimera.Core",
         "ProjectChimera.Data",
+        "ProjectChimera.Systems",
         "ProjectChimera.Visuals",
-        "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "ProjectChimera.Cultivation",
+        "ProjectChimera.Construction",
+        "ProjectChimera.Economy",
+                "ProjectChimera.Environment",
+        "ProjectChimera.Progression",
+        "UnityEngine.TestRunner"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

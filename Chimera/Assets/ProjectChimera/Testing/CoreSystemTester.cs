@@ -26,6 +26,7 @@ namespace ProjectChimera.Testing
         private int _testsPassed = 0;
         private int _testsFailed = 0;
         private List<string> _testResults = new List<string>();
+        private bool _testsRunning = false;
 
         protected override void Start()
         {
@@ -44,12 +45,21 @@ namespace ProjectChimera.Testing
         {
             StartCoroutine(RunAllTestsCoroutine());
         }
+        
+        /// <summary>
+        /// Runs tests manually for integration with test runner.
+        /// </summary>
+        public void RunTestsManually()
+        {
+            RunAllTests();
+        }
 
         /// <summary>
         /// Coroutine that runs all tests with delays.
         /// </summary>
         private IEnumerator RunAllTestsCoroutine()
         {
+            _testsRunning = true;
             LogInfo("=== Starting Project Chimera Core System Tests ===");
             _onTestStarted?.Raise();
 
@@ -84,6 +94,8 @@ namespace ProjectChimera.Testing
 
             // Print test summary
             PrintTestSummary();
+            
+            _testsRunning = false;
         }
 
         /// <summary>
@@ -442,6 +454,12 @@ namespace ProjectChimera.Testing
         {
             StartCoroutine(TestEventSystem());
         }
+        
+        // Public properties for external access
+        public bool TestsRunning => _testsRunning;
+        public int TestsRun => _testsRun;
+        public int TestsPassed => _testsPassed;
+        public int TestsFailed => _testsFailed;
     }
 
     /// <summary>
