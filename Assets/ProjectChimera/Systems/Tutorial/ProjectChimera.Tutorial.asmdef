@@ -1,0 +1,24 @@
+{
+    "name": "ProjectChimera.Tutorial",
+    "rootNamespace": "ProjectChimera.Systems.Tutorial",
+    "references": [
+        "GUID:365498379ff0240e68a20a8f327e0755",
+        "GUID:6cca6c5303192494bbddc11201b0e867",
+        "GUID:a2215f50de9b7471ea00c9bd0962c29a",
+        "GUID:bd180afed348e4b208267a698871b912",
+        "GUID:50dda257fa5de44f3845d5ce0d1f0074",
+        "GUID:7cd769b9b7a244bbf91a01cb465de065",
+        "GUID:8793bbaecc2ee47a19a0166a8565f767",
+        "GUID:d6d91e43cda324603a7dfb6616eaa741",
+        "GUID:2fab2900087b74620a6ae7f53d1409fd"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

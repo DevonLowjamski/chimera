@@ -1,0 +1,29 @@
+{
+    "name": "ProjectChimera.UI",
+    "rootNamespace": "ProjectChimera.UI",
+    "references": [
+        "GUID:365498379ff0240e68a20a8f327e0755",
+        "GUID:6cca6c5303192494bbddc11201b0e867",
+        "GUID:d6d91e43cda324603a7dfb6616eaa741",
+        "GUID:a2215f50de9b7471ea00c9bd0962c29a",
+        "GUID:bd180afed348e4b208267a698871b912",
+        "GUID:6f4404c7c9ca4465e892089039ea4f9a",
+        "GUID:50dda257fa5de44f3845d5ce0d1f0074",
+        "GUID:8793bbaecc2ee47a19a0166a8565f767",
+        "GUID:f216e585e1ac245929697dcec54b93ae",
+        "GUID:7cd769b9b7a244bbf91a01cb465de065",
+        "GUID:a108e8ae0eb004d1eb9c436ae6dfb46b",
+        "GUID:ab19632e6af1424cb93a8f1cdb979172",
+        "GUID:f45184f3a172745c4866e8574ff3bb98",
+        "GUID:7d1c36a4fec864e0e9dc60253ade9962"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

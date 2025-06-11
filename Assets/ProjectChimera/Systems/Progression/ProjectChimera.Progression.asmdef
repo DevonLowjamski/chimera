@@ -1,0 +1,21 @@
+{
+    "name": "ProjectChimera.Systems.Progression",
+    "rootNamespace": "ProjectChimera.Systems.Progression",
+    "references": [
+        "GUID:365498379ff0240e68a20a8f327e0755",
+        "GUID:6cca6c5303192494bbddc11201b0e867",
+        "GUID:50dda257fa5de44f3845d5ce0d1f0074",
+        "GUID:a2215f50de9b7471ea00c9bd0962c29a",
+        "GUID:d6d91e43cda324603a7dfb6616eaa741",
+        "GUID:a108e8ae0eb004d1eb9c436ae6dfb46b"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
