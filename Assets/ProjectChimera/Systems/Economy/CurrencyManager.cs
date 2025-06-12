@@ -62,7 +62,7 @@ namespace ProjectChimera.Systems.Economy
         private Dictionary<string, Investment> _investments = new Dictionary<string, Investment>();
         
         // System references
-        private ProgressionManager _progressionManager;
+        // private ProgressionManager _progressionManager; // Removed to prevent circular dependency
         
         // Performance and state
         private float _lastReportGeneration = 0f;
@@ -434,7 +434,7 @@ namespace ProjectChimera.Systems.Economy
             var gameManager = GameManager.Instance;
             if (gameManager != null)
             {
-                _progressionManager = gameManager.GetManager<ProgressionManager>();
+                // _progressionManager = gameManager.GetManager<ProgressionManager>();
             }
         }
         

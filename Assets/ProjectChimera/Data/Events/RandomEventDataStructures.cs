@@ -310,7 +310,7 @@ namespace ProjectChimera.Data.Events
     {
         Random,         // Standard random occurrence
         PlayerAction,   // Triggered by player behavior
-        TimeBasedPlayer action
+        TimeBased,      // Time-triggered events
         StoryProgression, // Part of narrative sequence
         SystemState,    // Based on game state
         Achievement,    // Unlocked by achievements
