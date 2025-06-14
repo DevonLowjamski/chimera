@@ -10,6 +10,7 @@ namespace ProjectChimera.Data.Economy
     public enum CurrencyType
     {
         Cash,
+        Credits,
         ResearchPoints,
         ReputationPoints
     }
@@ -39,6 +40,8 @@ namespace ProjectChimera.Data.Economy
         Investment,
         Loan,
         Tax,
+        Transfer,
+        System,
         Other
     }
 
@@ -60,6 +63,7 @@ namespace ProjectChimera.Data.Economy
         Monthly,
         Quarterly,
         Yearly,
+        Current,
         Custom
     }
 
@@ -79,6 +83,11 @@ namespace ProjectChimera.Data.Economy
         public bool IsSuccessful = true;
         public string ErrorMessage;
         
+        // Compatibility properties
+        public TransactionType Type => TransactionType;
+        public float Income => TransactionType == TransactionType.Income ? Amount : 0f;
+        public float Expense => TransactionType == TransactionType.Expense ? Amount : 0f;
+        
         public Transaction()
         {
             TransactionId = System.Guid.NewGuid().ToString();
@@ -96,7 +105,10 @@ namespace ProjectChimera.Data.Economy
         public float MonthlyRevenue;
         public float MonthlyExpenses;
         public float CashFlow;
+        public int TransactionCount;
         public DateTime LastUpdated;
+        public DateTime LastMilestone;
+        public float LastMilestoneAmount;
         
         [Header("Category Breakdowns")]
         public Dictionary<TransactionCategory, float> IncomeByCategory = new Dictionary<TransactionCategory, float>();
@@ -115,6 +127,11 @@ namespace ProjectChimera.Data.Economy
         public DateTime PeriodEnd;
         public BudgetPeriod Period;
         public List<Transaction> Transactions = new List<Transaction>();
+        
+        // Missing properties that CurrencyManager expects
+        public float ProjectedIncome;
+        public float ProjectedExpenses;
+        public float ProjectedBalance;
     }
 
     [System.Serializable]
@@ -126,6 +143,43 @@ namespace ProjectChimera.Data.Economy
         public bool RequireDescription = true;
         public bool AllowNegativeBalance = false;
         public List<TransactionCategory> RestrictedCategories = new List<TransactionCategory>();
+        
+        public bool ValidateTransaction(float amount, TransactionCategory category, string description)
+        {
+            // Check amount limits
+            if (amount > MaxTransactionAmount) return false;
+            
+            // Check description requirement
+            if (RequireDescription && string.IsNullOrEmpty(description)) return false;
+            
+            // Check restricted categories
+            if (RestrictedCategories.Contains(category)) return false;
+            
+            return true;
+        }
+        
+        public bool ValidateTransaction(Transaction transaction, float currentBalance)
+        {
+            // Check amount limits
+            if (transaction.Amount > MaxTransactionAmount) return false;
+            
+            // Check balance requirements
+            if (!AllowNegativeBalance && currentBalance - transaction.Amount < MinimumBalance) return false;
+            
+            // Check description requirement
+            if (RequireDescription && string.IsNullOrEmpty(transaction.Description)) return false;
+            
+            // Check restricted categories
+            if (RestrictedCategories.Contains(transaction.Category)) return false;
+            
+            return true;
+        }
+        
+        public bool ValidateTransaction(Transaction transaction, float currentBalance, string additionalContext)
+        {
+            // Use base validation and add any additional context-specific checks
+            return ValidateTransaction(transaction, currentBalance);
+        }
     }
 
     [System.Serializable]
@@ -135,6 +189,7 @@ namespace ProjectChimera.Data.Economy
         public string Name;
         public string Symbol;
         public Sprite Icon;
+        public string IconString; // For string-based icon references
         public Color DisplayColor = Color.white;
         public int DecimalPlaces = 2;
         public bool IsExchangeable = true;
@@ -144,10 +199,19 @@ namespace ProjectChimera.Data.Economy
     public class CurrencyDisplayData
     {
         [Header("Display Information")]
+        public CurrencyType CurrencyType;
         public string FormattedAmount;
         public string CurrencySymbol;
         public Color DisplayColor;
         public Sprite CurrencyIcon;
+        public float Amount;
+        public string Icon;
+        public Color Color;
+        public bool IsPositive;
+        
+        // Additional properties for compatibility
+        public float ChangeAmount;
+        public float ChangePercentage;
     }
 
     [System.Serializable]
@@ -160,18 +224,29 @@ namespace ProjectChimera.Data.Economy
         public DateTime PeriodStart;
         public DateTime PeriodEnd;
         
+        // Compatibility property
+        public DateTime ReportDate => GeneratedDate;
+        
         [Header("Financial Summary")]
         public float TotalRevenue;
         public float TotalExpenses;
+        public float NetProfit;
         public float NetIncome;
         public float TotalAssets;
         public float TotalLiabilities;
         public float NetWorth;
+        public float CashBalance;
+        public float TotalIncome;
+        public float BurnRate;
+        public float RunwayDays;
+        public float ProfitMargin;
         
         [Header("Detailed Breakdowns")]
-        public List<Transaction> Transactions = new List<Transaction>();
+        public Dictionary<string, float> IncomeByCategory = new Dictionary<string, float>();
+        public Dictionary<string, float> ExpensesByCategory = new Dictionary<string, float>();
         public FinancialStatistics Statistics;
-        public Dictionary<string, BudgetStatusReport> BudgetStatus = new Dictionary<string, BudgetStatusReport>();
+        public Dictionary<string, BudgetStatusReport> BudgetMonitoring = new Dictionary<string, BudgetStatusReport>();
+        public CashFlowData CashFlowPrediction;
     }
 
     [System.Serializable]
@@ -187,7 +262,6 @@ namespace ProjectChimera.Data.Economy
         public DateTime LastUpdated;
     }
 
-    // Simple Budget class for CurrencyManager
     [System.Serializable]
     public class Budget
     {
@@ -206,7 +280,6 @@ namespace ProjectChimera.Data.Economy
         public bool IsOverBudget => CurrentSpent > Limit;
     }
 
-    // Simple Loan class for CurrencyManager
     [System.Serializable]
     public class Loan
     {
@@ -226,13 +299,49 @@ namespace ProjectChimera.Data.Economy
         public float TotalInterest => PrincipalAmount * InterestRate * (TermDays / 365f);
     }
 
-    // BudgetStatus enum for CurrencyManager
     [System.Serializable]
-    public enum BudgetStatus
+    public enum BudgetMonitoringStatus
     {
         OnTrack,
         Warning,
         OverBudget,
         Inactive
+    }
+
+    /// <summary>
+    /// Sale transaction data for progression tracking
+    /// </summary>
+    [System.Serializable]
+    public class SaleTransaction
+    {
+        [Header("Sale Information")]
+        public string TransactionId;
+        public DateTime SaleDate;
+        public string ProductId;
+        public string ProductName;
+        public float Quantity;
+        public float UnitPrice;
+        public float TotalAmount;
+        public string CustomerId;
+        public string CustomerName;
+        
+        [Header("Sale Details")]
+        public float QualityRating;
+        public string SaleChannel;
+        public string PaymentMethod;
+        public bool IsSuccessful = true;
+        public string Notes;
+        
+        [Header("Business Metrics")]
+        public float ProfitMargin;
+        public float CostOfGoods;
+        public float NetProfit;
+        public TransactionCategory Category = TransactionCategory.Operations;
+        
+        public SaleTransaction()
+        {
+            TransactionId = System.Guid.NewGuid().ToString();
+            SaleDate = DateTime.UtcNow;
+        }
     }
 } 

@@ -244,7 +244,10 @@ namespace ProjectChimera.UI.Tutorial
             _errorPanel.style.borderTopRightRadius = 4f;
             _errorPanel.style.borderBottomLeftRadius = 4f;
             _errorPanel.style.borderBottomRightRadius = 4f;
-            _errorPanel.style.padding = new StyleLength(10f);
+            _errorPanel.style.paddingLeft = 10f;
+            _errorPanel.style.paddingRight = 10f;
+            _errorPanel.style.paddingTop = 10f;
+            _errorPanel.style.paddingBottom = 10f;
             _errorPanel.style.marginBottom = 10f;
             _errorPanel.style.display = DisplayStyle.None;
             

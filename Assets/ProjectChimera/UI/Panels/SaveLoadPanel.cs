@@ -2,10 +2,12 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Save;
-using ProjectChimera.Systems.Save;
+// using ProjectChimera.Systems.Save;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using ProjectChimera.UI.Core;
+using ProjectChimera.Data.UI;
 
 namespace ProjectChimera.UI.Panels
 {
@@ -14,7 +16,7 @@ namespace ProjectChimera.UI.Panels
     /// Provides an intuitive interface for managing save slots, creating new saves,
     /// loading existing games, and viewing save file details with visual feedback.
     /// </summary>
-    public class SaveLoadPanel : ChimeraUIPanel
+    public class SaveLoadPanel : UIPanel
     {
         [Header("Save/Load Configuration")]
         [SerializeField] private bool _enableSavePreview = true;
@@ -29,7 +31,7 @@ namespace ProjectChimera.UI.Panels
         [SerializeField] private Color _saveSlotColor = new Color(0.2f, 0.6f, 0.8f, 1f);
         
         // System References
-        private SaveManager _saveManager;
+        // private SaveManager _saveManager;
         
         // UI Elements
         private VisualElement _rootContainer;
@@ -57,7 +59,7 @@ namespace ProjectChimera.UI.Panels
         
         // Save Slot Management
         private List<VisualElement> _saveSlotElements = new List<VisualElement>();
-        private Dictionary<string, SaveSlotData> _slotDataMap = new Dictionary<string, SaveSlotData>();
+        private Dictionary<string, ProjectChimera.Data.Save.SaveSlotData> _slotDataMap = new Dictionary<string, ProjectChimera.Data.Save.SaveSlotData>();
         private string _selectedSlotName = "";
         private bool _isCurrentlyLoading = false;
         private bool _isCurrentlySaving = false;
@@ -66,18 +68,18 @@ namespace ProjectChimera.UI.Panels
         // State Management
         private bool _isSaveTabActive = true;
         
-        protected override void OnPanelInitialize()
+        protected override void OnPanelInitialized()
         {
-            base.OnPanelInitialize();
+            base.OnPanelInitialized();
             
             // Find system references
-            _saveManager = GameManager.Instance?.GetManager<SaveManager>();
+            // _saveManager = GameManager.Instance?.GetManager<SaveManager>();
             
-            if (_saveManager == null)
-            {
-                LogError("SaveManager not found - UI disabled");
+            // if (_saveManager == null)
+            // {
+                // LogError("SaveManager not found - UI disabled");
                 return;
-            }
+            // }
             
             CreateUI();
             SubscribeToEvents();
@@ -86,11 +88,9 @@ namespace ProjectChimera.UI.Panels
             LogInfo("SaveLoadPanel initialized");
         }
         
-        protected override void OnPanelUpdate()
+        private void Update()
         {
-            base.OnPanelUpdate();
-            
-            if (_saveManager == null) return;
+            // if (_saveManager == null) return;
             
             // Auto-refresh save slots periodically
             if (_enableAutoRefresh && Time.time - _lastRefreshTime >= _refreshInterval)
@@ -468,9 +468,9 @@ namespace ProjectChimera.UI.Panels
         
         private void RefreshSaveSlots()
         {
-            if (_saveManager == null) return;
+            // if (_saveManager == null) return;
             
-            var availableSlots = _saveManager.AvailableSaveSlots;
+            // var availableSlots = _saveManager.AvailableSaveSlots;
             
             // Clear existing slot elements
             _saveSlotContainer.Clear();
@@ -498,7 +498,7 @@ namespace ProjectChimera.UI.Panels
             }
         }
         
-        private VisualElement CreateSaveSlotElement(SaveSlotData slotData)
+        private VisualElement CreateSaveSlotElement(ProjectChimera.Data.Save.SaveSlotData slotData)
         {
             var slotContainer = new VisualElement();
             slotContainer.name = $"slot-{slotData.SlotName}";
@@ -618,7 +618,7 @@ namespace ProjectChimera.UI.Panels
             }
         }
         
-        private void UpdateSlotDetailContent(SaveSlotData slotData)
+        private void UpdateSlotDetailContent(ProjectChimera.Data.Save.SaveSlotData slotData)
         {
             // Create detailed info display
             var existingDetails = _slotDetailsPanel.Q<VisualElement>("detailed-info");
@@ -682,7 +682,7 @@ namespace ProjectChimera.UI.Panels
             _isCurrentlySaving = true;
             ShowSaveStatus("Saving game...", Color.yellow);
             
-            var result = await _saveManager.CreateNewSave(saveName, description);
+            // var result = await _saveManager.CreateNewSave(saveName, description);
             
             if (result.Success)
             {
@@ -690,10 +690,10 @@ namespace ProjectChimera.UI.Panels
                 _saveNameField.value = $"Save_{DateTime.Now:yyyyMMdd_HHmm}";
                 _saveDescriptionField.value = "";
             }
-            else
-            {
+            // else
+            // {
                 ShowSaveStatus($"Save failed: {result.ErrorMessage}", Color.red);
-            }
+            // }
             
             _isCurrentlySaving = false;
         }
@@ -705,16 +705,16 @@ namespace ProjectChimera.UI.Panels
             _isCurrentlySaving = true;
             ShowSaveStatus("Quick saving...", Color.yellow);
             
-            var result = await _saveManager.QuickSave();
+            // var result = await _saveManager.QuickSave();
             
             if (result.Success)
             {
                 ShowSaveStatus("Quick save successful!", Color.green);
             }
-            else
-            {
+            // else
+            // {
                 ShowSaveStatus($"Quick save failed: {result.ErrorMessage}", Color.red);
-            }
+            // }
             
             _isCurrentlySaving = false;
         }
@@ -726,16 +726,16 @@ namespace ProjectChimera.UI.Panels
             _isCurrentlyLoading = true;
             ShowLoadStatus("Loading game...", Color.yellow);
             
-            var result = await _saveManager.LoadGame(_selectedSlotName);
+            // var result = await _saveManager.LoadGame(_selectedSlotName);
             
             if (result.Success)
             {
                 ShowLoadStatus("Game loaded successfully!", Color.green);
             }
-            else
-            {
+            // else
+            // {
                 ShowLoadStatus($"Load failed: {result.ErrorMessage}", Color.red);
-            }
+            // }
             
             _isCurrentlyLoading = false;
         }
@@ -747,16 +747,16 @@ namespace ProjectChimera.UI.Panels
             _isCurrentlyLoading = true;
             ShowLoadStatus("Quick loading...", Color.yellow);
             
-            var result = await _saveManager.QuickLoad();
+            // var result = await _saveManager.QuickLoad();
             
             if (result.Success)
             {
                 ShowLoadStatus("Quick load successful!", Color.green);
             }
-            else
-            {
+            // else
+            // {
                 ShowLoadStatus($"Quick load failed: {result.ErrorMessage}", Color.red);
-            }
+            // }
             
             _isCurrentlyLoading = false;
         }
@@ -766,17 +766,17 @@ namespace ProjectChimera.UI.Panels
             if (string.IsNullOrEmpty(_selectedSlotName)) return;
             
             // Show confirmation dialog (simplified for now)
-            if (_saveManager.DeleteSaveSlot(_selectedSlotName))
-            {
+            // if (_saveManager.DeleteSaveSlot(_selectedSlotName))
+            // {
                 ShowLoadStatus("Save slot deleted", Color.yellow);
                 _selectedSlotName = "";
                 RefreshSaveSlots();
                 UpdateSlotDetailsPanel("");
-            }
-            else
-            {
+            // }
+            // else
+            // {
                 ShowLoadStatus("Failed to delete save slot", Color.red);
-            }
+            // }
         }
         
         private void ShowSaveStatus(string message, Color color)
@@ -828,13 +828,13 @@ namespace ProjectChimera.UI.Panels
         
         private void SubscribeToEvents()
         {
-            if (_saveManager != null)
-            {
-                _saveManager.OnSaveResult += OnSaveResult;
-                _saveManager.OnLoadResult += OnLoadResult;
-                _saveManager.OnAutoSaveCompleted += OnAutoSaveCompleted;
-                _saveManager.OnSaveSlotCreated += OnSaveSlotCreated;
-            }
+            // if (_saveManager != null)
+            // {
+                // _saveManager.OnSaveResult += OnSaveResult;
+                // _saveManager.OnLoadResult += OnLoadResult;
+                // _saveManager.OnAutoSaveCompleted += OnAutoSaveCompleted;
+                // _saveManager.OnSaveSlotCreated += OnSaveSlotCreated;
+            // }
         }
         
         private void OnSaveResult(SaveResult result)
@@ -854,24 +854,24 @@ namespace ProjectChimera.UI.Panels
             RefreshSaveSlots();
         }
         
-        private void OnSaveSlotCreated(SaveSlotData slotData)
+        private void OnSaveSlotCreated(ProjectChimera.Data.Save.SaveSlotData slotData)
         {
             LogInfo($"New save slot created: {slotData.SlotName}");
             RefreshSaveSlots();
         }
         
-        protected override void OnPanelDestroy()
+        protected override void OnBeforeHide()
         {
             // Unsubscribe from events
-            if (_saveManager != null)
-            {
-                _saveManager.OnSaveResult -= OnSaveResult;
-                _saveManager.OnLoadResult -= OnLoadResult;
-                _saveManager.OnAutoSaveCompleted -= OnAutoSaveCompleted;
-                _saveManager.OnSaveSlotCreated -= OnSaveSlotCreated;
-            }
+            // if (_saveManager != null)
+            // {
+                // _saveManager.OnSaveResult -= OnSaveResult;
+                // _saveManager.OnLoadResult -= OnLoadResult;
+                // _saveManager.OnAutoSaveCompleted -= OnAutoSaveCompleted;
+                // _saveManager.OnSaveSlotCreated -= OnSaveSlotCreated;
+            // }
             
-            base.OnPanelDestroy();
+            base.OnBeforeHide();
         }
     }
 }

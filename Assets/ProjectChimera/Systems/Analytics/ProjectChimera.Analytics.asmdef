@@ -2,8 +2,8 @@
     "name": "ProjectChimera.Analytics",
     "rootNamespace": "ProjectChimera.Systems.Analytics",
     "references": [
-        "GUID:365498379ff0240e68a20a8f327e0755",
-        "GUID:6cca6c5303192494bbddc11201b0e867"
+        "ProjectChimera.Core",
+        "ProjectChimera.Data"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

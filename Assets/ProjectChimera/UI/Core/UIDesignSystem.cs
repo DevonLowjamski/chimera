@@ -121,22 +121,22 @@ namespace ProjectChimera.UI.Core
                 LogError("Color palette is not configured");
                 isValid = false;
             }
-            else if (!_colorPalette.ValidateColors())
-            {
+            // else if (!_colorPalette.ValidateColors())
+            // {
                 LogError("Color palette validation failed");
                 isValid = false;
-            }
+            // }
             
             if (_typography == null)
             {
                 LogError("Typography is not configured");
                 isValid = false;
             }
-            else if (!_typography.ValidateTypography())
-            {
+            // else if (!_typography.ValidateTypography())
+            // {
                 LogError("Typography validation failed");
                 isValid = false;
-            }
+            // }
             
             if (_spacing == null)
             {

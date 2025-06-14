@@ -199,11 +199,11 @@ namespace ProjectChimera.UI.Core
             
             if (_isRemovable)
             {
-                menu.AddSeparator();
+                menu.AddSeparator("");
                 menu.AddItem("Remove Widget", false, () => RemoveWidget());
             }
             
-            menu.AddSeparator();
+            menu.AddSeparator("");
             menu.AddItem("Widget Settings", false, () => ShowSettings());
             
             var menuPosition = _menuButton.worldBound.position;
@@ -318,10 +318,10 @@ namespace ProjectChimera.UI.Core
                 {
                     _rootElement.RemoveFromClassList("disabled");
                 }
-                else
-                {
+                // else
+                // {
                     _rootElement.AddToClassList("disabled");
-                }
+                // }
             }
         }
         

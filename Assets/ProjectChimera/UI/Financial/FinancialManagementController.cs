@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ProjectChimera.Core;
-using ProjectChimera.Systems.Environment;
-using ProjectChimera.Systems.Economy;
+// using ProjectChimera.Systems.Environment;
+// using ProjectChimera.Systems.Economy;
 using ProjectChimera.Data.Economy;
 using ProjectChimera.Data.UI;
 
@@ -42,9 +42,9 @@ namespace ProjectChimera.UI.Financial
         [SerializeField] private AudioSource _audioSource;
         
         // System references
-        private MarketManager _marketManager;
-        private TradingManager _tradingManager;
-        private InvestmentManager _investmentManager;
+        // private MarketManager _marketManager;
+        // private TradingManager _tradingManager;
+        // private InvestmentManager _investmentManager;
         
         // UI Elements - Main Navigation
         private VisualElement _rootElement;
@@ -172,9 +172,9 @@ namespace ProjectChimera.UI.Financial
                 return;
             }
             
-            _marketManager = gameManager.GetManager<MarketManager>();
-            _tradingManager = gameManager.GetManager<TradingManager>();
-            _investmentManager = gameManager.GetManager<InvestmentManager>();
+            // _marketManager = gameManager.GetManager<MarketManager>();
+            // _tradingManager = gameManager.GetManager<TradingManager>();
+            // _investmentManager = gameManager.GetManager<InvestmentManager>();
             
             Debug.Log("Financial Management connected to economic systems");
         }
@@ -411,15 +411,15 @@ namespace ProjectChimera.UI.Financial
             }
             
             // Execute trade
-            if (_tradingManager != null)
-            {
-                bool success = _tradingManager.ExecuteTrade(trade);
+            // if (_tradingManager != null)
+            // {
+                // bool success = _tradingManager.ExecuteTrade(trade);
                 if (!success)
                 {
                     Debug.LogWarning("Trade execution failed");
                     return;
                 }
-            }
+            // }
             
             // Update portfolio
             UpdatePortfolioAfterTrade(trade);
@@ -450,11 +450,11 @@ namespace ProjectChimera.UI.Financial
             {
                 return _portfolio.CashBalance >= totalCost;
             }
-            else
-            {
+            // else
+            // {
                 // Check if we have enough of the asset to sell
                 return true; // Simplified validation
-            }
+            // }
         }
         
         private void UpdatePortfolioAfterTrade(TradeTransaction trade)
@@ -466,11 +466,11 @@ namespace ProjectChimera.UI.Financial
                 _portfolio.CashBalance -= totalValue;
                 // Add to holdings (simplified)
             }
-            else
-            {
+            // else
+            // {
                 _portfolio.CashBalance += totalValue;
                 // Remove from holdings (simplified)
-            }
+            // }
             
             _portfolio.TotalValue = _portfolio.CashBalance + CalculateHoldingsValue();
         }
@@ -487,9 +487,9 @@ namespace ProjectChimera.UI.Financial
         
         private void RebalancePortfolio()
         {
-            if (_investmentManager == null) return;
+            // if (_investmentManager == null) return;
             
-            var rebalanceResult = _investmentManager.RebalancePortfolio(_portfolio, _riskToleranceSlider.value);
+            // var rebalanceResult = _investmentManager.RebalancePortfolio(_portfolio, _riskToleranceSlider.value);
             
             if (rebalanceResult != null && rebalanceResult.Success)
             {
@@ -498,10 +498,10 @@ namespace ProjectChimera.UI.Financial
                 PlaySound(_investmentSound);
                 Debug.Log("Portfolio rebalanced successfully");
             }
-            else
-            {
+            // else
+            // {
                 Debug.LogWarning("Portfolio rebalancing failed");
-            }
+            // }
         }
         
         private void UpdateRiskTolerance(float riskLevel)
@@ -568,14 +568,14 @@ namespace ProjectChimera.UI.Financial
                         Volume = UnityEngine.Random.Range(1000f, 100000f)
                     };
                 }
-                else
-                {
+                // else
+                // {
                     var data = _marketPrices[pair];
                     float priceChange = UnityEngine.Random.Range(-0.02f, 0.02f);
                     data.Price += data.Price * priceChange;
                     data.Change24h = priceChange * 100f;
                     data.LastUpdate = DateTime.Now;
-                }
+                // }
             }
             
             // Update current price display
@@ -590,24 +590,24 @@ namespace ProjectChimera.UI.Financial
         
         private void UpdatePortfolioMetrics()
         {
-            if (_marketManager != null)
-            {
-                var metrics = _marketManager.GetPortfolioMetrics();
+            // if (_marketManager != null)
+            // {
+                // var metrics = _marketManager.GetPortfolioMetrics();
                 if (metrics != null)
                 {
                     _portfolio.TotalValue = metrics.TotalValue;
                     _portfolio.ProfitLoss = metrics.ProfitLoss;
                     _portfolio.DailyChange = metrics.DailyChange;
                 }
-            }
-            else
-            {
+            // }
+            // else
+            // {
                 // Simulate portfolio changes
                 float change = UnityEngine.Random.Range(-0.005f, 0.005f);
                 _portfolio.TotalValue += _portfolio.TotalValue * change;
                 _portfolio.DailyChange = change * 100f;
                 _portfolio.ProfitLoss = _portfolio.TotalValue - 125000f; // Starting value
-            }
+            // }
         }
         
         #endregion

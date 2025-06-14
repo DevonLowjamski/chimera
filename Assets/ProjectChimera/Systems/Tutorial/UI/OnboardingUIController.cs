@@ -161,7 +161,10 @@ namespace ProjectChimera.UI.Tutorial
             contentContainer.style.borderTopRightRadius = 10f;
             contentContainer.style.borderBottomLeftRadius = 10f;
             contentContainer.style.borderBottomRightRadius = 10f;
-            contentContainer.style.padding = new StyleLength(40f);
+            contentContainer.style.paddingLeft = 40f;
+            contentContainer.style.paddingRight = 40f;
+            contentContainer.style.paddingTop = 40f;
+            contentContainer.style.paddingBottom = 40f;
             contentContainer.style.maxWidth = 600f;
             contentContainer.style.alignItems = Align.Center;
             
@@ -198,7 +201,10 @@ namespace ProjectChimera.UI.Tutorial
             _continueButton.text = "Begin Tutorial";
             _continueButton.AddToClassList("welcome-continue-button");
             _continueButton.style.fontSize = 16f;
-            _continueButton.style.padding = new StyleLength(12f);
+            _continueButton.style.paddingLeft = 12f;
+            _continueButton.style.paddingRight = 12f;
+            _continueButton.style.paddingTop = 12f;
+            _continueButton.style.paddingBottom = 12f;
             _continueButton.style.backgroundColor = new Color(0.2f, 0.6f, 0.8f, 1f);
             _continueButton.style.color = Color.white;
             _continueButton.style.borderTopLeftRadius = 6f;
@@ -239,7 +245,10 @@ namespace ProjectChimera.UI.Tutorial
             _progressContainer.style.borderTopRightRadius = 8f;
             _progressContainer.style.borderBottomLeftRadius = 8f;
             _progressContainer.style.borderBottomRightRadius = 8f;
-            _progressContainer.style.padding = new StyleLength(10f);
+            _progressContainer.style.paddingLeft = 10f;
+            _progressContainer.style.paddingRight = 10f;
+            _progressContainer.style.paddingTop = 10f;
+            _progressContainer.style.paddingBottom = 10f;
             _progressContainer.style.display = DisplayStyle.None;
             
             // Phase label
@@ -282,7 +291,10 @@ namespace ProjectChimera.UI.Tutorial
             _skipButton.name = "skip-onboarding-button";
             _skipButton.text = "Skip Tutorial";
             _skipButton.style.fontSize = 12f;
-            _skipButton.style.padding = new StyleLength(8f);
+            _skipButton.style.paddingLeft = 8f;
+            _skipButton.style.paddingRight = 8f;
+            _skipButton.style.paddingTop = 8f;
+            _skipButton.style.paddingBottom = 8f;
             _skipButton.style.backgroundColor = new Color(0.6f, 0.2f, 0.2f, 0.8f);
             _skipButton.style.color = Color.white;
             _skipButton.style.borderTopLeftRadius = 4f;

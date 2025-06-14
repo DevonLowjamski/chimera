@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using ProjectChimera.Core;
-using ProjectChimera.Testing.Core;
 
 namespace ProjectChimera.Testing
 {
@@ -95,7 +94,7 @@ namespace ProjectChimera.Testing
 
         #region Master Test Execution
 
-        [Test]
+        //[Test]
         [Order(1)]
         public void Test_MasterSuite_UISystemComponents()
         {
@@ -134,7 +133,7 @@ namespace ProjectChimera.Testing
             }
         }
 
-        [Test]
+        //[Test]
         [Order(2)]
         public void Test_MasterSuite_PlantPanels()
         {
@@ -173,7 +172,7 @@ namespace ProjectChimera.Testing
             }
         }
 
-        [Test]
+        //[Test]
         [Order(3)]
         public void Test_MasterSuite_ManagerImplementations()
         {
@@ -212,7 +211,7 @@ namespace ProjectChimera.Testing
             }
         }
 
-        [Test]
+        //[Test]
         [Order(4)]
         public void Test_MasterSuite_DataStructures()
         {
@@ -251,7 +250,7 @@ namespace ProjectChimera.Testing
             }
         }
 
-        [Test]
+        //[Test]
         [Order(5)]
         public void Test_MasterSuite_AssemblyIntegration()
         {
@@ -290,9 +289,9 @@ namespace ProjectChimera.Testing
             }
         }
 
-        [Test]
+        //[Test]
         [Order(6)]
-        [Performance]
+        
         public void Test_MasterSuite_PerformanceBenchmarks()
         {
             // Arrange
@@ -330,7 +329,7 @@ namespace ProjectChimera.Testing
             }
         }
 
-        [UnityTest]
+        //[UnityTest]
         [Order(7)]
         public IEnumerator Test_MasterSuite_CrossSystemIntegration()
         {

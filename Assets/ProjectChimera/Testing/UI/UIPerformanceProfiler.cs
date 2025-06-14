@@ -2,7 +2,6 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using ProjectChimera.Core;
-using ProjectChimera.UI.Core;
 
 namespace ProjectChimera.Testing.UI
 {

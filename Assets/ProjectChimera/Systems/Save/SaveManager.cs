@@ -347,12 +347,12 @@ namespace ProjectChimera.Systems.Save
         /// <summary>
         /// Get detailed information about a save slot
         /// </summary>
-        public SaveSlotInfo GetSaveSlotInfo(string slotName)
+        public ProjectChimera.Data.Save.SaveSlotInfo GetSaveSlotInfo(string slotName)
         {
             var slotData = _availableSaveSlots.FirstOrDefault(s => s.SlotName == slotName);
             if (slotData == null) return null;
             
-            return new SaveSlotInfo
+            return new ProjectChimera.Data.Save.SaveSlotInfo
             {
                 SlotData = slotData,
                 FileSizeBytes = GetSaveFileSize(slotName),

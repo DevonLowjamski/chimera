@@ -62,6 +62,7 @@ namespace ProjectChimera.Data.Tutorial
         public bool SaveProgress => _saveProgress;
         
         public List<TutorialStepSO> TutorialSteps => _tutorialSteps;
+        public List<TutorialStepSO> Steps => _tutorialSteps; // Compatibility alias for testing framework
         public bool AllowStepSkipping => _allowStepSkipping;
         public bool AllowSequenceSkipping => _allowSequenceSkipping;
         public int StepCount => _tutorialSteps.Count;

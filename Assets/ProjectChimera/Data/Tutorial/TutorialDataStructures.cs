@@ -63,6 +63,32 @@ namespace ProjectChimera.Data.Tutorial
     }
     
     /// <summary>
+    /// Tutorial highlight settings for visual emphasis
+    /// </summary>
+    [Serializable]
+    public class TutorialHighlightSettings
+    {
+        public bool EnableHighlight = true;
+        public Color HighlightColor = Color.yellow;
+        public float HighlightIntensity = 1f;
+        public TutorialHighlightShape HighlightShape = TutorialHighlightShape.Rectangle;
+        public Vector2 HighlightOffset = Vector2.zero;
+        public Vector2 HighlightSize = new Vector2(100, 50);
+        public float PulseSpeed = 2f;
+        public bool EnablePulse = true;
+        public float BorderWidth = 2f;
+        public bool DimBackground = true;
+        public float BackgroundDimAmount = 0.7f;
+        public AnimationCurve HighlightCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        
+        // Additional properties for TutorialOverlayManager compatibility
+        public bool HasHighlight => EnableHighlight; // Compatibility alias
+        public TutorialHighlightType HighlightType = TutorialHighlightType.Rectangle; // For overlay manager
+        public string TargetElement = ""; // Target element ID for highlighting
+        public float HighlightPadding = 10f; // Padding around highlight area
+    }
+    
+    /// <summary>
     /// Tutorial completion reward
     /// </summary>
     [Serializable]
@@ -203,6 +229,23 @@ namespace ProjectChimera.Data.Tutorial
     }
     
     /// <summary>
+    /// Tutorial highlight types for overlay manager
+    /// </summary>
+    public enum TutorialHighlightType
+    {
+        None,
+        Rectangle,
+        Circle,
+        Oval,
+        RoundedRectangle,
+        Polygon,
+        Custom,
+        Glow,
+        Border,
+        Pulse
+    }
+    
+    /// <summary>
     /// Tutorial validation types
     /// </summary>
     public enum TutorialValidationType
@@ -326,16 +369,20 @@ namespace ProjectChimera.Data.Tutorial
     }
     
     /// <summary>
-    /// Tutorial event types
+    /// Tutorial event types for tracking and analytics
     /// </summary>
     public enum TutorialEventType
     {
         Started,
+        TutorialStarted,
+        StepStarted,
         StepCompleted,
         StepSkipped,
+        TutorialSkipped,
         HintShown,
         ValidationFailed,
         Completed,
+        TutorialCompleted,
         Abandoned,
         Paused,
         Resumed
@@ -375,5 +422,242 @@ namespace ProjectChimera.Data.Tutorial
         Normal,
         Fast,
         Instant
+    }
+
+    // Wrapper classes for EnhancedTutorialManager compatibility
+    
+    /// <summary>
+    /// Tutorial sequence wrapper class for manager compatibility
+    /// </summary>
+    [Serializable]
+    public class TutorialSequence
+    {
+        public string SequenceId;
+        public string Name;
+        public string Description;
+        public TutorialCategory Category;
+        public int Priority;
+        public bool IsRequired;
+        public List<TutorialStep> Steps = new List<TutorialStep>();
+        public List<string> UnlockRequirements = new List<string>();
+        public TutorialReward CompletionReward;
+        public TutorialDifficultyLevel DifficultyLevel;
+        public float EstimatedDuration; // Total estimated duration in minutes
+        
+        public TutorialSequence() { }
+        
+        public TutorialSequence(TutorialSequenceData data)
+        {
+            SequenceId = data.SequenceId;
+            Name = data.Name;
+            Description = data.Description;
+            Category = data.Category;
+            Priority = data.Priority;
+            IsRequired = data.IsRequired;
+            UnlockRequirements = new List<string>(data.UnlockRequirements);
+            CompletionReward = data.CompletionReward;
+            EstimatedDuration = 10f; // Default 10 minutes
+        }
+    }
+
+    /// <summary>
+    /// Tutorial step wrapper class for manager compatibility
+    /// </summary>
+    [Serializable]
+    public class TutorialStep
+    {
+        public string StepId;
+        public string Name;
+        public string Description;
+        public string DetailedInstructions;
+        public TutorialStepType StepType;
+        public TutorialTargetType TargetType;
+        public string TargetElementId;
+        public Vector2 HighlightOffset;
+        public Vector2 HighlightSize;
+        public TutorialHighlightShape HighlightShape;
+        public TutorialValidationType ValidationType;
+        public string ValidationTarget;
+        public float TimeoutDuration;
+        public bool IsOptional;
+        public bool CanSkip;
+        public List<string> Prerequisites = new List<string>();
+        public List<TutorialHint> Hints = new List<TutorialHint>();
+        public AudioClip NarrationClip;
+        public Sprite IllustrationImage;
+        public List<TutorialCondition> CompletionConditions = new List<TutorialCondition>();
+        
+        // Additional properties for manager compatibility
+        public float Progress; // Current progress (0-1)
+        public bool AutoComplete; // Whether step auto-completes when conditions are met
+        public float EstimatedDuration; // Expected completion time in seconds
+        public List<ContextualHint> ContextualHints = new List<ContextualHint>();
+        
+        public TutorialStep() { }
+        
+        public TutorialStep(TutorialStepData data)
+        {
+            StepId = data.StepId;
+            Name = data.Title;
+            Description = data.Description;
+            DetailedInstructions = data.DetailedInstructions;
+            StepType = data.StepType;
+            TargetType = data.TargetType;
+            TargetElementId = data.TargetElementId;
+            HighlightOffset = data.HighlightOffset;
+            HighlightSize = data.HighlightSize;
+            HighlightShape = data.HighlightShape;
+            ValidationType = data.ValidationType;
+            ValidationTarget = data.ValidationTarget;
+            TimeoutDuration = data.TimeoutDuration;
+            IsOptional = data.IsOptional;
+            CanSkip = data.CanSkip;
+            Prerequisites = new List<string>(data.Prerequisites);
+            Hints = new List<TutorialHint>(data.Hints);
+            NarrationClip = data.NarrationClip;
+            IllustrationImage = data.IllustrationImage;
+            
+            // Set defaults for additional properties
+            Progress = 0f;
+            AutoComplete = true;
+            EstimatedDuration = 30f; // Default 30 seconds
+        }
+    }
+
+    /// <summary>
+    /// Tutorial condition for step completion validation
+    /// </summary>
+    [Serializable]
+    public class TutorialCondition
+    {
+        public string ConditionId;
+        public TutorialValidationType ValidationType;
+        public string TargetElement;
+        public string ExpectedValue;
+        public bool IsRequired = true;
+        public string Description;
+    }
+
+    /// <summary>
+    /// Player tutorial progress tracking
+    /// </summary>
+    [Serializable]
+    public class PlayerTutorialProgress
+    {
+        public List<string> CompletedSequences = new List<string>();
+        public List<string> CompletedSteps = new List<string>();
+        public Dictionary<string, TutorialProgress> SequenceProgress = new Dictionary<string, TutorialProgress>();
+        public string CurrentSequenceId;
+        public string CurrentStepId;
+        public DateTime LastPlayTime;
+        public int TotalTutorialsCompleted;
+        public float TotalTimeSpent;
+        public Dictionary<string, object> CustomData = new Dictionary<string, object>();
+    }
+
+    /// <summary>
+    /// Learning analytics data
+    /// </summary>
+    [Serializable]
+    public class LearningAnalytics
+    {
+        public Dictionary<string, float> StepCompletionTimes = new Dictionary<string, float>();
+        public Dictionary<string, int> StepAttempts = new Dictionary<string, int>();
+        public Dictionary<string, int> HintsUsed = new Dictionary<string, int>();
+        public List<PlayerAction> PlayerActions = new List<PlayerAction>();
+        public LearningStyle PreferredLearningStyle = LearningStyle.Visual;
+        public float OverallSuccessRate;
+        public Dictionary<TutorialCategory, float> CategoryPerformance = new Dictionary<TutorialCategory, float>();
+        
+        // Additional properties for manager compatibility
+        public float AverageActionTime;
+        public float ErrorRate;
+        public float HintUsageRate;
+    }
+
+    /// <summary>
+    /// Player action tracking for analytics
+    /// </summary>
+    [Serializable]
+    public class PlayerAction
+    {
+        public string ActionId;
+        public string ActionType;
+        public DateTime Timestamp;
+        public string Context;
+        public Vector2 Position;
+        public float Duration;
+        public bool WasSuccessful;
+        public Dictionary<string, object> AdditionalData = new Dictionary<string, object>();
+        
+        // Additional properties for manager compatibility
+        public bool IsError => !WasSuccessful;
+    }
+
+    /// <summary>
+    /// Learning style enumeration
+    /// </summary>
+    public enum LearningStyle
+    {
+        Visual,
+        Auditory,
+        Kinesthetic,
+        ReadingWriting,
+        Mixed
+    }
+
+    /// <summary>
+    /// Contextual hint data
+    /// </summary>
+    [Serializable]
+    public class ContextualHint
+    {
+        public string HintId;
+        public string HintText;
+        public TutorialHintType HintType;
+        public string TargetElement;
+        public Vector2 Position;
+        public float DelayBeforeShow;
+        public float DisplayDuration = 5f;
+        public bool IsContextual = true;
+        public int Priority = 0;
+        
+        // Additional properties for manager compatibility
+        public string Title;
+        public string Content;
+        public float MinProgress; // Minimum step progress to show this hint
+        public float MaxProgress = 1f; // Maximum step progress to show this hint
+    }
+
+    /// <summary>
+    /// Tutorial metrics tracking
+    /// </summary>
+    [Serializable]
+    public class TutorialMetrics
+    {
+        public int TotalTutorialsStarted;
+        public int TotalTutorialsCompleted;
+        public int TotalStepsCompleted;
+        public int TotalHintsShown;
+        public float AverageCompletionTime;
+        public float OverallSuccessRate;
+        public Dictionary<string, float> SequenceCompletionRates = new Dictionary<string, float>();
+        public Dictionary<string, float> StepDifficultyRatings = new Dictionary<string, float>();
+        public DateTime LastUpdated;
+    }
+
+    /// <summary>
+    /// Step performance data
+    /// </summary>
+    [Serializable]
+    public class StepPerformanceData
+    {
+        public string StepId;
+        public float AverageCompletionTime;
+        public int TotalAttempts;
+        public int SuccessfulCompletions;
+        public int HintsUsed;
+        public float DifficultyRating;
+        public List<string> CommonErrors = new List<string>();
     }
 }

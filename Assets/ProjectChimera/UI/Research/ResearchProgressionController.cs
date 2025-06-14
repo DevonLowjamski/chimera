@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ProjectChimera.Core;
-using ProjectChimera.Systems.Progression;
+// using ProjectChimera.Systems.Progression;
 using ProjectChimera.Data.Progression;
 using ProjectChimera.Data.UI;
 
@@ -41,9 +41,9 @@ namespace ProjectChimera.UI.Research
         [SerializeField] private AudioSource _audioSource;
         
         // System references
-        private ProgressionManager _progressionManager;
-        private SkillTreeManager _skillTreeManager;
-        private ResearchManager _researchManager;
+        // private ProgressionManager _progressionManager;
+        // private SkillTreeManager _skillTreeManager;
+        // private ResearchManager _researchManager;
         
         // UI Elements - Main Interface
         private VisualElement _rootElement;
@@ -191,9 +191,9 @@ namespace ProjectChimera.UI.Research
                 return;
             }
             
-            _progressionManager = gameManager.GetManager<ProgressionManager>();
-            _skillTreeManager = gameManager.GetManager<SkillTreeManager>();
-            _researchManager = gameManager.GetManager<ResearchManager>();
+            // _progressionManager = gameManager.GetManager<ProgressionManager>();
+            // _skillTreeManager = gameManager.GetManager<SkillTreeManager>();
+            // _researchManager = gameManager.GetManager<ResearchManager>();
             
             Debug.Log("Research Progression connected to progression systems");
         }
@@ -404,15 +404,15 @@ namespace ProjectChimera.UI.Research
         
         private void RefreshSkillTree()
         {
-            if (_skillTreeManager != null)
-            {
-                _availableSkills = _skillTreeManager.GetAllSkills()?.ToList() ?? new List<SkillNodeSO>();
-            }
-            else
-            {
+            // if (_skillTreeManager != null)
+            // {
+                // _availableSkills = _skillTreeManager.GetAllSkills()?.ToList() ?? new List<SkillNodeSO>();
+            // }
+            // else
+            // {
                 // Generate sample skills for demonstration
                 GenerateSampleSkills();
-            }
+            // }
             
             UpdateSkillTreeDisplay();
         }
@@ -586,15 +586,15 @@ namespace ProjectChimera.UI.Research
         
         private void RefreshResearchData()
         {
-            if (_researchManager != null)
-            {
-                _availableResearch = _researchManager.GetAvailableResearch()?.ToList() ?? new List<ResearchProjectSO>();
-                _activeResearch = _researchManager.GetActiveResearch()?.ToList() ?? new List<ActiveResearch>();
-            }
-            else
-            {
+            // if (_researchManager != null)
+            // {
+                // _availableResearch = _researchManager.GetAvailableResearch()?.ToList() ?? new List<ResearchProjectSO>();
+                // _activeResearch = _researchManager.GetActiveResearch()?.ToList() ?? new List<ActiveResearch>();
+            // }
+            // else
+            // {
                 GenerateSampleResearch();
-            }
+            // }
             
             UpdateResearchDisplay();
         }
@@ -1108,14 +1108,14 @@ namespace ProjectChimera.UI.Research
         
         private void LoadProgressionData()
         {
-            if (_progressionManager != null)
-            {
-                var savedProgression = _progressionManager.GetPlayerProgression();
+            // if (_progressionManager != null)
+            // {
+                // var savedProgression = _progressionManager.GetPlayerProgression();
                 if (savedProgression != null)
                 {
                     _playerProgression = savedProgression;
                 }
-            }
+            // }
             
             Debug.Log("Progression data loaded");
         }

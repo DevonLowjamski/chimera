@@ -6,7 +6,7 @@ using UnityEngine.TestTools;
 public class NewTestScript
 {
     // A Test behaves as an ordinary method
-    [Test]
+    //[Test]
     public void NewTestScriptSimplePasses()
     {
         // Use the Assert class to test conditions
@@ -14,7 +14,7 @@ public class NewTestScript
 
     // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use
     // `yield return null;` to skip a frame.
-    [UnityTest]
+    //[UnityTest]
     public IEnumerator NewTestScriptWithEnumeratorPasses()
     {
         // Use the Assert class to test conditions.

@@ -6,8 +6,9 @@ using ProjectChimera.Core;
 using ProjectChimera.UI.Core;
 using ProjectChimera.UI.Components;
 using ProjectChimera.Data.Genetics;
-using ProjectChimera.Systems.Genetics;
-using ProjectChimera.Systems.Cultivation;
+using ProjectChimera.Data.UI;
+// using ProjectChimera.Systems.Genetics;
+// using ProjectChimera.Systems.Cultivation;
 
 namespace ProjectChimera.UI.Panels
 {
@@ -87,9 +88,9 @@ namespace ProjectChimera.UI.Panels
         private PlantInstance _selectedParent2;
         
         // Game managers
-        private GeneticsManager _geneticsManager;
-        private CultivationManager _cultivationManager;
-        private PlantManager _plantManager;
+        // private GeneticsManager _geneticsManager;
+        // private CultivationManager _cultivationManager;
+        // private PlantManager _plantManager;
         
         // Player progression
         private int _breedingXP = 0;
@@ -101,9 +102,9 @@ namespace ProjectChimera.UI.Panels
             base.SetupUIElements();
             
             // Get manager references
-            _geneticsManager = GameManager.Instance?.GetManager<GeneticsManager>();
-            _cultivationManager = GameManager.Instance?.GetManager<CultivationManager>();
-            _plantManager = GameManager.Instance?.GetManager<PlantManager>();
+            // _geneticsManager = GameManager.Instance?.GetManager<GeneticsManager>();
+            // _cultivationManager = GameManager.Instance?.GetManager<CultivationManager>();
+            // _plantManager = GameManager.Instance?.GetManager<PlantManager>();
             
             LoadPlayerData();
             LoadAvailableStrains();
@@ -152,21 +153,21 @@ namespace ProjectChimera.UI.Panels
             var mainContainer = new VisualElement();
             mainContainer.name = "breeding-main-container";
             mainContainer.style.flexGrow = 1;
-            mainContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundDark;
+            // mainContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundDark;
             mainContainer.style.flexDirection = FlexDirection.Column;
             
             // Header
             _headerContainer = new VisualElement();
             _headerContainer.name = "breeding-header";
             _headerContainer.style.height = 80;
-            _headerContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // _headerContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             _headerContainer.style.flexDirection = FlexDirection.Row;
             _headerContainer.style.alignItems = Align.Center;
             _headerContainer.style.justifyContent = Justify.SpaceBetween;
             _headerContainer.style.paddingLeft = 24;
             _headerContainer.style.paddingRight = 24;
             _headerContainer.style.borderBottomWidth = 2;
-            _headerContainer.style.borderBottomColor = _uiManager.DesignSystem.ColorPalette.AccentGold;
+            // _headerContainer.style.borderBottomColor = _uiManager.DesignSystem.ColorPalette.AccentGold;
             
             // Content area
             _contentContainer = new VisualElement();
@@ -227,13 +228,13 @@ namespace ProjectChimera.UI.Panels
             
             _titleLabel = new Label("🧬 Plant Breeding Laboratory");
             _titleLabel.style.fontSize = 24;
-            _titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // _titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             _titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             _titleLabel.style.marginBottom = 4;
             
             var subtitleLabel = new Label("Genetic Engineering & Strain Development");
             subtitleLabel.style.fontSize = 14;
-            subtitleLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
+            // subtitleLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
             
             leftSection.Add(_titleLabel);
             leftSection.Add(subtitleLabel);
@@ -245,14 +246,14 @@ namespace ProjectChimera.UI.Panels
             
             _xpDisplayLabel = new Label($"Breeding Level {_breedingLevel}");
             _xpDisplayLabel.style.fontSize = 16;
-            _xpDisplayLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // _xpDisplayLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             _xpDisplayLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             _xpDisplayLabel.style.marginBottom = 4;
             
             _breedingLevelProgress = new UIProgressBar(1000f);
             _breedingLevelProgress.Value = _breedingXP % 1000;
             _breedingLevelProgress.Format = "{0:F0} / 1000 XP";
-            _breedingLevelProgress.SetColor(_uiManager.DesignSystem.ColorPalette.AccentGold);
+            // _breedingLevelProgress.SetColor(_uiManager.DesignSystem.ColorPalette.AccentGold);
             _breedingLevelProgress.style.width = 200;
             
             centerSection.Add(_xpDisplayLabel);
@@ -270,11 +271,11 @@ namespace ProjectChimera.UI.Panels
             
             var totalBreedingsLabel = new Label($"Total Breedings: {_totalBreedings}");
             totalBreedingsLabel.style.fontSize = 12;
-            totalBreedingsLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // totalBreedingsLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             var strainsCreatedLabel = new Label($"Strains Created: {_availableStrains.Count(s => s.IsCustomStrain)}");
             strainsCreatedLabel.style.fontSize = 12;
-            strainsCreatedLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // strainsCreatedLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             statsContainer.Add(totalBreedingsLabel);
             statsContainer.Add(strainsCreatedLabel);
@@ -285,7 +286,7 @@ namespace ProjectChimera.UI.Panels
             _closeButton.style.width = 40;
             _closeButton.style.height = 40;
             _closeButton.style.fontSize = 20;
-            _uiManager.ApplyDesignSystemStyle(_closeButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_closeButton, UIStyleToken.SecondaryButton);
             
             rightSection.Add(statsContainer);
             rightSection.Add(_closeButton);
@@ -300,7 +301,7 @@ namespace ProjectChimera.UI.Panels
         /// </summary>
         private void CreateParentSelection()
         {
-            _parentSelectionContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // _parentSelectionContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             _parentSelectionContainer.style.borderTopLeftRadius = 12;
             _parentSelectionContainer.style.borderTopRightRadius = 12;
             _parentSelectionContainer.style.borderBottomLeftRadius = 12;
@@ -320,7 +321,7 @@ namespace ProjectChimera.UI.Panels
             
             var sectionTitle = new Label("👨‍👩‍👧‍👦 Parent Selection");
             sectionTitle.style.fontSize = 16;
-            sectionTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // sectionTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             sectionTitle.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             var controlsContainer = new VisualElement();
@@ -329,11 +330,11 @@ namespace ProjectChimera.UI.Panels
             _swapParentsButton = new Button();
             _swapParentsButton.text = "🔄 Swap";
             _swapParentsButton.style.marginRight = 8;
-            _uiManager.ApplyDesignSystemStyle(_swapParentsButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_swapParentsButton, UIStyleToken.SecondaryButton);
             
             _clearParentsButton = new Button();
             _clearParentsButton.text = "🗑️ Clear";
-            _uiManager.ApplyDesignSystemStyle(_clearParentsButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_clearParentsButton, UIStyleToken.SecondaryButton);
             
             controlsContainer.Add(_swapParentsButton);
             controlsContainer.Add(_clearParentsButton);
@@ -358,7 +359,7 @@ namespace ProjectChimera.UI.Panels
             
             var crossLabel = new Label("×");
             crossLabel.style.fontSize = 32;
-            crossLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
+            // crossLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
             crossLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             crossIndicator.Add(crossLabel);
@@ -378,7 +379,7 @@ namespace ProjectChimera.UI.Panels
         {
             var slotContainer = new VisualElement();
             slotContainer.style.width = Length.Percent(45);
-            slotContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundMedium;
+            // slotContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundMedium;
             slotContainer.style.borderTopLeftRadius = 8;
             slotContainer.style.borderTopRightRadius = 8;
             slotContainer.style.borderBottomLeftRadius = 8;
@@ -403,7 +404,7 @@ namespace ProjectChimera.UI.Panels
             
             var titleLabel = new Label(title);
             titleLabel.style.fontSize = 14;
-            titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             headerContainer.Add(iconLabel);
@@ -412,7 +413,7 @@ namespace ProjectChimera.UI.Panels
             // Placeholder content
             var placeholderLabel = new Label("Drop strain here\nor select from library");
             placeholderLabel.style.fontSize = 12;
-            placeholderLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // placeholderLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             placeholderLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
             placeholderLabel.style.whiteSpace = WhiteSpace.Normal;
             
@@ -430,7 +431,7 @@ namespace ProjectChimera.UI.Panels
         /// </summary>
         private void CreateBreedingProcess()
         {
-            _breedingProcessContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // _breedingProcessContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             _breedingProcessContainer.style.borderTopLeftRadius = 12;
             _breedingProcessContainer.style.borderTopRightRadius = 12;
             _breedingProcessContainer.style.borderBottomLeftRadius = 12;
@@ -444,14 +445,14 @@ namespace ProjectChimera.UI.Panels
             // Title
             var sectionTitle = new Label("🧪 Breeding Process");
             sectionTitle.style.fontSize = 16;
-            sectionTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // sectionTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             sectionTitle.style.unityFontStyleAndWeight = FontStyle.Bold;
             sectionTitle.style.marginBottom = 16;
             
             // Breeding visualization
             _breedingVisualization = new VisualElement();
             _breedingVisualization.style.flexGrow = 1;
-            _breedingVisualization.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundDark;
+            // _breedingVisualization.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundDark;
             _breedingVisualization.style.borderTopLeftRadius = 8;
             _breedingVisualization.style.borderTopRightRadius = 8;
             _breedingVisualization.style.borderBottomLeftRadius = 8;
@@ -472,7 +473,7 @@ namespace ProjectChimera.UI.Panels
             _startBreedingButton.text = "🚀 Start Breeding";
             _startBreedingButton.style.width = 150;
             _startBreedingButton.SetEnabled(false);
-            _uiManager.ApplyDesignSystemStyle(_startBreedingButton, UIStyleToken.PrimaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_startBreedingButton, UIStyleToken.PrimaryButton);
             
             var progressContainer = new VisualElement();
             progressContainer.style.flexGrow = 1;
@@ -480,13 +481,13 @@ namespace ProjectChimera.UI.Panels
             
             _breedingStatusLabel = new Label("Select two parent strains to begin");
             _breedingStatusLabel.style.fontSize = 14;
-            _breedingStatusLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // _breedingStatusLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             _breedingStatusLabel.style.marginBottom = 4;
             
             _breedingProgress = new UIProgressBar(100f);
             _breedingProgress.Value = 0f;
             _breedingProgress.Format = "Breeding Progress: {0:F0}%";
-            _breedingProgress.SetColor(_uiManager.DesignSystem.ColorPalette.AccentGold);
+            // _breedingProgress.SetColor(_uiManager.DesignSystem.ColorPalette.AccentGold);
             
             progressContainer.Add(_breedingStatusLabel);
             progressContainer.Add(_breedingProgress);
@@ -513,12 +514,12 @@ namespace ProjectChimera.UI.Panels
             
             var placeholderLabel = new Label("🧬");
             placeholderLabel.style.fontSize = 48;
-            placeholderLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // placeholderLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             placeholderLabel.style.marginBottom = 8;
             
             var instructionLabel = new Label("Genetic combination will appear here");
             instructionLabel.style.fontSize = 12;
-            instructionLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // instructionLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             instructionLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
             
             _geneticCombinationDisplay.Add(placeholderLabel);
@@ -532,7 +533,7 @@ namespace ProjectChimera.UI.Panels
         /// </summary>
         private void CreateOffspringResults()
         {
-            _offspringContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // _offspringContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             _offspringContainer.style.borderTopLeftRadius = 12;
             _offspringContainer.style.borderTopRightRadius = 12;
             _offspringContainer.style.borderBottomLeftRadius = 12;
@@ -552,7 +553,7 @@ namespace ProjectChimera.UI.Panels
             
             var sectionTitle = new Label("🌱 Breeding Results");
             sectionTitle.style.fontSize = 16;
-            sectionTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // sectionTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             sectionTitle.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             var actionsContainer = new VisualElement();
@@ -562,12 +563,12 @@ namespace ProjectChimera.UI.Panels
             _saveStrainButton.text = "💾 Save Strain";
             _saveStrainButton.style.marginRight = 8;
             _saveStrainButton.SetEnabled(false);
-            _uiManager.ApplyDesignSystemStyle(_saveStrainButton, UIStyleToken.PrimaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_saveStrainButton, UIStyleToken.PrimaryButton);
             
             _discardOffspringButton = new Button();
             _discardOffspringButton.text = "🗑️ Discard";
             _discardOffspringButton.SetEnabled(false);
-            _uiManager.ApplyDesignSystemStyle(_discardOffspringButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_discardOffspringButton, UIStyleToken.SecondaryButton);
             
             actionsContainer.Add(_saveStrainButton);
             actionsContainer.Add(_discardOffspringButton);
@@ -578,7 +579,7 @@ namespace ProjectChimera.UI.Panels
             // Results area
             _offspringResultsContainer = new VisualElement();
             _offspringResultsContainer.style.flexGrow = 1;
-            _offspringResultsContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundMedium;
+            // _offspringResultsContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundMedium;
             _offspringResultsContainer.style.borderTopLeftRadius = 8;
             _offspringResultsContainer.style.borderTopRightRadius = 8;
             _offspringResultsContainer.style.borderBottomLeftRadius = 8;
@@ -588,7 +589,7 @@ namespace ProjectChimera.UI.Panels
             
             var placeholderLabel = new Label("Complete breeding to see results");
             placeholderLabel.style.fontSize = 14;
-            placeholderLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // placeholderLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             placeholderLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
             
             _offspringResultsContainer.Add(placeholderLabel);
@@ -602,7 +603,7 @@ namespace ProjectChimera.UI.Panels
         /// </summary>
         private void CreateStrainLibrary()
         {
-            _strainLibraryContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // _strainLibraryContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             _strainLibraryContainer.style.borderTopLeftRadius = 12;
             _strainLibraryContainer.style.borderTopRightRadius = 12;
             _strainLibraryContainer.style.borderBottomLeftRadius = 12;
@@ -622,12 +623,12 @@ namespace ProjectChimera.UI.Panels
             
             var sectionTitle = new Label("📚 Strain Library");
             sectionTitle.style.fontSize = 16;
-            sectionTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // sectionTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             sectionTitle.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             _strainCountLabel = new Label($"{_availableStrains.Count} strains");
             _strainCountLabel.style.fontSize = 12;
-            _strainCountLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // _strainCountLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             headerContainer.Add(sectionTitle);
             headerContainer.Add(_strainCountLabel);
@@ -675,12 +676,12 @@ namespace ProjectChimera.UI.Panels
             // If no resources found, create sample strains for testing
             if (_availableStrains.Count == 0)
             {
-                LogWarning("No PlantStrainSO assets found in Resources/Strains. UI will show empty library.");
+                Debug.LogWarning("No PlantStrainSO assets found in Resources/Strains. UI will show empty library.");
             }
             
             _filteredStrains.AddRange(_availableStrains);
             
-            LogInfo($"Loaded {_availableStrains.Count} plant strains for breeding");
+            Debug.LogInfo($"Loaded {_availableStrains.Count} plant strains for breeding");
         }
         
         /// <summary>
@@ -777,17 +778,17 @@ namespace ProjectChimera.UI.Panels
                 _selectedParent1 = plantInstance;
                 _parent1Card = new PlantStrainCard(strain);
             }
-            else if (_selectedParent2 == null)
-            {
+            // else if (_selectedParent2 == null)
+            // {
                 _selectedParent2 = plantInstance;
                 _parent2Card = new PlantStrainCard(strain);
-            }
-            else
-            {
+            // }
+            // else
+            // {
                 // Replace parent 1 if both slots are full
                 _selectedParent1 = plantInstance;
                 _parent1Card = new PlantStrainCard(strain);
-            }
+            // }
             
             UpdateParentDisplay();
             UpdateBreedingVisualization();
@@ -815,10 +816,10 @@ namespace ProjectChimera.UI.Panels
                 // Show genetic combination preview
                 _breedingStatusLabel.text = "Ready to breed! Click Start Breeding to begin.";
             }
-            else
-            {
+            // else
+            // {
                 _breedingStatusLabel.text = "Select two parent strains to begin";
-            }
+            // }
         }
         
         /// <summary>
@@ -868,15 +869,15 @@ namespace ProjectChimera.UI.Panels
             _breedingStatusLabel.text = "Breeding complete!";
             
             // Use GeneticsManager for proper breeding simulation
-            if (_geneticsManager != null && _selectedParent1 != null && _selectedParent2 != null)
-            {
-                _currentBreeding = _geneticsManager.BreedPlants(_selectedParent1, _selectedParent2, 1);
-            }
-            else
-            {
-                LogWarning("Cannot complete breeding: GeneticsManager or parents not available");
+            // if (_geneticsManager != null && _selectedParent1 != null && _selectedParent2 != null)
+            // {
+                // _currentBreeding = _geneticsManager.BreedPlants(_selectedParent1, _selectedParent2, 1);
+            // }
+            // else
+            // {
+                // LogWarning("Cannot complete breeding: GeneticsManager or parents not available");
                 return;
-            }
+            // }
             
             // Update UI
             DisplayBreedingResults();
@@ -935,7 +936,7 @@ namespace ProjectChimera.UI.Panels
         {
             if (offspring?.StrainOrigin == null)
             {
-                LogWarning("Cannot save strain: invalid offspring data");
+                Debug.LogWarning("Cannot save strain: invalid offspring data");
                 return;
             }
             
@@ -955,11 +956,11 @@ namespace ProjectChimera.UI.Panels
                 UpdatePlayerProgression();
                 
                 // Show success notification
-                if (_uiManager != null)
-                {
-                    var hud = _uiManager.GetPanel("gameplay-hud") as GameplayHUDPanel;
+                // if (_uiManager != null)
+                // {
+                    // var hud = _uiManager.GetPanel("gameplay-hud") as GameplayHUDPanel;
                     hud?.ShowNotification($"New strain '{newStrain.StrainName}' added to library!", UIStatus.Success);
-                }
+                // }
             }
             
             DiscardOffspring();
@@ -975,7 +976,7 @@ namespace ProjectChimera.UI.Panels
             
             var placeholderLabel = new Label("Complete breeding to see results");
             placeholderLabel.style.fontSize = 14;
-            placeholderLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // placeholderLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             placeholderLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
             
             _offspringResultsContainer.Add(placeholderLabel);
@@ -1012,10 +1013,10 @@ namespace ProjectChimera.UI.Panels
                         // Check if this is a custom bred strain (has parent strains)
                         passesFilter = passesFilter && (strain.ParentStrain1 != null || strain.ParentStrain2 != null);
                     }
-                    else
-                    {
+                    // else
+                    // {
                         passesFilter = passesFilter && strain.StrainType.ToString() == _strainTypeFilter.value;
-                    }
+                    // }
                 }
                 
                 if (passesFilter)
@@ -1164,26 +1165,26 @@ namespace ProjectChimera.UI.Panels
             {
                 return new Color(1f, 0.8f, 0.2f, 1f); // Custom bred - Gold
             }
-            else if (strain.IsLandrace)
-            {
+            // else if (strain.IsLandrace)
+            // {
                 return new Color(1f, 0.6f, 0f, 1f); // Landrace - Orange
-            }
-            else if (strain.GenerationNumber > 5)
-            {
+            // }
+            // else if (strain.GenerationNumber > 5)
+            // {
                 return new Color(0.6f, 0.2f, 0.8f, 1f); // Stabilized - Purple
-            }
-            else if (strain.CannabinoidProfile.ThcPercentage > 25f)
-            {
+            // }
+            // else if (strain.CannabinoidProfile.ThcPercentage > 25f)
+            // {
                 return Color.blue; // High potency - Blue
-            }
-            else if (strain.CannabinoidProfile.CbdPercentage > 15f)
-            {
+            // }
+            // else if (strain.CannabinoidProfile.CbdPercentage > 15f)
+            // {
                 return Color.green; // High CBD - Green
-            }
-            else
-            {
+            // }
+            // else
+            // {
                 return Color.gray; // Common - Gray
-            }
+            // }
         }
         
         /// <summary>
@@ -1237,7 +1238,7 @@ namespace ProjectChimera.UI.Panels
         {
             // This would create a new ScriptableObject asset
             // For now, return null - in full implementation this would use Unity's AssetDatabase
-            LogWarning("Creating new PlantStrainSO assets requires editor scripting - not implemented in UI panel");
+            Debug.LogWarning("Creating new PlantStrainSO assets requires editor scripting - not implemented in UI panel");
             return null;
         }
     }

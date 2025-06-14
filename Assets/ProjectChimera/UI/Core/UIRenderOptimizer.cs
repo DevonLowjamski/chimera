@@ -290,11 +290,11 @@ namespace ProjectChimera.UI.Core
                     _visibleElements.Add(element);
                     SetElementVisibility(element, true);
                 }
-                else
-                {
+                // else
+                // {
                     _culledElements.Add(element);
                     SetElementVisibility(element, false);
-                }
+                // }
             }
             
             OnVisibleElementsChanged?.Invoke(_visibleElements.Count);

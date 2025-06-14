@@ -344,6 +344,16 @@ namespace ProjectChimera.Data.Genetics
         GlaucomaTreatment
     }
 
+    public enum StrainRarity
+    {
+        Common,
+        Uncommon,
+        Rare,
+        Epic,
+        Legendary,
+        Custom
+    }
+
     /// <summary>
     /// Represents a specific plant's genetic makeup including alleles and inheritance information.
     /// </summary>
@@ -407,6 +417,7 @@ namespace ProjectChimera.Data.Genetics
         public string OriginRegion;
         public string Description;
         public StrainType StrainType;
+        public StrainRarity Rarity;
         public float THCPercentage;
         public float CBDPercentage;
         public float FloweringTime;
@@ -416,6 +427,13 @@ namespace ProjectChimera.Data.Genetics
         public bool IsAutoflower;
         public string[] ParentStrains;
         public string StrainID;
+        
+        // Compatibility properties for UI
+        public string Id => StrainID;
+        public string Name => StrainName;
+        public string Type => StrainType.ToString();
+        public float THCLevel => THCPercentage;
+        public float CBDLevel => CBDPercentage;
         
         public static PlantStrainData FromSO(PlantStrainSO strainSO)
         {
@@ -428,6 +446,7 @@ namespace ProjectChimera.Data.Genetics
                     OriginRegion = "Unknown",
                     Description = "",
                     StrainType = StrainType.Hybrid,
+                    Rarity = StrainRarity.Common,
                     THCPercentage = 0f,
                     CBDPercentage = 0f,
                     FloweringTime = 0f,
@@ -447,6 +466,7 @@ namespace ProjectChimera.Data.Genetics
                 OriginRegion = strainSO.OriginRegion,
                 Description = strainSO.StrainDescription,
                 StrainType = strainSO.StrainType,
+                Rarity = StrainRarity.Common,
                 THCPercentage = 15f, // Placeholder - would need actual calculation
                 CBDPercentage = 2f,  // Placeholder - would need actual calculation
                 FloweringTime = 60f, // Placeholder - would need actual calculation

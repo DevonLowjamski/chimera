@@ -1,6 +1,7 @@
 using UnityEngine;
 using ProjectChimera.Core;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ProjectChimera.Data.Progression
 {
@@ -93,6 +94,26 @@ namespace ProjectChimera.Data.Progression
         public List<SkillEffect> Effects => _skillEffects;
         public bool IsStartingSkill => _prerequisiteSkills.Count == 0 && _skillTier == 1;
         public int SkillPriority => _skillTier; // Use tier as priority
+        public int UnlockLevel => _skillTier; // Use tier as unlock level
+        public string SkillId => name; // Use ScriptableObject name as ID
+        public List<SkillNodeSO> Skills => new List<SkillNodeSO> { this }; // For compatibility
+        public int MaxLevel => _maxSkillLevel; // Alias for MaxSkillLevel
+        public List<string> PrerequisiteSkillIds => _prerequisiteSkills.Select(skill => skill.name).ToList(); // String IDs for compatibility
+        public List<SkillNodeSO> Prerequisites => _prerequisiteSkills; // Alias for PrerequisiteSkills
+        public int RequiredLevel => _skillTier; // Alias for UnlockLevel
+        
+        /// <summary>
+        /// Get total experience required to max this skill
+        /// </summary>
+        public float GetTotalExperienceRequired()
+        {
+            float total = 0f;
+            for (int level = 1; level <= _maxSkillLevel; level++)
+            {
+                total += GetExperienceRequiredForLevel(level);
+            }
+            return total;
+        }
         
         /// <summary>
         /// Checks if the player meets the prerequisites to learn this skill.
@@ -485,6 +506,7 @@ namespace ProjectChimera.Data.Progression
     // Enums for the skill system
     public enum SkillCategory
     {
+        Basic,
         Cultivation,
         Genetics,
         Processing,
@@ -499,6 +521,7 @@ namespace ProjectChimera.Data.Progression
     
     public enum SkillDomain
     {
+        Cultivation,
         Growing,
         Genetics,
         Breeding,
@@ -625,5 +648,22 @@ namespace ProjectChimera.Data.Progression
         Emotional_Support,
         Career_Guidance,
         Innovation_Catalyst
+    }
+    
+    public enum SkillEffectType
+    {
+        Yield_Bonus,
+        Quality_Bonus,
+        Growth_Speed,
+        Disease_Resistance,
+        Nutrient_Efficiency,
+        Energy_Efficiency,
+        Cost_Reduction,
+        Time_Reduction,
+        Success_Rate,
+        Learning_Speed,
+        Research_Speed,
+        Innovation_Rate,
+        Efficiency
     }
 }

@@ -6,6 +6,7 @@ using ProjectChimera.UI.Core;
 using ProjectChimera.UI.Events;
 using ProjectChimera.UI.Components;
 using ProjectChimera.Data;
+using ProjectChimera.Data.UI;
 
 namespace ProjectChimera.UI.Panels
 {
@@ -65,8 +66,8 @@ namespace ProjectChimera.UI.Panels
         private Queue<UINotificationToast> _notificationQueue;
         
         // Game managers (would be injected or found)
-        private TimeManager _timeManager;
-        private DataManager _dataManager;
+        // private TimeManager _timeManager;
+        // private DataManager _dataManager;
         
         protected override void SetupUIElements()
         {
@@ -76,8 +77,8 @@ namespace ProjectChimera.UI.Panels
             _notificationQueue = new Queue<UINotificationToast>();
             
             // Get manager references
-            _timeManager = GameManager.Instance?.GetManager<TimeManager>();
-            _dataManager = GameManager.Instance?.GetManager<DataManager>();
+            // _timeManager = GameManager.Instance?.GetManager<TimeManager>();
+            // _dataManager = GameManager.Instance?.GetManager<DataManager>();
             
             CreateHUDLayout();
             CreateTopBar();
@@ -190,7 +191,7 @@ namespace ProjectChimera.UI.Panels
             // Cash display
             _cashCard = new UIDataCard("Cash", "$0", "");
             _cashCard.style.marginRight = 16;
-            _cashCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.AccentGold);
+            // _cashCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.AccentGold);
             
             // Time display
             _timeCard = new UIDataCard("Day", "1", "");
@@ -200,7 +201,7 @@ namespace ProjectChimera.UI.Panels
             _overallProgressBar = new UIProgressBar(100f);
             _overallProgressBar.Format = "Progress: {0:F0}%";
             _overallProgressBar.style.minWidth = 200;
-            _overallProgressBar.SetColor(_uiManager.DesignSystem.ColorPalette.PrimaryGreen);
+            // _overallProgressBar.SetColor(_uiManager.DesignSystem.ColorPalette.PrimaryGreen);
             
             leftSection.Add(_cashCard);
             leftSection.Add(_timeCard);
@@ -219,7 +220,7 @@ namespace ProjectChimera.UI.Panels
             _pauseButton.style.width = 40;
             _pauseButton.style.height = 40;
             _pauseButton.style.marginRight = 8;
-            _uiManager.ApplyDesignSystemStyle(_pauseButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_pauseButton, UIStyleToken.SecondaryButton);
             
             // Settings button
             _settingsButton = new Button();
@@ -228,7 +229,7 @@ namespace ProjectChimera.UI.Panels
             _settingsButton.style.width = 40;
             _settingsButton.style.height = 40;
             _settingsButton.style.marginRight = 8;
-            _uiManager.ApplyDesignSystemStyle(_settingsButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_settingsButton, UIStyleToken.SecondaryButton);
             
             // Menu button
             _menuButton = new Button();
@@ -236,7 +237,7 @@ namespace ProjectChimera.UI.Panels
             _menuButton.text = "☰";
             _menuButton.style.width = 40;
             _menuButton.style.height = 40;
-            _uiManager.ApplyDesignSystemStyle(_menuButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_menuButton, UIStyleToken.SecondaryButton);
             
             rightSection.Add(_pauseButton);
             rightSection.Add(_settingsButton);
@@ -292,7 +293,7 @@ namespace ProjectChimera.UI.Panels
             
             var textLabel = new Label(label);
             textLabel.style.fontSize = 12;
-            textLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // textLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             content.Add(iconLabel);
             content.Add(textLabel);
@@ -331,7 +332,7 @@ namespace ProjectChimera.UI.Panels
             var titleLabel = new Label("Status Overview");
             titleLabel.name = "side-panel-title";
             titleLabel.style.fontSize = 16;
-            titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             titleLabel.style.marginBottom = 16;
             
@@ -386,13 +387,13 @@ namespace ProjectChimera.UI.Panels
             _currentTaskLabel = new Label("Current Task: Plant Monitoring");
             _currentTaskLabel.name = "current-task-label";
             _currentTaskLabel.style.fontSize = 14;
-            _currentTaskLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // _currentTaskLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             _currentTaskLabel.style.marginBottom = 8;
             
             _currentTaskProgress = new UIProgressBar(100f);
             _currentTaskProgress.Value = 65f;
             _currentTaskProgress.Format = "{0:F0}% Complete";
-            _currentTaskProgress.SetColor(_uiManager.DesignSystem.ColorPalette.Info);
+            // _currentTaskProgress.SetColor(_uiManager.DesignSystem.ColorPalette.Info);
             
             taskContainer.Add(_currentTaskLabel);
             taskContainer.Add(_currentTaskProgress);
@@ -442,7 +443,8 @@ namespace ProjectChimera.UI.Panels
                 
                 button.AddClickAnimation();
                 
-                var hoverColor = _uiManager.DesignSystem.ColorPalette.InteractiveHover;
+                // var hoverColor = _uiManager.DesignSystem.ColorPalette.InteractiveHover;
+                var hoverColor = new Color(0.67f, 0.47f, 1f, 1f); // Placeholder hover color
                 var normalColor = button.style.backgroundColor.value;
                 button.AddHoverEffects(hoverColor, normalColor);
             }
@@ -487,16 +489,16 @@ namespace ProjectChimera.UI.Panels
             // Update color based on cash flow
             if (currentCash < 10000f)
             {
-                _cashCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.Error);
+                // _cashCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.Error);
             }
-            else if (currentCash < 50000f)
-            {
-                _cashCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.Warning);
-            }
-            else
-            {
-                _cashCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.AccentGold);
-            }
+            // else if (currentCash < 50000f)
+            // {
+                // _cashCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.Warning);
+            // }
+            // else
+            // {
+                // _cashCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.AccentGold);
+            // }
         }
         
         /// <summary>
@@ -504,22 +506,22 @@ namespace ProjectChimera.UI.Panels
         /// </summary>
         private void UpdateTimeData()
         {
-            if (_timeManager != null)
-            {
+            // if (_timeManager != null)
+            // {
                 // Get current game day from time manager
-                var currentDay = _timeManager.GetCurrentDay();
+                // var currentDay = _timeManager.GetCurrentDay();
                 _timeCard.Value = currentDay.ToString();
                 
                 // Update time card with additional info
-                var timeOfDay = _timeManager.GetTimeOfDay();
+                // var timeOfDay = _timeManager.GetTimeOfDay();
                 _timeCard.Unit = $"{timeOfDay:HH:mm}";
-            }
-            else
-            {
+            // }
+            // else
+            // {
                 // Fallback to sample data
                 _timeCard.Value = "15";
                 _timeCard.Unit = "14:30";
-            }
+            // }
         }
         
         /// <summary>
@@ -620,7 +622,7 @@ namespace ProjectChimera.UI.Panels
             _onHUDButtonClicked?.RaiseButtonClick("pause", PanelId, evt.position);
             
             // Toggle pause state
-            _uiManager.SetUIState(UIState.Paused);
+            // _uiManager.SetUIState(UIState.Paused);
         }
         
         private void OnSettingsClicked(ClickEvent evt)
@@ -628,7 +630,7 @@ namespace ProjectChimera.UI.Panels
             _onSettingsClicked?.Raise();
             _onHUDButtonClicked?.RaiseButtonClick("settings", PanelId, evt.position);
             
-            _uiManager.ShowPanel("settings-menu");
+            // _uiManager.ShowPanel("settings-menu");
         }
         
         private void OnMenuClicked(ClickEvent evt)
@@ -636,37 +638,37 @@ namespace ProjectChimera.UI.Panels
             _onMenuClicked?.Raise();
             _onHUDButtonClicked?.RaiseButtonClick("menu", PanelId, evt.position);
             
-            _uiManager.SetUIState(UIState.MainMenu);
+            // _uiManager.SetUIState(UIState.MainMenu);
         }
         
         private void OnFacilitiesClicked(ClickEvent evt)
         {
             _onHUDButtonClicked?.RaiseButtonClick("facilities", PanelId, evt.position);
-            _uiManager.ShowPanel("facility-management-panel");
+            // _uiManager.ShowPanel("facility-management-panel");
         }
         
         private void OnPlantsClicked(ClickEvent evt)
         {
             _onHUDButtonClicked?.RaiseButtonClick("plants", PanelId, evt.position);
-            _uiManager.ShowPanel("plant-management-panel");
+            // _uiManager.ShowPanel("plant-management-panel");
         }
         
         private void OnResearchClicked(ClickEvent evt)
         {
             _onHUDButtonClicked?.RaiseButtonClick("research", PanelId, evt.position);
-            _uiManager.ShowPanel("research-panel");
+            // _uiManager.ShowPanel("research-panel");
         }
         
         private void OnMarketClicked(ClickEvent evt)
         {
             _onHUDButtonClicked?.RaiseButtonClick("market", PanelId, evt.position);
-            _uiManager.ShowPanel("market-panel");
+            // _uiManager.ShowPanel("market-panel");
         }
         
         private void OnInventoryClicked(ClickEvent evt)
         {
             _onHUDButtonClicked?.RaiseButtonClick("inventory", PanelId, evt.position);
-            _uiManager.ShowPanel("inventory-panel");
+            // _uiManager.ShowPanel("inventory-panel");
         }
         
         protected override void OnDestroy()

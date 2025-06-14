@@ -5,7 +5,6 @@
         "ProjectChimera.Core",
         "ProjectChimera.Data",
         "ProjectChimera.Environment",
-        "ProjectChimera.Visuals",
         "ProjectChimera.Visuals"
     ],
     "includePlatforms": [],

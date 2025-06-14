@@ -248,10 +248,10 @@ namespace ProjectChimera.UI.Core
             {
                 StartShowAnimation();
             }
-            else
-            {
+            // else
+            // {
                 OnModalOpened?.Invoke(this);
-            }
+            // }
             
             // Focus the modal
             _rootElement.Focus();
@@ -273,10 +273,10 @@ namespace ProjectChimera.UI.Core
             {
                 StartHideAnimation(confirmed);
             }
-            else
-            {
+            // else
+            // {
                 CompleteHide(confirmed);
-            }
+            // }
             
             LogInfo($"Modal '{_componentName}' closed (confirmed: {confirmed})");
         }
@@ -352,10 +352,10 @@ namespace ProjectChimera.UI.Core
             {
                 OnModalConfirmed?.Invoke(this);
             }
-            else
-            {
+            // else
+            // {
                 OnModalCancelled?.Invoke(this);
-            }
+            // }
             
             OnModalClosed?.Invoke(this);
         }

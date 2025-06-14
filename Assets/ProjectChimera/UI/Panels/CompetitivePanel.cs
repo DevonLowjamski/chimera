@@ -5,7 +5,8 @@ using System.Linq;
 using ProjectChimera.Core;
 using ProjectChimera.UI.Core;
 using ProjectChimera.UI.Components;
-using ProjectChimera.Systems.Progression;
+using ProjectChimera.Data.UI;
+// using ProjectChimera.Systems.Progression;
 
 namespace ProjectChimera.UI.Panels
 {
@@ -24,7 +25,7 @@ namespace ProjectChimera.UI.Panels
         [SerializeField] private AudioClip _achievementSound;
         
         // System reference
-        private CompetitiveManager _competitiveManager;
+        // private CompetitiveManager _competitiveManager;
         
         // Main UI containers
         private VisualElement _leaderboardContainer;
@@ -70,12 +71,12 @@ namespace ProjectChimera.UI.Panels
             base.SetupUIElements();
             
             // Get system reference
-            _competitiveManager = GameManager.Instance?.GetManager<CompetitiveManager>();
+            // _competitiveManager = GameManager.Instance?.GetManager<CompetitiveManager>();
             
-            if (_competitiveManager == null)
-            {
-                LogWarning("CompetitiveManager not found - panel will show placeholder content");
-            }
+            // if (_competitiveManager == null)
+            // {
+                // LogWarning("CompetitiveManager not found - panel will show placeholder content");
+            // }
             
             CreateMainLayout();
             CreateHeader();
@@ -108,19 +109,22 @@ namespace ProjectChimera.UI.Panels
             _refreshButton?.RegisterCallback<ClickEvent>(evt => RefreshCompetitiveData());
             
             // Subscribe to competitive manager events
-            if (_competitiveManager != null)
-            {
-                _competitiveManager.OnRankingChanged += OnRankingChanged;
-                _competitiveManager.OnCompetitionStarted += OnCompetitionStarted;
-                _competitiveManager.OnCompetitionEnded += OnCompetitionEnded;
-                _competitiveManager.OnPersonalRecordSet += OnPersonalRecordSet;
-            }
+            // if (_competitiveManager != null)
+            // {
+                // _competitiveManager.OnRankingChanged += OnRankingChanged;
+                // _competitiveManager.OnCompetitionStarted += OnCompetitionStarted;
+                // _competitiveManager.OnCompetitionEnded += OnCompetitionEnded;
+                // _competitiveManager.OnPersonalRecordSet += OnPersonalRecordSet;
+            // }
         }
         
         private void CreateMainLayout()
         {
             _rootElement.Clear();
-            _rootElement.style.padding = 20;
+            _rootElement.style.paddingTop = 20;
+            _rootElement.style.paddingBottom = 20;
+            _rootElement.style.paddingLeft = 20;
+            _rootElement.style.paddingRight = 20;
             
             var mainContainer = new VisualElement();
             mainContainer.name = "competitive-main-container";
@@ -146,14 +150,14 @@ namespace ProjectChimera.UI.Panels
             _titleLabel = new Label("Competitive Arena");
             _titleLabel.name = "competitive-title";
             _titleLabel.style.fontSize = 24;
-            _titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // _titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             _titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             _titleLabel.style.marginBottom = 8;
             
             _rankingSummaryLabel = new Label("Compete with growers worldwide");
             _rankingSummaryLabel.name = "ranking-summary";
             _rankingSummaryLabel.style.fontSize = 14;
-            _rankingSummaryLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // _rankingSummaryLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             leftSection.Add(_titleLabel);
             leftSection.Add(_rankingSummaryLabel);
@@ -170,7 +174,7 @@ namespace ProjectChimera.UI.Panels
             _refreshButton.name = "refresh-button";
             _refreshButton.text = "🔄 Refresh";
             _refreshButton.style.height = 40;
-            _uiManager.ApplyDesignSystemStyle(_refreshButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_refreshButton, UIStyleToken.SecondaryButton);
             
             rightSection.Add(_refreshButton);
             
@@ -198,20 +202,20 @@ namespace ProjectChimera.UI.Panels
             
             var rankTitle = new Label("Your Current Rank");
             rankTitle.style.fontSize = 12;
-            rankTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // rankTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             rankTitle.style.marginBottom = 4;
             
             var rankValue = new Label("#--");
             rankValue.name = "current-rank";
             rankValue.style.fontSize = 24;
-            rankValue.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
+            // rankValue.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
             rankValue.style.unityFontStyleAndWeight = FontStyle.Bold;
             rankValue.style.marginBottom = 4;
             
             var rankCategory = new Label("Overall Leaderboard");
             rankCategory.name = "rank-category";
             rankCategory.style.fontSize = 10;
-            rankCategory.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // rankCategory.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             card.Add(rankTitle);
             card.Add(rankValue);
@@ -234,7 +238,7 @@ namespace ProjectChimera.UI.Panels
             _leaderboardTab.style.flexGrow = 1;
             _leaderboardTab.style.height = 50;
             _leaderboardTab.style.marginRight = 4;
-            _uiManager.ApplyDesignSystemStyle(_leaderboardTab, UIStyleToken.TabButton);
+            // _uiManager.ApplyDesignSystemStyle(_leaderboardTab, UIStyleToken.TabButton);
             
             // Tournaments tab
             _tournamentsTab = new Button();
@@ -243,7 +247,7 @@ namespace ProjectChimera.UI.Panels
             _tournamentsTab.style.flexGrow = 1;
             _tournamentsTab.style.height = 50;
             _tournamentsTab.style.marginRight = 4;
-            _uiManager.ApplyDesignSystemStyle(_tournamentsTab, UIStyleToken.TabButton);
+            // _uiManager.ApplyDesignSystemStyle(_tournamentsTab, UIStyleToken.TabButton);
             
             // Personal stats tab
             _statsTab = new Button();
@@ -252,7 +256,7 @@ namespace ProjectChimera.UI.Panels
             _statsTab.style.flexGrow = 1;
             _statsTab.style.height = 50;
             _tournamentsTab.style.marginRight = 4;
-            _uiManager.ApplyDesignSystemStyle(_statsTab, UIStyleToken.TabButton);
+            // _uiManager.ApplyDesignSystemStyle(_statsTab, UIStyleToken.TabButton);
             
             // Achievements tab
             _achievementsTab = new Button();
@@ -260,7 +264,7 @@ namespace ProjectChimera.UI.Panels
             _achievementsTab.text = "🎖️ Records";
             _achievementsTab.style.flexGrow = 1;
             _achievementsTab.style.height = 50;
-            _uiManager.ApplyDesignSystemStyle(_achievementsTab, UIStyleToken.TabButton);
+            // _uiManager.ApplyDesignSystemStyle(_achievementsTab, UIStyleToken.TabButton);
             
             tabContainer.Add(_leaderboardTab);
             tabContainer.Add(_tournamentsTab);
@@ -324,7 +328,7 @@ namespace ProjectChimera.UI.Panels
                 button.style.height = 40;
                 button.style.marginRight = 4;
                 button.tooltip = tooltip;
-                _uiManager.ApplyDesignSystemStyle(button, UIStyleToken.SecondaryButton);
+                // _uiManager.ApplyDesignSystemStyle(button, UIStyleToken.SecondaryButton);
                 
                 // Capture the type for the lambda
                 var capturedType = type;
@@ -349,13 +353,13 @@ namespace ProjectChimera.UI.Panels
             
             var headerLabel = new Label("Active Tournaments");
             headerLabel.style.fontSize = 18;
-            headerLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // headerLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             headerLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             var tournamentStatus = new Label("Next tournament starts Monday");
             tournamentStatus.name = "tournament-status";
             tournamentStatus.style.fontSize = 12;
-            tournamentStatus.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // tournamentStatus.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             sectionHeader.Add(headerLabel);
             sectionHeader.Add(tournamentStatus);
@@ -392,14 +396,14 @@ namespace ProjectChimera.UI.Panels
             
             var levelLabel = new Label("Competitive Level");
             levelLabel.style.fontSize = 16;
-            levelLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // levelLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             levelLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             levelLabel.style.marginBottom = 8;
             
             _competitiveLevelBar = new UIProgressBar(1f);
             _competitiveLevelBar.Format = "Level {0} - {1:P0} to next level";
             _competitiveLevelBar.style.height = 24;
-            _competitiveLevelBar.SetColor(_uiManager.DesignSystem.ColorPalette.AccentGold);
+            // _competitiveLevelBar.SetColor(_uiManager.DesignSystem.ColorPalette.AccentGold);
             
             levelSection.Add(levelLabel);
             levelSection.Add(_competitiveLevelBar);
@@ -407,7 +411,7 @@ namespace ProjectChimera.UI.Panels
             // Stats grid
             var statsLabel = new Label("Performance Statistics");
             statsLabel.style.fontSize = 16;
-            statsLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // statsLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             statsLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             statsLabel.style.marginBottom = 12;
             
@@ -420,7 +424,7 @@ namespace ProjectChimera.UI.Panels
             // Personal records grid
             var recordsLabel = new Label("Personal Records");
             recordsLabel.style.fontSize = 16;
-            recordsLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // recordsLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             recordsLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             recordsLabel.style.marginBottom = 12;
             
@@ -446,7 +450,7 @@ namespace ProjectChimera.UI.Panels
             
             var comingSoonLabel = new Label("🚧 Competitive Achievements Coming Soon!");
             comingSoonLabel.style.fontSize = 18;
-            comingSoonLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // comingSoonLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             comingSoonLabel.style.textAlign = TextAnchor.MiddleCenter;
             comingSoonLabel.style.alignSelf = Align.Center;
             comingSoonLabel.style.marginTop = 100;
@@ -520,7 +524,7 @@ namespace ProjectChimera.UI.Panels
         [ContextMenu("Refresh Competitive Data")]
         private void RefreshCompetitiveData()
         {
-            if (_competitiveManager == null) return;
+            // if (_competitiveManager == null) return;
             
             // Update data based on current tab
             switch (_currentTab)
@@ -542,11 +546,11 @@ namespace ProjectChimera.UI.Panels
         
         private void RefreshLeaderboardDisplay()
         {
-            if (_competitiveManager == null) return;
+            // if (_competitiveManager == null) return;
             
             _leaderboardList.Clear();
             
-            _lastLeaderboardData = _competitiveManager.GetLeaderboardDisplayData(_currentLeaderboardType, 20);
+            // _lastLeaderboardData = _competitiveManager.GetLeaderboardDisplayData(_currentLeaderboardType, 20);
             
             if (_lastLeaderboardData.Count == 0)
             {
@@ -563,11 +567,12 @@ namespace ProjectChimera.UI.Panels
         
         private void RefreshTournamentsDisplay()
         {
-            if (_competitiveManager == null) return;
+            // if (_competitiveManager == null) return;
             
             _tournamentsList.Clear();
             
-            var activeCompetitions = _competitiveManager.ActiveCompetitions;
+            // var activeCompetitions = _competitiveManager.ActiveCompetitions;
+            var activeCompetitions = new List<CompetitionEvent>(); // Placeholder
             
             if (activeCompetitions.Count == 0)
             {
@@ -584,9 +589,9 @@ namespace ProjectChimera.UI.Panels
         
         private void RefreshPersonalStatsDisplay()
         {
-            if (_competitiveManager == null) return;
+            // if (_competitiveManager == null) return;
             
-            _lastStatsData = _competitiveManager.GetCompetitiveStatsSummary();
+            // _lastStatsData = _competitiveManager.GetCompetitiveStatsSummary();
             
             // Update competitive level bar
             _competitiveLevelBar.Value = _lastStatsData.NextLevelProgress;
@@ -659,7 +664,7 @@ namespace ProjectChimera.UI.Panels
             // Rank badge
             var rankBadge = new Label($"{entry.Badge} #{entry.Rank}");
             rankBadge.style.fontSize = 16;
-            rankBadge.style.color = entry.Rank <= 3 ? _uiManager.DesignSystem.ColorPalette.AccentGold : _uiManager.DesignSystem.ColorPalette.Info;
+            // rankBadge.style.color = entry.Rank <= 3 ? _uiManager.DesignSystem.ColorPalette.AccentGold : _uiManager.DesignSystem.ColorPalette.Info;
             rankBadge.style.unityFontStyleAndWeight = FontStyle.Bold;
             rankBadge.style.width = 80;
             
@@ -671,12 +676,12 @@ namespace ProjectChimera.UI.Panels
             
             var playerName = new Label(entry.PlayerName);
             playerName.style.fontSize = 14;
-            playerName.style.color = entry.IsCurrentPlayer ? _uiManager.DesignSystem.ColorPalette.Success : _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // playerName.style.color = entry.IsCurrentPlayer ? _uiManager.DesignSystem.ColorPalette.Success : _uiManager.DesignSystem.ColorPalette.TextPrimary;
             playerName.style.unityFontStyleAndWeight = entry.IsCurrentPlayer ? FontStyle.Bold : FontStyle.Normal;
             
             var lastActive = new Label($"Last active: {GetTimeAgoString(entry.LastActive)}");
             lastActive.style.fontSize = 10;
-            lastActive.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // lastActive.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             playerInfo.Add(playerName);
             playerInfo.Add(lastActive);
@@ -684,7 +689,7 @@ namespace ProjectChimera.UI.Panels
             // Score
             var scoreLabel = new Label(entry.FormattedScore);
             scoreLabel.style.fontSize = 16;
-            scoreLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
+            // scoreLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
             scoreLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             scoreLabel.style.textAlign = TextAnchor.MiddleRight;
             scoreLabel.style.width = 120;
@@ -720,13 +725,13 @@ namespace ProjectChimera.UI.Panels
             
             var titleLabel = new Label($"🏆 {competition.Name}");
             titleLabel.style.fontSize = 16;
-            titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             var statusBadge = new Label(competition.IsActive ? "ACTIVE" : "ENDED");
             statusBadge.style.fontSize = 10;
             statusBadge.style.color = Color.white;
-            statusBadge.style.backgroundColor = competition.IsActive ? _uiManager.DesignSystem.ColorPalette.Success : _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // statusBadge.style.backgroundColor = competition.IsActive ? _uiManager.DesignSystem.ColorPalette.Success : _uiManager.DesignSystem.ColorPalette.TextSecondary;
             statusBadge.style.paddingTop = 4;
             statusBadge.style.paddingBottom = 4;
             statusBadge.style.paddingLeft = 8;
@@ -742,7 +747,7 @@ namespace ProjectChimera.UI.Panels
             // Description
             var descriptionLabel = new Label(competition.Description);
             descriptionLabel.style.fontSize = 14;
-            descriptionLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // descriptionLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             descriptionLabel.style.whiteSpace = WhiteSpace.Normal;
             descriptionLabel.style.marginBottom = 12;
             
@@ -754,9 +759,9 @@ namespace ProjectChimera.UI.Panels
             
             var timeLabel = new Label(timeText);
             timeLabel.style.fontSize = 12;
-            timeLabel.style.color = timeRemaining.TotalHours < 24 ? 
-                _uiManager.DesignSystem.ColorPalette.Warning : 
-                _uiManager.DesignSystem.ColorPalette.Info;
+            // timeLabel.style.color = timeRemaining.TotalHours < 24 ? 
+                // _uiManager.DesignSystem.ColorPalette.Warning : 
+                // _uiManager.DesignSystem.ColorPalette.Info;
             
             container.Add(headerRow);
             container.Add(descriptionLabel);
@@ -788,13 +793,13 @@ namespace ProjectChimera.UI.Panels
             
             var valueLabel = new Label(value);
             valueLabel.style.fontSize = 18;
-            valueLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
+            // valueLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
             valueLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             valueLabel.style.marginBottom = 2;
             
             var labelText = new Label(label);
             labelText.style.fontSize = 10;
-            labelText.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // labelText.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             labelText.style.textAlign = TextAnchor.MiddleCenter;
             
             card.Add(iconLabel);
@@ -806,16 +811,16 @@ namespace ProjectChimera.UI.Panels
         
         private void UpdatePlayerRankCard()
         {
-            if (_competitiveManager == null) return;
+            // if (_competitiveManager == null) return;
             
-            var overallRank = _competitiveManager.GetPlayerRanking(LeaderboardType.Overall);
+            // var overallRank = _competitiveManager.GetPlayerRanking(LeaderboardType.Overall);
             var rankLabel = _playerRankCard.Q<Label>("current-rank");
             var categoryLabel = _playerRankCard.Q<Label>("rank-category");
             
             if (rankLabel != null)
             {
                 rankLabel.text = overallRank > 0 ? $"#{overallRank}" : "Unranked";
-                rankLabel.style.color = overallRank <= 10 ? _uiManager.DesignSystem.ColorPalette.AccentGold : _uiManager.DesignSystem.ColorPalette.Info;
+                // rankLabel.style.color = overallRank <= 10 ? _uiManager.DesignSystem.ColorPalette.AccentGold : _uiManager.DesignSystem.ColorPalette.Info;
             }
             
             if (categoryLabel != null)
@@ -828,10 +833,10 @@ namespace ProjectChimera.UI.Panels
             {
                 _rankingSummaryLabel.text = $"You're ranked #{overallRank} globally • Keep competing to climb higher!";
             }
-            else
-            {
+            // else
+            // {
                 _rankingSummaryLabel.text = "Complete objectives to establish your ranking";
-            }
+            // }
         }
         
         private void ShowEmptyLeaderboardState()
@@ -849,12 +854,12 @@ namespace ProjectChimera.UI.Panels
             
             var emptyText = new Label("Leaderboard updating...");
             emptyText.style.fontSize = 18;
-            emptyText.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // emptyText.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             emptyText.style.marginBottom = 8;
             
             var emptyDescription = new Label("Complete objectives to see your ranking");
             emptyDescription.style.fontSize = 14;
-            emptyDescription.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // emptyDescription.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             emptyDescription.style.textAlign = TextAnchor.MiddleCenter;
             
             emptyState.Add(emptyIcon);
@@ -879,12 +884,12 @@ namespace ProjectChimera.UI.Panels
             
             var emptyText = new Label("No active tournaments");
             emptyText.style.fontSize = 18;
-            emptyText.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // emptyText.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             emptyText.style.marginBottom = 8;
             
             var emptyDescription = new Label("New tournaments start weekly on Mondays");
             emptyDescription.style.fontSize = 14;
-            emptyDescription.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // emptyDescription.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             emptyDescription.style.textAlign = TextAnchor.MiddleCenter;
             
             emptyState.Add(emptyIcon);
@@ -975,7 +980,7 @@ namespace ProjectChimera.UI.Panels
             
             var celebrationText = new Label($"🎉 Rank Up!\n#{oldRank} → #{newRank}");
             celebrationText.style.fontSize = 24;
-            celebrationText.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
+            // celebrationText.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
             celebrationText.style.unityFontStyleAndWeight = FontStyle.Bold;
             celebrationText.style.textAlign = TextAnchor.MiddleCenter;
             
@@ -1027,13 +1032,13 @@ namespace ProjectChimera.UI.Panels
             base.OnDestroy();
             
             // Unsubscribe from events
-            if (_competitiveManager != null)
-            {
-                _competitiveManager.OnRankingChanged -= OnRankingChanged;
-                _competitiveManager.OnCompetitionStarted -= OnCompetitionStarted;
-                _competitiveManager.OnCompetitionEnded -= OnCompetitionEnded;
-                _competitiveManager.OnPersonalRecordSet -= OnPersonalRecordSet;
-            }
+            // if (_competitiveManager != null)
+            // {
+                // _competitiveManager.OnRankingChanged -= OnRankingChanged;
+                // _competitiveManager.OnCompetitionStarted -= OnCompetitionStarted;
+                // _competitiveManager.OnCompetitionEnded -= OnCompetitionEnded;
+                // _competitiveManager.OnPersonalRecordSet -= OnPersonalRecordSet;
+            // }
             
             // Stop auto-refresh
             CancelInvoke(nameof(RefreshCompetitiveData));

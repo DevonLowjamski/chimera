@@ -287,9 +287,9 @@ namespace ProjectChimera.Systems.Progression
             {
                 Accelerator = accelerator,
                 StartDate = System.DateTime.Now,
-                ExpirationDate = System.DateTime.Now.AddDays(accelerator.DurationDays),
+                ExpirationDate = System.DateTime.Now.AddHours(accelerator.DurationHours),
                 RemainingUses = accelerator.AcceleratorType == AcceleratorType.Time_Acceleration ? 
-                    accelerator.DurationDays : -1 // -1 for unlimited uses within duration
+                    (int)accelerator.DurationDays : -1 // -1 for unlimited uses within duration
             };
             
             _playerProgression.ActiveAccelerators.Add(activeAccelerator);

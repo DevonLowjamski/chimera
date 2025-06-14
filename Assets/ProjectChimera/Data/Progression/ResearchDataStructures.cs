@@ -54,6 +54,11 @@ namespace ProjectChimera.Data.Progression
         public bool IsCriticalSkill = true;
         public bool CanBeOutsourced = false;
         public string SkillApplicationDescription;
+        
+        // Compatibility properties
+        public string SkillId => RequiredSkillNode?.SkillId ?? "";
+        public int RequiredLevel => MinimumLevel;
+        public int MinLevel => MinimumLevel; // Compatibility alias
     }
     
     [System.Serializable]
@@ -464,14 +469,7 @@ namespace ProjectChimera.Data.Progression
         public float OverallFeasibility;
     }
     
-    [System.Serializable]
-    public class ResearchProgress
-    {
-        public float PhaseProgress;
-        public float MilestoneProgress;
-        public float OverallProgress;
-        public float EstimatedTimeRemaining;
-    }
+
     
     [System.Serializable]
     public class CompletedPhase
@@ -1049,6 +1047,18 @@ namespace ProjectChimera.Data.Progression
         Market_Access,
         Technology_Transfer
     }
+
+    public enum CollaborationBenefitType
+    {
+        Accelerated_Research,
+        Quality_Improvement,
+        Risk_Sharing,
+        Cost_Reduction,
+        Expertise_Access,
+        Resource_Sharing,
+        Technology_Transfer,
+        Market_Access
+    }
     
     public enum IPStrategy
     {
@@ -1151,5 +1161,14 @@ namespace ProjectChimera.Data.Progression
         Completed,
         Failed,
         Cancelled
+    }
+
+    public enum ResearchTier
+    {
+        Basic,
+        Intermediate,
+        Advanced,
+        Expert,
+        Cutting_Edge
     }
 }

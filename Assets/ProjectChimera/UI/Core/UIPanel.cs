@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections;
 using ProjectChimera.Core;
+using ProjectChimera.UI.Core;
 
 namespace ProjectChimera.UI.Core
 {
@@ -29,7 +30,7 @@ namespace ProjectChimera.UI.Core
         [SerializeField] private string _rootElementName = "root";
         
         // Protected members for derived classes
-        protected UIManager _uiManager;
+        // protected UIManager _uiManager;
         protected VisualElement _rootElement;
         protected VisualElement _contentContainer;
         protected bool _isVisible;
@@ -55,24 +56,24 @@ namespace ProjectChimera.UI.Core
         /// <summary>
         /// Initialize the panel with UI Manager reference
         /// </summary>
-        public virtual void Initialize(UIManager uiManager)
-        {
-            if (_isInitialized)
-            {
-                LogWarning($"Panel {_panelId} is already initialized");
-                return;
-            }
+        // public virtual void Initialize(UIManager uiManager)
+        // {
+            // if (_isInitialized)
+            // {
+                // LogWarning($"Panel {_panelId} is already initialized");
+                // return;
+            // }
             
-            _uiManager = uiManager;
+            // _uiManager = uiManager;
             
-            SetupUIDocument();
-            SetupUIElements();
-            BindUIEvents();
-            OnPanelInitialized();
+            // SetupUIDocument();
+            // SetupUIElements();
+            // BindUIEvents();
+            // OnPanelInitialized();
             
-            _isInitialized = true;
-            LogInfo($"Panel {_panelId} initialized successfully");
-        }
+            // _isInitialized = true;
+            // LogInfo($"Panel {_panelId} initialized successfully");
+        // }
         
         /// <summary>
         /// Setup UI Document and find root element
@@ -115,10 +116,10 @@ namespace ProjectChimera.UI.Core
         protected virtual void SetupUIElements()
         {
             // Apply design system styles if available
-            if (_uiManager?.DesignSystem != null)
-            {
+            // if (_uiManager?.DesignSystem != null)
+            // {
                 ApplyDesignSystemStyles();
-            }
+            // }
         }
         
         /// <summary>
@@ -558,17 +559,17 @@ namespace ProjectChimera.UI.Core
         /// </summary>
         protected virtual void ApplyDesignSystemStyles()
         {
-            if (_uiManager?.DesignSystem == null) return;
+            // if (_uiManager?.DesignSystem == null) return;
             
             // Apply panel styling based on type
             switch (_panelType)
             {
                 case UIPanelType.Standard:
-                    _uiManager.ApplyDesignSystemStyle(_rootElement, UIStyleToken.Panel);
+                    // _uiManager.ApplyDesignSystemStyle(_rootElement, UIStyleToken.Panel);
                     break;
                     
                 case UIPanelType.Modal:
-                    _uiManager.ApplyDesignSystemStyle(_rootElement, UIStyleToken.Card);
+                    // _uiManager.ApplyDesignSystemStyle(_rootElement, UIStyleToken.Card);
                     break;
             }
         }

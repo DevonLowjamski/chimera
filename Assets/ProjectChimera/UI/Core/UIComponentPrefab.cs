@@ -92,12 +92,12 @@ namespace ProjectChimera.UI.Core
                 _rootElement.style.width = _defaultWidth;
                 _rootElement.style.height = _defaultHeight;
             }
-            else
-            {
+            // else
+            // {
                 _rootElement = new VisualElement();
                 _rootElement.name = _componentName;
                 _rootElement.userData = this;
-            }
+            // }
         }
         
         /// <summary>

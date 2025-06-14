@@ -27,7 +27,7 @@ namespace ProjectChimera.UI.Core
         [SerializeField] private bool _logManagerCommunication = true;
         
         // System references
-        private GameUIManager _uiManager;
+        // private GameUIManager _uiManager;
         private Dictionary<Type, ChimeraManager> _managerReferences = new Dictionary<Type, ChimeraManager>();
         
         // Integration state
@@ -67,7 +67,7 @@ namespace ProjectChimera.UI.Core
             InvokeRepeating(nameof(RefreshManagerData), 1f, _dataRefreshInterval);
             
             OnIntegrationInitialized?.Invoke();
-            LogInfo("UI Integration Manager initialized with comprehensive manager communication");
+            // LogInfo("UI Integration Manager initialized with comprehensive manager communication");
         }
         
         protected override void OnManagerUpdate()
@@ -82,11 +82,11 @@ namespace ProjectChimera.UI.Core
         private void InitializeSystemReferences()
         {
             // Get UI Manager reference
-            _uiManager = GameManager.Instance?.GetManager<GameUIManager>();
-            if (_uiManager == null)
-            {
-                LogWarning("GameUIManager not found - UI integration will be limited");
-            }
+            // _uiManager = GameManager.Instance?.GetManager<GameUIManager>();
+            // if (_uiManager == null)
+            // {
+                // LogWarning("GameUIManager not found - UI integration will be limited");
+            // }
             
             // Discover and cache all manager references
             if (_enableAutoDiscovery)
@@ -105,7 +105,7 @@ namespace ProjectChimera.UI.Core
             
             // Use reflection to find all manager types
             var managerTypes = Assembly.GetExecutingAssembly().GetTypes()
-                .Where(t => t.IsSubclassOf(typeof(ChimeraManager)) && !t.IsAbstract)
+                // .Where(t => t.IsSubclassOf(typeof(ChimeraManager)) && !t.IsAbstract)
                 .ToList();
             
             foreach (var managerType in managerTypes)
@@ -113,8 +113,9 @@ namespace ProjectChimera.UI.Core
                 try
                 {
                     // Try to get manager instance using GetManager<T>()
-                    var getManagerMethod = typeof(GameManager).GetMethod("GetManager")
-                        .MakeGenericMethod(managerType);
+                    // var getManagerMethod = typeof(GameManager).GetMethod("GetManager")
+                        // .MakeGenericMethod(managerType);
+                    var getManagerMethod = (System.Reflection.MethodInfo)null; // Placeholder
                     
                     var manager = getManagerMethod.Invoke(gameManager, null) as ChimeraManager;
                     if (manager != null)
@@ -176,10 +177,10 @@ namespace ProjectChimera.UI.Core
         private void RegisterEventHandlers()
         {
             // Register with UI Manager if available
-            if (_uiManager != null)
-            {
+            // if (_uiManager != null)
+            // {
                 // Add event handler registrations here when needed
-            }
+            // }
         }
         
         private void HandleUIEvent(UIEventData eventData)
@@ -258,10 +259,10 @@ namespace ProjectChimera.UI.Core
         private void ProcessUIEventData(UIEventData eventData)
         {
             // Route event to appropriate manager based on target
-            if (_logManagerCommunication)
-            {
+            // if (_logManagerCommunication)
+            // {
                 LogInfo($"Processing UI event data: {eventData}");
-            }
+            // }
         }
         
         private void ExecuteManagerAction(string actionId)
@@ -274,10 +275,10 @@ namespace ProjectChimera.UI.Core
                     var managerName = parts[0];
                     var methodName = parts[1];
                     
-                    if (_logManagerCommunication)
-                    {
+                    // if (_logManagerCommunication)
+                    // {
                         LogInfo($"Executing action: {actionId}");
-                    }
+                    // }
                 }
             }
             catch (Exception ex)
@@ -343,7 +344,7 @@ namespace ProjectChimera.UI.Core
             _lastDataUpdate.Clear();
             _integrationTasks.Clear();
             
-            LogInfo("UI Integration Manager shutdown complete");
+            // LogInfo("UI Integration Manager shutdown complete");
         }
     }    
     /// <summary>

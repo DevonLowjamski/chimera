@@ -107,6 +107,21 @@ namespace ProjectChimera.Data.Progression
         public PublicationPlan PublicationPlan => _publicationPlan;
         public PatentStrategy PatentStrategy => _patentStrategy;
         
+        // Additional properties for compatibility
+        public string ProjectId => name; // Use ScriptableObject name as ID
+        public string ResearchId => name; // Compatibility alias for ProjectId
+        public ResearchTier Tier => (ResearchTier)((int)_complexity); // Map complexity to tier
+        public List<string> Prerequisites => new List<string>(); // Empty list of prerequisite IDs for now
+        public List<RequiredSkill> SkillRequirements => _requiredSkills; // Alias
+        public float EstimatedDurationHours => _timeline?.EstimatedDurationDays * 24f ?? 0f; // Convert days to hours
+        public List<string> Keywords => new List<string> { _projectName, _researchCategory.ToString(), _researchType.ToString() }; // Generate keywords from project data
+        
+        // Additional compatibility properties for ComprehensiveProgressionManager
+        public string ResearchName => _projectName; // Compatibility alias
+        public float ResearchDuration => EstimatedDurationHours; // Compatibility alias
+        public List<string> ContentUnlocks => new List<string>(); // Empty list for now
+        public List<PassiveBonus> PassiveBonuses => new List<PassiveBonus>(); // Empty list for now
+        
         /// <summary>
         /// Evaluates if the player can initiate this research project.
         /// </summary>
@@ -161,8 +176,7 @@ namespace ProjectChimera.Data.Progression
             // Calculate milestone progress
             progress.MilestoneProgress = _milestones.Count > 0 ? (float)completedMilestones.Count / _milestones.Count : 0f;
             
-            // Calculate overall progress
-            progress.OverallProgress = (progress.PhaseProgress * 0.7f) + (progress.MilestoneProgress * 0.3f);
+            // Overall progress is calculated automatically from PhaseProgress and MilestoneProgress
             
             // Estimate time remaining
             progress.EstimatedTimeRemaining = CalculateRemainingTime(progress.OverallProgress);

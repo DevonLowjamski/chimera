@@ -43,6 +43,9 @@ namespace ProjectChimera.Systems.Environment
         private float _lastUpdateTime;
         private float _lastCannabinoidSample;
         
+        // Events for other systems to subscribe to
+        public System.Action OnConditionsOptimized;
+        
         public override ManagerPriority Priority => ManagerPriority.High;
         
         // Public Properties
@@ -123,6 +126,9 @@ namespace ProjectChimera.Systems.Environment
             
             var optimization = CalculateCannabinoidOptimization(environment.CurrentConditions, growthStage, target);
             ApplyEnvironmentalOptimization(environment, optimization);
+            
+            // Invoke OnConditionsOptimized event for other systems
+            OnConditionsOptimized?.Invoke();
             
             _onEnvironmentalOptimization?.Raise();
             LogInfo($"Applied cannabinoid optimization to environment {environment.EnvironmentName}");

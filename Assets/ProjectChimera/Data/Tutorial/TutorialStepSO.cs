@@ -49,6 +49,11 @@ namespace ProjectChimera.Data.Tutorial
         [SerializeField] private bool _dimBackground = true;
         [SerializeField] private float _backgroundDimAmount = 0.7f;
         [SerializeField] private bool _allowInterruption = false;
+        [SerializeField] private bool _blockInteraction = true;
+        [SerializeField] private List<string> _allowedInteractionElements = new List<string>();
+        
+        [Header("Highlight Settings")]
+        [SerializeField] private TutorialHighlightSettings _highlightSettings = new TutorialHighlightSettings();
         
         // Properties
         public string StepId => _stepId;
@@ -81,6 +86,9 @@ namespace ProjectChimera.Data.Tutorial
         public bool DimBackground => _dimBackground;
         public float BackgroundDimAmount => _backgroundDimAmount;
         public bool AllowInterruption => _allowInterruption;
+        public bool BlockInteraction => _blockInteraction;
+        public List<string> AllowedInteractionElements => _allowedInteractionElements;
+        public TutorialHighlightSettings HighlightSettings => _highlightSettings;
         
         // Runtime configuration methods
         public void SetStepId(string stepId) => _stepId = stepId;

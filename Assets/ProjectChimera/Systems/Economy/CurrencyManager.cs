@@ -2,7 +2,6 @@ using UnityEngine;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Economy;
 using ProjectChimera.Data.Progression;
-using ProjectChimera.Systems.Progression;
 using System.Collections.Generic;
 using System.Linq;
 using System;
@@ -147,7 +146,7 @@ namespace ProjectChimera.Systems.Economy
             var transaction = new Transaction
             {
                 TransactionId = Guid.NewGuid().ToString(),
-                Type = TransactionType.Income,
+                TransactionType = TransactionType.Income,
                 CurrencyType = currencyType,
                 Amount = amount,
                 Category = category,
@@ -220,7 +219,7 @@ namespace ProjectChimera.Systems.Economy
             var transaction = new Transaction
             {
                 TransactionId = Guid.NewGuid().ToString(),
-                Type = TransactionType.Expense,
+                TransactionType = TransactionType.Expense,
                 CurrencyType = currencyType,
                 Amount = amount,
                 Category = category,
@@ -276,7 +275,7 @@ namespace ProjectChimera.Systems.Economy
             var transaction = new Transaction
             {
                 TransactionId = Guid.NewGuid().ToString(),
-                Type = amount > oldAmount ? TransactionType.Income : TransactionType.Expense,
+                TransactionType = amount > oldAmount ? TransactionType.Income : TransactionType.Expense,
                 CurrencyType = currencyType,
                 Amount = Mathf.Abs(amount - oldAmount),
                 Category = TransactionCategory.System,
@@ -352,12 +351,20 @@ namespace ProjectChimera.Systems.Economy
             var investment = new Investment
             {
                 InvestmentId = Guid.NewGuid().ToString(),
-                Type = investmentType,
-                Amount = amount,
+                InvestmentName = investmentType,
+                InvestmentType = InvestmentType.Technology_Upgrade, // Default type, should be parsed from string
+                InvestmentDate = DateTime.Now,
+                InitialAmount = amount,
+                CurrentValue = amount,
                 ExpectedReturn = expectedReturn,
-                StartDate = DateTime.Now,
+                ActualReturn = 0f,
+                RiskLevel = InvestmentRisk.Moderate,
+                DurationMonths = maturityDays / 30,
+                Status = InvestmentStatus.Active,
                 MaturityDate = DateTime.Now.AddDays(maturityDays),
-                IsActive = true
+                IsLiquid = true,
+                ManagementFee = 0f,
+                InvestmentDescription = $"Investment in {investmentType}"
             };
             
             _investments[investment.InvestmentId] = investment;
@@ -374,7 +381,7 @@ namespace ProjectChimera.Systems.Economy
             return new FinancialReport
             {
                 ReportId = Guid.NewGuid().ToString(),
-                ReportDate = DateTime.Now,
+                GeneratedDate = DateTime.Now,
                 Period = ReportPeriod.Current,
                 
                 // Balances
@@ -396,7 +403,7 @@ namespace ProjectChimera.Systems.Economy
                 // Detailed breakdowns
                 IncomeByCategory = GetIncomeByCategory(),
                 ExpensesByCategory = GetExpensesByCategory(),
-                BudgetStatus = GetBudgetStatus(),
+                BudgetMonitoring = GetBudgetMonitoringStatus(),
                 
                 // Predictions
                 CashFlowPrediction = _cashFlow
@@ -418,7 +425,7 @@ namespace ProjectChimera.Systems.Economy
                     CurrencyType = currency.Key,
                     Amount = currency.Value,
                     FormattedAmount = FormatCurrency(currency.Value, currency.Key),
-                    Icon = settings.Icon,
+                    Icon = settings.IconString,
                     Color = settings.DisplayColor,
                     IsPositive = currency.Value >= 0,
                     ChangeAmount = GetRecentChange(currency.Key),
@@ -460,7 +467,7 @@ namespace ProjectChimera.Systems.Economy
             {
                 Name = "Cash",
                 Symbol = "$",
-                Icon = "💰",
+                IconString = "💰",
                 DisplayColor = new Color(0.2f, 0.8f, 0.2f, 1f),
                 DecimalPlaces = 2,
                 IsExchangeable = true
@@ -470,7 +477,7 @@ namespace ProjectChimera.Systems.Economy
             {
                 Name = "Credits",
                 Symbol = "CR",
-                Icon = "🪙",
+                IconString = "🪙",
                 DisplayColor = new Color(0.8f, 0.6f, 0.2f, 1f),
                 DecimalPlaces = 0,
                 IsExchangeable = true
@@ -480,7 +487,7 @@ namespace ProjectChimera.Systems.Economy
             {
                 Name = "Research Points",
                 Symbol = "RP",
-                Icon = "🔬",
+                IconString = "🔬",
                 DisplayColor = new Color(0.2f, 0.6f, 0.8f, 1f),
                 DecimalPlaces = 0,
                 IsExchangeable = false
@@ -490,7 +497,7 @@ namespace ProjectChimera.Systems.Economy
             {
                 Name = "Reputation",
                 Symbol = "REP",
-                Icon = "⭐",
+                IconString = "⭐",
                 DisplayColor = new Color(0.8f, 0.2f, 0.8f, 1f),
                 DecimalPlaces = 0,
                 IsExchangeable = false
@@ -553,7 +560,7 @@ namespace ProjectChimera.Systems.Economy
             var transaction = new Transaction
             {
                 TransactionId = Guid.NewGuid().ToString(),
-                Type = TransactionType.Credit,
+                TransactionType = TransactionType.Credit,
                 CurrencyType = CurrencyType.Cash,
                 Amount = creditNeeded,
                 Category = category,
@@ -586,7 +593,7 @@ namespace ProjectChimera.Systems.Economy
         
         private void UpdateBudgetTracking(Transaction transaction)
         {
-            if (!_enableBudgetTracking || transaction.Type != TransactionType.Expense) return;
+            if (!_enableBudgetTracking || transaction.TransactionType != TransactionType.Expense) return;
             
             string categoryName = transaction.Category.ToString();
             if (_budgets.TryGetValue(categoryName, out var budget))
@@ -597,19 +604,17 @@ namespace ProjectChimera.Systems.Economy
         
         private void UpdateCategoryStatistics(TransactionCategory category, float amount, bool isIncome)
         {
-            string categoryKey = category.ToString();
-            
             if (isIncome)
             {
-                if (!_statistics.IncomeByCategory.ContainsKey(categoryKey))
-                    _statistics.IncomeByCategory[categoryKey] = 0f;
-                _statistics.IncomeByCategory[categoryKey] += amount;
+                if (!_statistics.IncomeByCategory.ContainsKey(category))
+                    _statistics.IncomeByCategory[category] = 0f;
+                _statistics.IncomeByCategory[category] += amount;
             }
             else
             {
-                if (!_statistics.ExpensesByCategory.ContainsKey(categoryKey))
-                    _statistics.ExpensesByCategory[categoryKey] = 0f;
-                _statistics.ExpensesByCategory[categoryKey] += amount;
+                if (!_statistics.ExpensesByCategory.ContainsKey(category))
+                    _statistics.ExpensesByCategory[category] = 0f;
+                _statistics.ExpensesByCategory[category] += amount;
             }
         }
         
@@ -652,7 +657,10 @@ namespace ProjectChimera.Systems.Economy
         {
             // Simplified loan payment calculation
             float monthlyRate = loan.InterestRate / 12f;
-            int paymentsRemaining = Math.Max(1, (int)((loan.StartDate.AddDays(loan.TermDays) - DateTime.Now).TotalDays / 30));
+            var currentDate = DateTime.Now;
+            var loanEndDate = loan.StartDate.AddDays(loan.TermDays);
+            var remainingTime = loanEndDate - currentDate;
+            int paymentsRemaining = Math.Max(1, (int)(remainingTime.TotalDays / 30));
             
             return loan.RemainingBalance / paymentsRemaining * (1 + monthlyRate);
         }
@@ -669,8 +677,9 @@ namespace ProjectChimera.Systems.Economy
         private float EstimateProjectedIncome()
         {
             // Analyze recent income patterns
+            DateTime cutoffDate = DateTime.Now.AddDays(-30);
             var recentIncome = _transactionHistory
-                .Where(t => t.Type == TransactionType.Income && t.Timestamp > DateTime.Now.AddDays(-30))
+                .Where(t => t.TransactionType == TransactionType.Income && t.Timestamp > cutoffDate)
                 .Sum(t => t.Amount);
             
             return recentIncome; // Simplified projection
@@ -679,8 +688,9 @@ namespace ProjectChimera.Systems.Economy
         private float EstimateProjectedExpenses()
         {
             // Analyze recent expense patterns plus known recurring costs
+            DateTime cutoffDate = DateTime.Now.AddDays(-30);
             var recentExpenses = _transactionHistory
-                .Where(t => t.Type == TransactionType.Expense && t.Timestamp > DateTime.Now.AddDays(-30))
+                .Where(t => t.TransactionType == TransactionType.Expense && t.Timestamp > cutoffDate)
                 .Sum(t => t.Amount);
             
             var recurringCosts = _activeLoans.Sum(l => CalculateMonthlyPayment(l));
@@ -722,17 +732,19 @@ namespace ProjectChimera.Systems.Economy
             float netWorth = CalculateNetWorth();
             
             // Check for milestone achievements
-            if (netWorth >= 100000f && _statistics.LastMilestone < 100000f)
+            if (netWorth >= 100000f && _statistics.LastMilestoneAmount < 100000f)
             {
                 _onFinancialMilestone?.Raise();
                 OnFinancialMilestone?.Invoke(100000f);
-                _statistics.LastMilestone = 100000f;
+                _statistics.LastMilestoneAmount = 100000f;
+                _statistics.LastMilestone = DateTime.Now;
             }
-            else if (netWorth >= 50000f && _statistics.LastMilestone < 50000f)
+            else if (netWorth >= 50000f && _statistics.LastMilestoneAmount < 50000f)
             {
                 _onFinancialMilestone?.Raise();
                 OnFinancialMilestone?.Invoke(50000f);
-                _statistics.LastMilestone = 50000f;
+                _statistics.LastMilestoneAmount = 50000f;
+                _statistics.LastMilestone = DateTime.Now;
             }
         }
         
@@ -760,7 +772,7 @@ namespace ProjectChimera.Systems.Economy
         private float CalculateTotalAssets()
         {
             float totalAssets = Cash;
-            totalAssets += _investments.Values.Sum(i => i.Amount * (1 + i.ExpectedReturn));
+            totalAssets += _investments.Values.Sum(i => i.InitialAmount * (1 + i.ExpectedReturn));
             return totalAssets;
         }
         
@@ -773,8 +785,9 @@ namespace ProjectChimera.Systems.Economy
         
         private float CalculateBurnRate()
         {
+            var cutoffDate = DateTime.Now.AddDays(-30);
             var recentExpenses = _transactionHistory
-                .Where(t => t.Type == TransactionType.Expense && t.Timestamp > DateTime.Now.AddDays(-30))
+                .Where(t => t.TransactionType == TransactionType.Expense && t.Timestamp > cutoffDate)
                 .Sum(t => t.Amount);
             
             return recentExpenses / 30f; // Daily burn rate
@@ -795,27 +808,29 @@ namespace ProjectChimera.Systems.Economy
         
         private Dictionary<string, float> GetIncomeByCategory()
         {
-            return new Dictionary<string, float>(_statistics.IncomeByCategory);
+            return _statistics.IncomeByCategory.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value);
         }
         
         private Dictionary<string, float> GetExpensesByCategory()
         {
-            return new Dictionary<string, float>(_statistics.ExpensesByCategory);
+            return _statistics.ExpensesByCategory.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value);
         }
         
-        private Dictionary<string, BudgetStatus> GetBudgetStatus()
+        private Dictionary<string, BudgetStatusReport> GetBudgetMonitoringStatus()
         {
-            var budgetStatus = new Dictionary<string, BudgetStatus>();
+            var budgetStatus = new Dictionary<string, BudgetStatusReport>();
             
             foreach (var budget in _budgets.Values)
             {
-                budgetStatus[budget.CategoryName] = new BudgetStatus
+                budgetStatus[budget.CategoryName] = new BudgetStatusReport
                 {
-                    BudgetAmount = budget.Limit,
-                    SpentAmount = budget.CurrentSpent,
-                    RemainingAmount = budget.Limit - budget.CurrentSpent,
-                    PercentageUsed = budget.CurrentSpent / budget.Limit,
-                    IsOverBudget = budget.CurrentSpent > budget.Limit
+                    CategoryName = budget.CategoryName,
+                    Spent = budget.CurrentSpent,
+                    Limit = budget.Limit,
+                    Remaining = budget.Limit - budget.CurrentSpent,
+                    Percentage = budget.CurrentSpent / budget.Limit,
+                    IsOverBudget = budget.CurrentSpent > budget.Limit,
+                    LastUpdated = DateTime.Now
                 };
             }
             

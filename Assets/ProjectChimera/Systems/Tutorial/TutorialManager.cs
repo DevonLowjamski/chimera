@@ -59,6 +59,54 @@ namespace ProjectChimera.Systems.Tutorial
         public bool IsInitialized { get; private set; }
         public TutorialSettings Settings => _settings;
         
+        /// <summary>
+        /// Get current tutorial step - compatibility method for testing framework
+        /// </summary>
+        public TutorialStepSO GetCurrentStep()
+        {
+            return _currentStep;
+        }
+        
+        /// <summary>
+        /// Check if current step can be skipped - compatibility method for testing framework
+        /// </summary>
+        public bool CanSkipCurrentStep()
+        {
+            return _currentStep != null && _currentStep.CanSkip;
+        }
+        
+        /// <summary>
+        /// Check if a tutorial sequence is currently active - compatibility method for testing framework
+        /// </summary>
+        public bool IsSequenceActive()
+        {
+            return _currentSequence != null;
+        }
+        
+        /// <summary>
+        /// Get tutorial progress data - compatibility method for testing framework
+        /// </summary>
+        public TutorialProgress GetProgressData()
+        {
+            return _currentProgress;
+        }
+        
+        /// <summary>
+        /// Save tutorial progress - compatibility method for testing framework
+        /// </summary>
+        public void SaveProgress()
+        {
+            SaveTutorialProgress();
+        }
+        
+        /// <summary>
+        /// Load tutorial progress - compatibility method for testing framework
+        /// </summary>
+        public void LoadProgress()
+        {
+            LoadTutorialProgress();
+        }
+        
         protected override void OnManagerInitialize()
         {
             InitializeTutorialSystem();

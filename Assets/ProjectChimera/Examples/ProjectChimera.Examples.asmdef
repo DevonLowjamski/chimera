@@ -2,11 +2,11 @@
     "name": "ProjectChimera.Examples",
     "rootNamespace": "ProjectChimera.Examples",
     "references": [
-        "GUID:365498379ff0240e68a20a8f327e0755",
-        "GUID:6cca6c5303192494bbddc11201b0e867",
-        "GUID:7cd769b9b7a244bbf91a01cb465de065",
-        "GUID:bd180afed348e4b208267a698871b912",
-        "GUID:50dda257fa5de44f3845d5ce0d1f0074"
+        "ProjectChimera.Core",
+        "ProjectChimera.Data",
+        "ProjectChimera.Systems.Automation",
+        "ProjectChimera.Environment",
+        "ProjectChimera.Systems.Economy"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

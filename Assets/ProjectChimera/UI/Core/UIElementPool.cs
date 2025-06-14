@@ -71,17 +71,17 @@ namespace ProjectChimera.UI.Core
             {
                 element = (T)_pool.Dequeue();
             }
-            else if (!IsAtMaxCapacity)
-            {
+            // else if (!IsAtMaxCapacity)
+            // {
                 element = CreateElement();
-            }
-            else
-            {
+            // }
+            // else
+            // {
                 // Pool is at max capacity, reuse oldest active element
                 element = (T)_activeElements.First();
                 _activeElements.Remove(element);
                 _resetFunction(element);
-            }
+            // }
             
             _activeElements.Add(element);
             PrepareElement(element);
@@ -104,10 +104,10 @@ namespace ProjectChimera.UI.Core
             {
                 _pool.Enqueue(element);
             }
-            else
-            {
+            // else
+            // {
                 _destroyFunction(element);
-            }
+            // }
         }
         
         /// <summary>
@@ -159,7 +159,7 @@ namespace ProjectChimera.UI.Core
             element.style.opacity = 1f;
             
             // Reset transform properties
-            element.style.translate = new Translate(Length.Zero(), Length.Zero());
+            element.style.translate = new Translate(new Length(0), new Length(0));
             element.style.rotate = new Rotate(Angle.Zero());
             element.style.scale = new Scale(Vector2.one);
             
@@ -177,14 +177,14 @@ namespace ProjectChimera.UI.Core
             {
                 label.text = string.Empty;
             }
-            else if (element is Button button)
-            {
+            // else if (element is Button button)
+            // {
                 button.text = string.Empty;
-            }
-            else if (element is TextField textField)
-            {
+            // }
+            // else if (element is TextField textField)
+            // {
                 textField.value = string.Empty;
-            }
+            // }
             
             // Clear children
             element.Clear();

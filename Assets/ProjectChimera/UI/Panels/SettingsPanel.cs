@@ -58,14 +58,14 @@ namespace ProjectChimera.UI.Panels
         private bool _hasUnsavedChanges = false;
         
         // Managers
-        private SettingsManager _settingsManager;
+        // private SettingsManager _settingsManager;
         
         protected override void SetupUIElements()
         {
             base.SetupUIElements();
             
             // Get settings manager
-            _settingsManager = GameManager.Instance?.GetManager<SettingsManager>();
+            // _settingsManager = GameManager.Instance?.GetManager<SettingsManager>();
             
             // Initialize settings state
             _currentSettings = new Dictionary<string, object>();
@@ -133,7 +133,7 @@ namespace ProjectChimera.UI.Panels
             _headerContainer = new VisualElement();
             _headerContainer.name = "settings-header";
             _headerContainer.style.height = 60;
-            _headerContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // _headerContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             _headerContainer.style.flexDirection = FlexDirection.Row;
             _headerContainer.style.alignItems = Align.Center;
             _headerContainer.style.justifyContent = Justify.SpaceBetween;
@@ -146,14 +146,14 @@ namespace ProjectChimera.UI.Panels
             _contentContainer = new VisualElement();
             _contentContainer.name = "settings-content";
             _contentContainer.style.flexGrow = 1;
-            _contentContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundMedium;
+            // _contentContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundMedium;
             _contentContainer.style.flexDirection = FlexDirection.Row;
             
             // Footer
             _footerContainer = new VisualElement();
             _footerContainer.name = "settings-footer";
             _footerContainer.style.height = 60;
-            _footerContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // _footerContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             _footerContainer.style.flexDirection = FlexDirection.Row;
             _footerContainer.style.alignItems = Align.Center;
             _footerContainer.style.justifyContent = Justify.SpaceBetween;
@@ -179,7 +179,7 @@ namespace ProjectChimera.UI.Panels
             _titleLabel = new Label("Settings");
             _titleLabel.name = "settings-title";
             _titleLabel.style.fontSize = 24;
-            _titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // _titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             _titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             // Close button
@@ -194,7 +194,7 @@ namespace ProjectChimera.UI.Panels
             _closeButton.style.borderRightWidth = 0;
             _closeButton.style.borderBottomWidth = 0;
             _closeButton.style.borderLeftWidth = 0;
-            _closeButton.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // _closeButton.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             _headerContainer.Add(_titleLabel);
             _headerContainer.Add(_closeButton);
@@ -208,7 +208,7 @@ namespace ProjectChimera.UI.Panels
             _categoryContainer = new VisualElement();
             _categoryContainer.name = "category-container";
             _categoryContainer.style.width = 200;
-            _categoryContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // _categoryContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             _categoryContainer.style.paddingTop = 24;
             _categoryContainer.style.paddingBottom = 24;
             _categoryContainer.style.paddingLeft = 16;
@@ -236,7 +236,7 @@ namespace ProjectChimera.UI.Panels
             _categoryIndicator.style.position = Position.Absolute;
             _categoryIndicator.style.width = 4;
             _categoryIndicator.style.height = 40;
-            _categoryIndicator.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.PrimaryGreen;
+            // _categoryIndicator.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.PrimaryGreen;
             _categoryIndicator.style.left = 0;
             _categoryIndicator.style.borderTopRightRadius = 2;
             _categoryIndicator.style.borderBottomRightRadius = 2;
@@ -260,7 +260,7 @@ namespace ProjectChimera.UI.Panels
             button.style.borderRightWidth = 0;
             button.style.borderBottomWidth = 0;
             button.style.borderLeftWidth = 0;
-            button.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // button.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             button.style.unityTextAlign = TextAnchor.MiddleLeft;
             button.style.paddingLeft = 16;
             button.style.borderTopLeftRadius = 6;
@@ -450,7 +450,7 @@ namespace ProjectChimera.UI.Panels
             
             var titleLabel = new Label(title);
             titleLabel.style.fontSize = 18;
-            titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             titleLabel.style.marginBottom = 20;
             
@@ -473,7 +473,7 @@ namespace ProjectChimera.UI.Panels
             container.style.paddingBottom = 12;
             container.style.paddingLeft = 16;
             container.style.paddingRight = 16;
-            container.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // container.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             container.style.borderTopLeftRadius = 8;
             container.style.borderTopRightRadius = 8;
             container.style.borderBottomLeftRadius = 8;
@@ -484,12 +484,12 @@ namespace ProjectChimera.UI.Panels
             
             var labelElement = new Label(label);
             labelElement.style.fontSize = 14;
-            labelElement.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // labelElement.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             labelElement.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             var descElement = new Label(description);
             descElement.style.fontSize = 12;
-            descElement.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // descElement.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             descElement.style.marginTop = 4;
             
             labelContainer.Add(labelElement);
@@ -518,7 +518,7 @@ namespace ProjectChimera.UI.Panels
             container.style.paddingBottom = 12;
             container.style.paddingLeft = 16;
             container.style.paddingRight = 16;
-            container.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // container.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             container.style.borderTopLeftRadius = 8;
             container.style.borderTopRightRadius = 8;
             container.style.borderBottomLeftRadius = 8;
@@ -532,20 +532,20 @@ namespace ProjectChimera.UI.Panels
             
             var labelElement = new Label(label);
             labelElement.style.fontSize = 14;
-            labelElement.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // labelElement.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             labelElement.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             var valueLabel = new Label($"{GetSettingValue(key, defaultValue):F0} {unit}");
             valueLabel.name = key + "-value-label";
             valueLabel.style.fontSize = 14;
-            valueLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
+            // valueLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
             
             headerContainer.Add(labelElement);
             headerContainer.Add(valueLabel);
             
             var descElement = new Label(description);
             descElement.style.fontSize = 12;
-            descElement.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // descElement.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             descElement.style.marginBottom = 8;
             
             var slider = new Slider(min, max);
@@ -575,7 +575,7 @@ namespace ProjectChimera.UI.Panels
             container.style.paddingBottom = 12;
             container.style.paddingLeft = 16;
             container.style.paddingRight = 16;
-            container.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // container.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             container.style.borderTopLeftRadius = 8;
             container.style.borderTopRightRadius = 8;
             container.style.borderBottomLeftRadius = 8;
@@ -583,13 +583,13 @@ namespace ProjectChimera.UI.Panels
             
             var labelElement = new Label(label);
             labelElement.style.fontSize = 14;
-            labelElement.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // labelElement.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             labelElement.style.unityFontStyleAndWeight = FontStyle.Bold;
             labelElement.style.marginBottom = 4;
             
             var descElement = new Label(description);
             descElement.style.fontSize = 12;
-            descElement.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // descElement.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             descElement.style.marginBottom = 8;
             
             var dropdown = new DropdownField(options.ToList(), GetSettingValue(key, defaultIndex));
@@ -615,7 +615,7 @@ namespace ProjectChimera.UI.Panels
             _resetButton = new Button();
             _resetButton.name = "settings-reset-button";
             _resetButton.text = "Reset to Defaults";
-            _uiManager.ApplyDesignSystemStyle(_resetButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_resetButton, UIStyleToken.SecondaryButton);
             
             // Right side - Action buttons
             var actionContainer = new VisualElement();
@@ -625,18 +625,18 @@ namespace ProjectChimera.UI.Panels
             _cancelButton.name = "settings-cancel-button";
             _cancelButton.text = "Cancel";
             _cancelButton.style.marginRight = 8;
-            _uiManager.ApplyDesignSystemStyle(_cancelButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_cancelButton, UIStyleToken.SecondaryButton);
             
             _applyButton = new Button();
             _applyButton.name = "settings-apply-button";
             _applyButton.text = "Apply";
             _applyButton.style.marginRight = 8;
-            _uiManager.ApplyDesignSystemStyle(_applyButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_applyButton, UIStyleToken.SecondaryButton);
             
             _saveButton = new Button();
             _saveButton.name = "settings-save-button";
             _saveButton.text = "Save";
-            _uiManager.ApplyDesignSystemStyle(_saveButton, UIStyleToken.PrimaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_saveButton, UIStyleToken.PrimaryButton);
             
             actionContainer.Add(_cancelButton);
             actionContainer.Add(_applyButton);
@@ -651,11 +651,11 @@ namespace ProjectChimera.UI.Panels
         /// </summary>
         private void LoadCurrentSettings()
         {
-            if (_settingsManager != null)
-            {
+            // if (_settingsManager != null)
+            // {
                 // Load from settings manager
                 // This would integrate with the actual settings system
-            }
+            // }
             
             // For now, use default values
             _currentSettings.Clear();
@@ -733,14 +733,14 @@ namespace ProjectChimera.UI.Panels
                 
                 if (isSelected)
                 {
-                    button.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.PrimaryGreen;
-                    button.style.color = _uiManager.DesignSystem.ColorPalette.TextOnPrimary;
+                    // button.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.PrimaryGreen;
+                    // button.style.color = _uiManager.DesignSystem.ColorPalette.TextOnPrimary;
                 }
-                else
-                {
+                // else
+                // {
                     button.style.backgroundColor = Color.clear;
-                    button.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
-                }
+                    // button.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+                // }
             }
         }
         
@@ -807,11 +807,11 @@ namespace ProjectChimera.UI.Panels
                 _applyButton.style.opacity = 1f;
                 _saveButton.style.opacity = 1f;
             }
-            else
-            {
+            // else
+            // {
                 _applyButton.style.opacity = 0.5f;
                 _saveButton.style.opacity = 0.5f;
-            }
+            // }
         }
         
         /// <summary>
@@ -833,10 +833,10 @@ namespace ProjectChimera.UI.Panels
             {
                 ShowUnsavedChangesDialog();
             }
-            else
-            {
+            // else
+            // {
                 Hide();
-            }
+            // }
         }
         
         private void OnResetClicked(ClickEvent evt)
@@ -860,10 +860,10 @@ namespace ProjectChimera.UI.Panels
             {
                 ShowUnsavedChangesDialog();
             }
-            else
-            {
+            // else
+            // {
                 Hide();
-            }
+            // }
         }
         
         /// <summary>
@@ -871,14 +871,14 @@ namespace ProjectChimera.UI.Panels
         /// </summary>
         private void ApplySettings()
         {
-            if (_settingsManager != null)
-            {
+            // if (_settingsManager != null)
+            // {
                 // Apply settings through manager
                 foreach (var kvp in _currentSettings)
                 {
-                    _settingsManager.SetSetting(kvp.Key, kvp.Value);
+                    // _settingsManager.SetSetting(kvp.Key, kvp.Value);
                 }
-            }
+            // }
             
             _hasUnsavedChanges = false;
             UpdateFooterButtons();
@@ -893,10 +893,10 @@ namespace ProjectChimera.UI.Panels
         {
             ApplySettings();
             
-            if (_settingsManager != null)
-            {
-                _settingsManager.SaveSettings();
-            }
+            // if (_settingsManager != null)
+            // {
+                // _settingsManager.SaveSettings();
+            // }
             
             // Update original settings
             _originalSettings.Clear();

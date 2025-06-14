@@ -79,7 +79,7 @@ namespace ProjectChimera.UI.Tutorial
                 hintOverlay.style.top = 0;
                 hintOverlay.style.right = 0;
                 hintOverlay.style.bottom = 0;
-                hintOverlay.style.pointerEvents = PointerEvents.None; // Allow clicks through
+                hintOverlay.pickingMode = PickingMode.Ignore; // Allow clicks through
                 
                 _hintContainer.Add(hintOverlay);
             }
@@ -227,7 +227,10 @@ namespace ProjectChimera.UI.Tutorial
             panel.style.borderTopRightRadius = 6f;
             panel.style.borderBottomLeftRadius = 6f;
             panel.style.borderBottomRightRadius = 6f;
-            panel.style.padding = new StyleLength(10f);
+            panel.style.paddingLeft = 10f;
+            panel.style.paddingRight = 10f;
+            panel.style.paddingTop = 10f;
+            panel.style.paddingBottom = 10f;
             panel.style.maxWidth = 250f;
             panel.style.minWidth = 100f;
             

@@ -4,10 +4,12 @@
     "references": [
         "ProjectChimera.Core",
         "ProjectChimera.Data",
-        "GUID:50dda257fa5de44f3845d5ce0d1f0074",
-        "GUID:a2215f50de9b7471ea00c9bd0962c29a",
-        "GUID:d6d91e43cda324603a7dfb6616eaa741",
-        "GUID:a108e8ae0eb004d1eb9c436ae6dfb46b"
+        "ProjectChimera.Systems.Cultivation",
+        "ProjectChimera.Systems.Economy",
+        "ProjectChimera.Environment",
+        "ProjectChimera.Construction",
+        "ProjectChimera.Genetics",
+        "ProjectChimera.Systems.Facilities"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

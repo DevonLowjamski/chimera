@@ -104,6 +104,12 @@ namespace ProjectChimera.Data.Economy
         public bool IsLiquid;
         public DateTime? MaturityDate;
         public float ManagementFee;
+        
+        // Compatibility properties
+        public InvestmentType Type => InvestmentType;
+        public float Amount => InitialAmount;
+        public DateTime StartDate => InvestmentDate;
+        public bool IsActive => Status == InvestmentStatus.Active;
     }
 
     [System.Serializable]
@@ -658,10 +664,17 @@ namespace ProjectChimera.Data.Economy
         public string AccountType;
         public float CreditLimit;
         public float CurrentBalance;
+        public float UsedCredit;
+        public float PaymentDue;
         public float MinimumPayment;
         public DateTime LastPayment;
         public int MonthsOnRecord;
         public PaymentHistory PaymentHistory;
+        
+        // Additional properties for compatibility
+        public float InterestRate;
+        public float CreditScore;
+        public DateTime LastPaymentDate;
     }
 
     [System.Serializable]

@@ -2,7 +2,6 @@ using UnityEngine;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Progression;
 using ProjectChimera.Systems.Cultivation;
-using ProjectChimera.Systems.Economy;
 using System.Collections.Generic;
 using System.Linq;
 using System;
@@ -37,7 +36,6 @@ namespace ProjectChimera.Systems.Progression
         // System references
         private ProgressionManager _progressionManager;
         private PlantManager _plantManager;
-        private MarketManager _marketManager;
         private TimeManager _timeManager;
         
         // Objective tracking
@@ -243,7 +241,6 @@ namespace ProjectChimera.Systems.Progression
             {
                 _progressionManager = gameManager.GetManager<ProgressionManager>();
                 _plantManager = gameManager.GetManager<PlantManager>();
-                _marketManager = gameManager.GetManager<MarketManager>();
                 _timeManager = gameManager.GetManager<TimeManager>();
             }
         }
@@ -275,8 +272,8 @@ namespace ProjectChimera.Systems.Progression
                     CategoryIcon = "🌱",
                     Rewards = new List<ObjectiveReward>
                     {
-                        new ObjectiveReward { Type = RewardType.Experience, Value = 200f },
-                        new ObjectiveReward { Type = RewardType.Currency, Value = 1000f }
+                                        new ObjectiveReward { Type = ObjectiveRewardType.Experience, Value = 200f },
+                new ObjectiveReward { Type = ObjectiveRewardType.Currency, Value = 1000f }
                     }
                 },
                 new ObjectiveTemplate
@@ -290,8 +287,8 @@ namespace ProjectChimera.Systems.Progression
                     CategoryIcon = "🧬",
                     Rewards = new List<ObjectiveReward>
                     {
-                        new ObjectiveReward { Type = RewardType.Experience, Value = 500f },
-                        new ObjectiveReward { Type = RewardType.UnlockFeature, Description = "Advanced Genetics Lab" }
+                                        new ObjectiveReward { Type = ObjectiveRewardType.Experience, Value = 500f },
+                new ObjectiveReward { Type = ObjectiveRewardType.UnlockFeature, Description = "Advanced Genetics Lab" }
                     }
                 },
                 new ObjectiveTemplate
@@ -305,9 +302,9 @@ namespace ProjectChimera.Systems.Progression
                     CategoryIcon = "💚",
                     Rewards = new List<ObjectiveReward>
                     {
-                        new ObjectiveReward { Type = RewardType.Experience, Value = 750f },
-                        new ObjectiveReward { Type = RewardType.SkillPoints, Value = 2f },
-                        new ObjectiveReward { Type = RewardType.UnlockFeature, Description = "Health Monitoring AI" }
+                                        new ObjectiveReward { Type = ObjectiveRewardType.Experience, Value = 750f },
+                new ObjectiveReward { Type = ObjectiveRewardType.SkillPoints, Value = 2f },
+                new ObjectiveReward { Type = ObjectiveRewardType.UnlockFeature, Description = "Health Monitoring AI" }
                     }
                 }
             };
@@ -330,8 +327,8 @@ namespace ProjectChimera.Systems.Progression
                     CategoryIcon = "💰",
                     Rewards = new List<ObjectiveReward>
                     {
-                        new ObjectiveReward { Type = RewardType.Experience, Value = 300f },
-                        new ObjectiveReward { Type = RewardType.Currency, Value = 2000f }
+                                        new ObjectiveReward { Type = ObjectiveRewardType.Experience, Value = 300f },
+                new ObjectiveReward { Type = ObjectiveRewardType.Currency, Value = 2000f }
                     }
                 },
                 new ObjectiveTemplate
@@ -345,8 +342,8 @@ namespace ProjectChimera.Systems.Progression
                     CategoryIcon = "📈",
                     Rewards = new List<ObjectiveReward>
                     {
-                        new ObjectiveReward { Type = RewardType.Experience, Value = 400f },
-                        new ObjectiveReward { Type = RewardType.UnlockFeature, Description = "Market Analytics Dashboard" }
+                                        new ObjectiveReward { Type = ObjectiveRewardType.Experience, Value = 400f },
+                new ObjectiveReward { Type = ObjectiveRewardType.UnlockFeature, Description = "Market Analytics Dashboard" }
                     }
                 },
                 new ObjectiveTemplate
@@ -360,9 +357,9 @@ namespace ProjectChimera.Systems.Progression
                     CategoryIcon = "🏦",
                     Rewards = new List<ObjectiveReward>
                     {
-                        new ObjectiveReward { Type = RewardType.Experience, Value = 1000f },
-                        new ObjectiveReward { Type = RewardType.SkillPoints, Value = 3f },
-                        new ObjectiveReward { Type = RewardType.UnlockFeature, Description = "Investment Portfolio" }
+                                        new ObjectiveReward { Type = ObjectiveRewardType.Experience, Value = 1000f },
+                new ObjectiveReward { Type = ObjectiveRewardType.SkillPoints, Value = 3f },
+                new ObjectiveReward { Type = ObjectiveRewardType.UnlockFeature, Description = "Investment Portfolio" }
                     }
                 }
             };
@@ -385,8 +382,8 @@ namespace ProjectChimera.Systems.Progression
                     CategoryIcon = "🔬",
                     Rewards = new List<ObjectiveReward>
                     {
-                        new ObjectiveReward { Type = RewardType.Experience, Value = 600f },
-                        new ObjectiveReward { Type = RewardType.UnlockFeature, Description = "Advanced Research Lab" }
+                                        new ObjectiveReward { Type = ObjectiveRewardType.Experience, Value = 600f },
+                new ObjectiveReward { Type = ObjectiveRewardType.UnlockFeature, Description = "Advanced Research Lab" }
                     }
                 },
                 new ObjectiveTemplate
@@ -400,9 +397,9 @@ namespace ProjectChimera.Systems.Progression
                     CategoryIcon = "⚗️",
                     Rewards = new List<ObjectiveReward>
                     {
-                        new ObjectiveReward { Type = RewardType.Experience, Value = 800f },
-                        new ObjectiveReward { Type = RewardType.SkillPoints, Value = 3f },
-                        new ObjectiveReward { Type = RewardType.Title, Description = "Innovation Pioneer" }
+                                        new ObjectiveReward { Type = ObjectiveRewardType.Experience, Value = 800f },
+                new ObjectiveReward { Type = ObjectiveRewardType.SkillPoints, Value = 3f },
+                new ObjectiveReward { Type = ObjectiveRewardType.Title, Description = "Innovation Pioneer" }
                     }
                 }
             };
@@ -425,8 +422,8 @@ namespace ProjectChimera.Systems.Progression
                     CategoryIcon = "⭐",
                     Rewards = new List<ObjectiveReward>
                     {
-                        new ObjectiveReward { Type = RewardType.Experience, Value = 500f },
-                        new ObjectiveReward { Type = RewardType.UnlockFeature, Description = "Quality Assurance System" }
+                                        new ObjectiveReward { Type = ObjectiveRewardType.Experience, Value = 500f },
+                new ObjectiveReward { Type = ObjectiveRewardType.UnlockFeature, Description = "Quality Assurance System" }
                     }
                 },
                 new ObjectiveTemplate
@@ -440,9 +437,9 @@ namespace ProjectChimera.Systems.Progression
                     CategoryIcon = "💎",
                     Rewards = new List<ObjectiveReward>
                     {
-                        new ObjectiveReward { Type = RewardType.Experience, Value = 1000f },
-                        new ObjectiveReward { Type = RewardType.SkillPoints, Value = 2f },
-                        new ObjectiveReward { Type = RewardType.Title, Description = "Quality Master" }
+                                        new ObjectiveReward { Type = ObjectiveRewardType.Experience, Value = 1000f },
+                new ObjectiveReward { Type = ObjectiveRewardType.SkillPoints, Value = 2f },
+                new ObjectiveReward { Type = ObjectiveRewardType.Title, Description = "Quality Master" }
                     }
                 }
             };
@@ -465,8 +462,8 @@ namespace ProjectChimera.Systems.Progression
                     CategoryIcon = "⚡",
                     Rewards = new List<ObjectiveReward>
                     {
-                        new ObjectiveReward { Type = RewardType.Experience, Value = 400f },
-                        new ObjectiveReward { Type = RewardType.UnlockFeature, Description = "Growth Acceleration Boost" }
+                                        new ObjectiveReward { Type = ObjectiveRewardType.Experience, Value = 400f },
+                new ObjectiveReward { Type = ObjectiveRewardType.UnlockFeature, Description = "Growth Acceleration Boost" }
                     }
                 },
                 new ObjectiveTemplate
@@ -480,8 +477,8 @@ namespace ProjectChimera.Systems.Progression
                     CategoryIcon = "🤖",
                     Rewards = new List<ObjectiveReward>
                     {
-                        new ObjectiveReward { Type = RewardType.Experience, Value = 350f },
-                        new ObjectiveReward { Type = RewardType.UnlockFeature, Description = "Advanced AI Assistant" }
+                                        new ObjectiveReward { Type = ObjectiveRewardType.Experience, Value = 350f },
+                new ObjectiveReward { Type = ObjectiveRewardType.UnlockFeature, Description = "Advanced AI Assistant" }
                     }
                 }
             };
@@ -634,8 +631,8 @@ namespace ProjectChimera.Systems.Progression
                 CategoryIcon = "🌿",
                 Rewards = new List<ObjectiveReward>
                 {
-                    new ObjectiveReward { Type = RewardType.Experience, Value = 100f },
-                    new ObjectiveReward { Type = RewardType.Currency, Value = 500f }
+                                    new ObjectiveReward { Type = ObjectiveRewardType.Experience, Value = 100f },
+                new ObjectiveReward { Type = ObjectiveRewardType.Currency, Value = 500f }
                 }
             });
             
@@ -650,8 +647,8 @@ namespace ProjectChimera.Systems.Progression
                 CategoryIcon = "💹",
                 Rewards = new List<ObjectiveReward>
                 {
-                    new ObjectiveReward { Type = RewardType.Experience, Value = 200f },
-                    new ObjectiveReward { Type = RewardType.Currency, Value = 1500f }
+                                    new ObjectiveReward { Type = ObjectiveRewardType.Experience, Value = 200f },
+                new ObjectiveReward { Type = ObjectiveRewardType.Currency, Value = 1500f }
                 }
             });
             
@@ -666,8 +663,8 @@ namespace ProjectChimera.Systems.Progression
                 CategoryIcon = "✨",
                 Rewards = new List<ObjectiveReward>
                 {
-                    new ObjectiveReward { Type = RewardType.Experience, Value = 300f },
-                    new ObjectiveReward { Type = RewardType.SkillPoints, Value = 1f }
+                                    new ObjectiveReward { Type = ObjectiveRewardType.Experience, Value = 300f },
+                new ObjectiveReward { Type = ObjectiveRewardType.SkillPoints, Value = 1f }
                 }
             });
             
@@ -738,19 +735,19 @@ namespace ProjectChimera.Systems.Progression
         {
             switch (reward.Type)
             {
-                case RewardType.Experience:
+                case ObjectiveRewardType.Experience:
                     _progressionManager?.GainExperience(reward.Value, ExperienceSource.Achievement);
                     break;
-                case RewardType.Currency:
+                case ObjectiveRewardType.Currency:
                     // Would integrate with economy manager
                     break;
-                case RewardType.SkillPoints:
+                case ObjectiveRewardType.SkillPoints:
                     // Would integrate with progression manager
                     break;
-                case RewardType.UnlockFeature:
+                case ObjectiveRewardType.UnlockFeature:
                     LogInfo($"🔓 Feature Unlocked: {reward.Description}");
                     break;
-                case RewardType.Title:
+                case ObjectiveRewardType.Title:
                     LogInfo($"🎖️ Title Earned: {reward.Description}");
                     break;
             }
@@ -776,19 +773,19 @@ namespace ProjectChimera.Systems.Progression
             {
                 switch (reward.Type)
                 {
-                    case RewardType.Experience:
+                    case ObjectiveRewardType.Experience:
                         previews.Add($"+{reward.Value:F0} XP");
                         break;
-                    case RewardType.Currency:
+                    case ObjectiveRewardType.Currency:
                         previews.Add($"+${reward.Value:F0}");
                         break;
-                    case RewardType.SkillPoints:
+                    case ObjectiveRewardType.SkillPoints:
                         previews.Add($"+{reward.Value:F0} SP");
                         break;
-                    case RewardType.UnlockFeature:
+                    case ObjectiveRewardType.UnlockFeature:
                         previews.Add($"🔓 {reward.Description}");
                         break;
-                    case RewardType.Title:
+                    case ObjectiveRewardType.Title:
                         previews.Add($"🎖️ {reward.Description}");
                         break;
                 }
@@ -862,7 +859,7 @@ namespace ProjectChimera.Systems.Progression
     [System.Serializable]
     public class ObjectiveReward
     {
-        public RewardType Type;
+        public ObjectiveRewardType Type;
         public float Value;
         public string Description;
     }
@@ -904,7 +901,7 @@ namespace ProjectChimera.Systems.Progression
         Legendary
     }
     
-    public enum RewardType
+    public enum ObjectiveRewardType
     {
         Experience,
         Currency,

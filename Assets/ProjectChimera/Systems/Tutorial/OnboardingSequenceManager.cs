@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Tutorial;
 using ProjectChimera.Systems.Cultivation;
-using ProjectChimera.Systems.Economy;
 
 namespace ProjectChimera.Systems.Tutorial
 {
@@ -39,7 +38,7 @@ namespace ProjectChimera.Systems.Tutorial
         // Managers
         private TutorialManager _tutorialManager;
         private CultivationManager _cultivationManager;
-        private MarketManager _marketManager;
+        // private MarketManager _marketManager; // Removed to prevent circular dependency
         
         // Properties
         public bool IsOnboardingActive => _isOnboardingActive;
@@ -52,7 +51,7 @@ namespace ProjectChimera.Systems.Tutorial
             // Get required managers
             _tutorialManager = GameManager.Instance.GetManager<TutorialManager>();
             _cultivationManager = GameManager.Instance.GetManager<CultivationManager>();
-            _marketManager = GameManager.Instance.GetManager<MarketManager>();
+            // _marketManager = GameManager.Instance.GetManager<MarketManager>(); // Removed to prevent circular dependency
             
             // Check if onboarding should start
             CheckOnboardingStatus();

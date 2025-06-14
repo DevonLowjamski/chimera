@@ -2,9 +2,9 @@
     "name": "ProjectChimera.Systems.Automation",
     "rootNamespace": "ProjectChimera.Systems.Automation",
     "references": [
-        "GUID:365498379ff0240e68a20a8f327e0755",
-        "GUID:6cca6c5303192494bbddc11201b0e867",
-        "GUID:bd180afed348e4b208267a698871b912"
+        "ProjectChimera.Core",
+        "ProjectChimera.Data",
+        "ProjectChimera.Environment"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

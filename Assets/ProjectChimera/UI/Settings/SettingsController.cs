@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ProjectChimera.Core;
-using ProjectChimera.Systems.Settings;
+// using ProjectChimera.Systems.Settings;
 using ProjectChimera.Data.UI;
-using SettingsManager = ProjectChimera.Systems.Settings.SettingsManager;
+// using SettingsManager = ProjectChimera.Systems.Settings.SettingsManager;
 
 namespace ProjectChimera.UI.Settings
 {
@@ -40,8 +40,8 @@ namespace ProjectChimera.UI.Settings
         [SerializeField] private AudioSource _audioSource;
         
         // System references
-        private SettingsManager _settingsManager;
-        private GameManager _gameManager;
+        // private SettingsManager _settingsManager;
+        // private GameManager _gameManager;
         
         // UI Elements - Main Interface
         private VisualElement _rootElement;
@@ -209,18 +209,18 @@ namespace ProjectChimera.UI.Settings
         
         private void InitializeSystemReferences()
         {
-            _gameManager = GameManager.Instance;
-            if (_gameManager == null)
-            {
+            // _gameManager = GameManager.Instance;
+            // if (_gameManager == null)
+            // {
                 Debug.LogWarning("GameManager not found - using standalone mode");
                 return;
-            }
+            // }
             
-            _settingsManager = _gameManager.GetManager<SettingsManager>();
-            if (_settingsManager == null)
-            {
-                Debug.LogWarning("SettingsManager not found - creating default settings");
-            }
+            // _settingsManager = _gameManager.GetManager<SettingsManager>();
+            // if (_settingsManager == null)
+            // {
+                // Debug.LogWarning("SettingsManager not found - creating default settings");
+            // }
             
             Debug.Log("Settings Controller connected to game systems");
         }
@@ -712,15 +712,15 @@ namespace ProjectChimera.UI.Settings
             
             _isApplyingSettings = true;
             
-            if (_settingsManager != null)
-            {
-                _settingsManager.ApplySettings(_currentSettings);
-            }
-            else
-            {
+            // if (_settingsManager != null)
+            // {
+                // _settingsManager.ApplySettings(_currentSettings);
+            // }
+            // else
+            // {
                 // Apply settings directly to Unity systems
                 ApplyUnitySettings();
-            }
+            // }
             
             // Copy current to original
             _originalSettings.Clear();
@@ -849,14 +849,14 @@ namespace ProjectChimera.UI.Settings
         
         private void LoadSettings()
         {
-            if (_settingsManager != null)
-            {
-                var loadedSettings = _settingsManager.GetAllSettings();
+            // if (_settingsManager != null)
+            // {
+                // var loadedSettings = _settingsManager.GetAllSettings();
                 if (loadedSettings != null)
                 {
                     _currentSettings = new Dictionary<string, object>(loadedSettings);
                 }
-            }
+            // }
             
             if (_currentSettings.Count == 0)
             {
@@ -1084,10 +1084,10 @@ namespace ProjectChimera.UI.Settings
             // Load available profiles
             _availableProfiles.Clear();
             
-            if (_settingsManager != null)
-            {
-                _availableProfiles = _settingsManager.GetAvailableProfiles()?.ToList() ?? new List<SettingsProfile>();
-            }
+            // if (_settingsManager != null)
+            // {
+                // _availableProfiles = _settingsManager.GetAvailableProfiles()?.ToList() ?? new List<SettingsProfile>();
+            // }
             
             if (_availableProfiles.Count == 0)
             {
@@ -1143,10 +1143,10 @@ namespace ProjectChimera.UI.Settings
             
             _currentProfile.Settings = new Dictionary<string, object>(_currentSettings);
             
-            if (_settingsManager != null)
-            {
-                _settingsManager.SaveProfile(_currentProfile);
-            }
+            // if (_settingsManager != null)
+            // {
+                // _settingsManager.SaveProfile(_currentProfile);
+            // }
             
             UpdateStatusLabel($"Profile saved: {_currentProfile.Name}");
             Debug.Log($"Profile saved: {_currentProfile.Name}");
@@ -1158,10 +1158,10 @@ namespace ProjectChimera.UI.Settings
             
             _availableProfiles.Remove(_currentProfile);
             
-            if (_settingsManager != null)
-            {
-                _settingsManager.DeleteProfile(_currentProfile);
-            }
+            // if (_settingsManager != null)
+            // {
+                // _settingsManager.DeleteProfile(_currentProfile);
+            // }
             
             // Switch to default profile
             _currentProfile = _availableProfiles.FirstOrDefault(p => p.IsDefault);

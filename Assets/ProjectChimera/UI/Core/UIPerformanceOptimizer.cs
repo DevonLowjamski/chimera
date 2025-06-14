@@ -594,15 +594,15 @@ namespace ProjectChimera.UI.Core
                     _framesSinceLastOptimization = 0;
                 }
             }
-            else
-            {
+            // else
+            // {
                 // More frequent optimization for non-optimal states
                 if (_framesSinceLastOptimization > 300) // 5 seconds at 60 FPS
                 {
                     TriggerAdaptiveOptimization(_currentPerformanceState);
                     _framesSinceLastOptimization = 0;
                 }
-            }
+            // }
         }
         
         private void OnValidate()

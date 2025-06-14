@@ -157,7 +157,10 @@ namespace ProjectChimera.UI.Tutorial
             _guidancePanel.style.borderTopRightRadius = 8f;
             _guidancePanel.style.borderBottomLeftRadius = 8f;
             _guidancePanel.style.borderBottomRightRadius = 8f;
-            _guidancePanel.style.padding = new StyleLength(20f);
+            _guidancePanel.style.paddingLeft = 20f;
+            _guidancePanel.style.paddingRight = 20f;
+            _guidancePanel.style.paddingTop = 20f;
+            _guidancePanel.style.paddingBottom = 20f;
             _guidancePanel.style.minWidth = 300f;
             _guidancePanel.style.maxWidth = 500f;
             
@@ -247,7 +250,7 @@ namespace ProjectChimera.UI.Tutorial
             PositionGuidancePanel(step);
             
             // Show highlight overlay
-            _overlayManager?.ShowHighlight(step);
+            _overlayManager?.ShowOverlay(step);
             
             // Animate panel in
             AnimatePanelIn(_guidancePanel);
@@ -582,10 +585,8 @@ namespace ProjectChimera.UI.Tutorial
             LogInfo("Tutorial hint dismissed");
         }
         
-        protected override void Update()
+        private void Update()
         {
-            base.Update();
-            
             if (_isUIInitialized)
             {
                 UpdateAnimations();

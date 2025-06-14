@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ProjectChimera.Core;
 using ProjectChimera.UI.Core;
+using ProjectChimera.Data.UI;
 
 namespace ProjectChimera.UI.Components
 {
@@ -494,10 +495,10 @@ namespace ProjectChimera.UI.Components
                 // This is a simplified representation
                 _indicator.style.opacity = 0.7f;
             }
-            else
-            {
+            // else
+            // {
                 _indicator.style.opacity = 1f;
-            }
+            // }
         }
     }
     

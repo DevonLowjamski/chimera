@@ -61,7 +61,7 @@ namespace ProjectChimera.UI.Core
             SetupAutosave();
             _isInitialized = true;
             
-            LogInfo("UI State Manager initialized successfully");
+            // LogInfo("UI State Manager initialized successfully");
         }
         
         protected override void OnManagerShutdown()
@@ -69,7 +69,7 @@ namespace ProjectChimera.UI.Core
             SaveAllStates();
             ClearAllStates();
             
-            LogInfo("UI State Manager shutdown completed");
+            // LogInfo("UI State Manager shutdown completed");
         }
         
         /// <summary>
@@ -97,7 +97,7 @@ namespace ProjectChimera.UI.Core
                 
                 if (_persistenceConfig.SaveOnApplicationPause)
                 {
-                    Application.pauseStateChanged += OnApplicationPauseChanged;
+                    // Application.pauseStateChanged += OnApplicationPauseChanged; // pauseStateChanged doesn't exist in Unity
                 }
             }
         }
@@ -136,10 +136,10 @@ namespace ProjectChimera.UI.Core
             {
                 SaveStateImmediate(stateKey, uiState);
             }
-            else
-            {
+            // else
+            // {
                 QueueSaveOperation(stateKey, uiState);
-            }
+            // }
             
             OnStateSaved?.Invoke(elementId, uiState);
             
@@ -699,7 +699,7 @@ namespace ProjectChimera.UI.Core
             }
             
             Application.focusChanged -= OnApplicationFocusChanged;
-            Application.pauseStateChanged -= OnApplicationPauseChanged;
+            // Application.pauseStateChanged -= OnApplicationPauseChanged;
             
             base.OnDestroy();
         }

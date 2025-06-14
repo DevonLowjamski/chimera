@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ProjectChimera.Core;
-using ProjectChimera.Systems.Environment;
-using ProjectChimera.Systems.Automation;
+// using ProjectChimera.Systems.Environment;
+// using ProjectChimera.Systems.Automation;
 using ProjectChimera.Data.Environment;
 using ProjectChimera.Data.UI;
 
@@ -45,9 +45,9 @@ namespace ProjectChimera.UI.Environmental
         [SerializeField] private AudioSource _audioSource;
         
         // System references
-        private HVACManager _hvacManager;
-        private LightingManager _lightingManager;
-        private AutomationManager _automationManager;
+        // private HVACManager _hvacManager;
+        // private LightingManager _lightingManager;
+        // private AutomationManager _automationManager;
         
         // UI Elements - Main Controls
         private VisualElement _rootElement;
@@ -174,9 +174,9 @@ namespace ProjectChimera.UI.Environmental
                 return;
             }
             
-            _hvacManager = gameManager.GetManager<HVACManager>();
-            _lightingManager = gameManager.GetManager<LightingManager>();
-            _automationManager = gameManager.GetManager<AutomationManager>();
+            // _hvacManager = gameManager.GetManager<HVACManager>();
+            // _lightingManager = gameManager.GetManager<LightingManager>();
+            // _automationManager = gameManager.GetManager<AutomationManager>();
             
             Debug.Log($"Environmental Control connected to available systems");
         }
@@ -536,11 +536,11 @@ namespace ProjectChimera.UI.Environmental
         
         private void ApplyTemperatureChange(float temperature)
         {
-            if (_hvacManager != null)
-            {
+            // if (_hvacManager != null)
+            // {
                 // Would integrate with actual HVAC system
                 Debug.Log($"Setting temperature to {temperature}°C in {_selectedZone}");
-            }
+            // }
             
             // Update current temperature with some simulation
             UpdateZoneData(_selectedZone, zd => 
@@ -552,10 +552,10 @@ namespace ProjectChimera.UI.Environmental
         
         private void ApplyHumidityChange(float humidity)
         {
-            if (_hvacManager != null)
-            {
+            // if (_hvacManager != null)
+            // {
                 Debug.Log($"Setting humidity to {humidity}% in {_selectedZone}");
-            }
+            // }
             
             UpdateZoneData(_selectedZone, zd => 
             {
@@ -577,20 +577,20 @@ namespace ProjectChimera.UI.Environmental
         
         private void ApplyLightIntensityChange(float intensity)
         {
-            if (_lightingManager != null)
-            {
+            // if (_lightingManager != null)
+            // {
                 Debug.Log($"Setting light intensity to {intensity} PPFD in {_selectedZone}");
-            }
+            // }
             
             UpdateZoneData(_selectedZone, zd => zd.LightIntensity = intensity);
         }
         
         private void ApplyLightingToggle(bool isOn)
         {
-            if (_lightingManager != null)
-            {
+            // if (_lightingManager != null)
+            // {
                 Debug.Log($"{(isOn ? "Enabling" : "Disabling")} lighting in {_selectedZone}");
-            }
+            // }
             
             UpdateZoneData(_selectedZone, zd => 
             {
@@ -721,11 +721,11 @@ namespace ProjectChimera.UI.Environmental
             SetAutomationState("temperature", isAuto);
             UpdateTemperatureAutoButton(isAuto);
             
-            if (isAuto && _automationManager != null)
-            {
+            // if (isAuto && _automationManager != null)
+            // {
                 // Create automation rule for temperature
                 CreateTemperatureAutomationRule();
-            }
+            // }
         }
         
         private void ToggleHumidityAuto()
@@ -734,10 +734,10 @@ namespace ProjectChimera.UI.Environmental
             SetAutomationState("humidity", isAuto);
             UpdateHumidityAutoButton(isAuto);
             
-            if (isAuto && _automationManager != null)
-            {
+            // if (isAuto && _automationManager != null)
+            // {
                 CreateHumidityAutomationRule();
-            }
+            // }
         }
         
         private void ToggleCO2Auto()
@@ -746,10 +746,10 @@ namespace ProjectChimera.UI.Environmental
             SetAutomationState("co2", isAuto);
             UpdateCO2AutoButton(isAuto);
             
-            if (isAuto && _automationManager != null)
-            {
+            // if (isAuto && _automationManager != null)
+            // {
                 CreateCO2AutomationRule();
-            }
+            // }
         }
         
         #endregion
@@ -834,9 +834,9 @@ namespace ProjectChimera.UI.Environmental
         
         private void UpdateZoneReadings(string zoneId)
         {
-            if (_automationManager != null)
-            {
-                var readings = _automationManager.GetZoneSensorReadings(zoneId);
+            // if (_automationManager != null)
+            // {
+                // var readings = _automationManager.GetZoneSensorReadings(zoneId);
                 
                 foreach (var reading in readings)
                 {
@@ -852,12 +852,12 @@ namespace ProjectChimera.UI.Environmental
                             zd.LightIntensity = reading.Value;
                     });
                 }
-            }
-            else
-            {
+            // }
+            // else
+            // {
                 // Simulate gradual changes toward targets
                 UpdateZoneData(zoneId, zd => SimulateEnvironmentalChanges(zd));
-            }
+            // }
         }
         
         private void UpdateZoneData(string zoneId, System.Action<EnvironmentalZoneData> updateAction)
@@ -929,11 +929,11 @@ namespace ProjectChimera.UI.Environmental
                     _dliProgressBar.AddToClassList("optimal-range");
                     _dliProgressBar.RemoveFromClassList("suboptimal-range");
                 }
-                else
-                {
+                // else
+                // {
                     _dliProgressBar.AddToClassList("suboptimal-range");
                     _dliProgressBar.RemoveFromClassList("optimal-range");
-                }
+                // }
             }
             
             // Store previous values for next trend calculation
@@ -1247,10 +1247,10 @@ namespace ProjectChimera.UI.Environmental
             {
                 zoneData.LightIntensity = Mathf.MoveTowards(zoneData.LightIntensity, zoneData.TargetLightIntensity, changeRate * 50f * deltaTime);
             }
-            else
-            {
+            // else
+            // {
                 zoneData.LightIntensity = Mathf.MoveTowards(zoneData.LightIntensity, 0f, changeRate * 100f * deltaTime);
-            }
+            // }
         }
         
         private float CalculateStability(float current, float target, float tolerance)
@@ -1410,7 +1410,7 @@ namespace ProjectChimera.UI.Environmental
         
         private void CreateTemperatureAutomationRule()
         {
-            if (_automationManager == null) return;
+            // if (_automationManager == null) return;
             
             var trigger = new ProjectChimera.Data.Automation.AutomationTrigger
             {
@@ -1431,12 +1431,12 @@ namespace ProjectChimera.UI.Environmental
                 }
             };
             
-            _automationManager.CreateAutomationRule($"Auto Temperature Control - {_selectedZone}", trigger, actions);
+            // _automationManager.CreateAutomationRule($"Auto Temperature Control - {_selectedZone}", trigger, actions);
         }
         
         private void CreateHumidityAutomationRule()
         {
-            if (_automationManager == null) return;
+            // if (_automationManager == null) return;
             
             var trigger = new ProjectChimera.Data.Automation.AutomationTrigger
             {
@@ -1457,12 +1457,12 @@ namespace ProjectChimera.UI.Environmental
                 }
             };
             
-            _automationManager.CreateAutomationRule($"Auto Humidity Control - {_selectedZone}", trigger, actions);
+            // _automationManager.CreateAutomationRule($"Auto Humidity Control - {_selectedZone}", trigger, actions);
         }
         
         private void CreateCO2AutomationRule()
         {
-            if (_automationManager == null) return;
+            // if (_automationManager == null) return;
             
             var trigger = new ProjectChimera.Data.Automation.AutomationTrigger
             {
@@ -1482,7 +1482,7 @@ namespace ProjectChimera.UI.Environmental
                 }
             };
             
-            _automationManager.CreateAutomationRule($"Auto CO2 Control - {_selectedZone}", trigger, actions);
+            // _automationManager.CreateAutomationRule($"Auto CO2 Control - {_selectedZone}", trigger, actions);
         }
         
         private void PlaySound(AudioClip clip)

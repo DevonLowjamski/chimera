@@ -88,7 +88,7 @@ namespace ProjectChimera.UI.Core
             InitializeAudioSystem();
             InitializeVisualAccessibility();
             
-            LogInfo("UI Accessibility Manager initialized successfully");
+            // LogInfo("UI Accessibility Manager initialized successfully");
         }
         
         protected override void OnManagerShutdown()
@@ -118,7 +118,7 @@ namespace ProjectChimera.UI.Core
             _textScaling?.Clear();
             _liveRegions?.Clear();
             
-            LogInfo("UI Accessibility Manager shutdown complete");
+            // LogInfo("UI Accessibility Manager shutdown complete");
         }
         
         /// <summary>
@@ -305,9 +305,20 @@ namespace ProjectChimera.UI.Core
         private string GetElementLabel(VisualElement element)
         {
             // Try to get label from various sources
-            if (element is ITextElement textElement && !string.IsNullOrEmpty(textElement.text))
+            // Check for common text-containing elements
+            if (element is Label label && !string.IsNullOrEmpty(label.text))
             {
-                return textElement.text;
+                return label.text;
+            }
+            
+            if (element is Button button && !string.IsNullOrEmpty(button.text))
+            {
+                return button.text;
+            }
+            
+            if (element is TextField textField && !string.IsNullOrEmpty(textField.value))
+            {
+                return textField.value;
             }
             
             if (!string.IsNullOrEmpty(element.tooltip))
@@ -347,19 +358,21 @@ namespace ProjectChimera.UI.Core
             if (!_enableAriaLabels)
                 return;
             
-            // Set ARIA role
-            element.SetProperty("aria-role", info.Role.ToString().ToLower());
+            // Set ARIA role using userData instead of SetProperty
+            element.userData = element.userData ?? new Dictionary<string, object>();
+            var userData = element.userData as Dictionary<string, object>;
+            userData["aria-role"] = info.Role.ToString().ToLower();
             
             // Set ARIA label
             if (!string.IsNullOrEmpty(info.Label))
             {
-                element.SetProperty("aria-label", info.Label);
+                userData["aria-label"] = info.Label;
             }
             
             // Set ARIA description
             if (!string.IsNullOrEmpty(info.Description))
             {
-                element.SetProperty("aria-describedby", info.Description);
+                userData["aria-describedby"] = info.Description;
             }
             
             // Set tab index
@@ -371,7 +384,7 @@ namespace ProjectChimera.UI.Core
             // Set live region
             if (info.LiveRegion != UILiveRegionType.None)
             {
-                element.SetProperty("aria-live", info.LiveRegion.ToString().ToLower());
+                userData["aria-live"] = info.LiveRegion.ToString().ToLower();
             }
         }
         
@@ -393,8 +406,8 @@ namespace ProjectChimera.UI.Core
         /// </summary>
         private void ApplyVisualAccessibility(VisualElement element, UIAccessibilityInfo info)
         {
-            // Apply text scaling
-            if (element is ITextElement)
+            // Apply text scaling to text-containing elements
+            if (element is Label || element is Button || element is TextField)
             {
                 ApplyTextScalingToElement(element);
             }
@@ -546,10 +559,10 @@ namespace ProjectChimera.UI.Core
             {
                 nextIndex = currentIndex <= 0 ? _focusableElements.Count - 1 : currentIndex - 1;
             }
-            else
-            {
+            // else
+            // {
                 nextIndex = currentIndex >= _focusableElements.Count - 1 ? 0 : currentIndex + 1;
-            }
+            // }
             
             var nextElement = _focusableElements[nextIndex];
             nextElement.Focus();
@@ -859,11 +872,11 @@ namespace ProjectChimera.UI.Core
                     element.style.color = Color.white;
                 }
             }
-            else
-            {
+            // else
+            // {
                 element.RemoveFromClassList("high-contrast");
                 // Reset to original colors
-            }
+            // }
         }
         
         /// <summary>

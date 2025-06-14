@@ -47,6 +47,8 @@ namespace ProjectChimera.Systems.Economy
         public System.Action<MarketProductSO, float, float> OnProductPriceChanged; // product, oldPrice, newPrice
         public System.Action<MarketConditions> OnMarketConditionsChanged;
         public System.Action<MarketEvent> OnMarketEventOccurred;
+        public System.Action<MarketTransaction> OnSaleCompleted;
+        public System.Action<float> OnProfitGenerated;
         
         protected override void OnManagerInitialize()
         {
@@ -126,7 +128,7 @@ namespace ProjectChimera.Systems.Economy
                 Quantity = quantity,
                 QualityScore = qualityScore,
                 IsRetail = isRetail,
-                TransactionType = TransactionType.Sale,
+                TransactionType = MarketTransactionType.Sale,
                 Timestamp = System.DateTime.Now
             };
             
@@ -136,10 +138,14 @@ namespace ProjectChimera.Systems.Economy
             transaction.TotalValue = unitPrice * quantity;
             
             // Apply market impact (large sales can reduce prices)
-            ApplyMarketImpact(product, quantity, TransactionType.Sale);
+            ApplyMarketImpact(product, quantity, MarketTransactionType.Sale);
             
             // Update player reputation based on quality
             UpdatePlayerReputationFromSale(product, qualityScore, quantity);
+            
+            // Invoke events for other systems
+            OnSaleCompleted?.Invoke(transaction);
+            OnProfitGenerated?.Invoke(transaction.TotalValue);
             
             return transaction;
         }
@@ -154,7 +160,7 @@ namespace ProjectChimera.Systems.Economy
                 Product = product,
                 Quantity = quantity,
                 IsRetail = isRetail,
-                TransactionType = TransactionType.Purchase,
+                TransactionType = MarketTransactionType.Purchase,
                 Timestamp = System.DateTime.Now
             };
             
@@ -163,7 +169,7 @@ namespace ProjectChimera.Systems.Economy
             transaction.TotalValue = unitPrice * quantity;
             
             // Apply market impact (large purchases can increase prices)
-            ApplyMarketImpact(product, quantity, TransactionType.Purchase);
+            ApplyMarketImpact(product, quantity, MarketTransactionType.Purchase);
             
             return transaction;
         }
@@ -388,7 +394,7 @@ namespace ProjectChimera.Systems.Economy
             return Mathf.Clamp01(currentValue + change);
         }
         
-        private void ApplyMarketImpact(MarketProductSO product, float quantity, TransactionType type)
+        private void ApplyMarketImpact(MarketProductSO product, float quantity, MarketTransactionType type)
         {
             if (!_productMarketData.ContainsKey(product)) return;
             
@@ -398,7 +404,7 @@ namespace ProjectChimera.Systems.Economy
             float marketSize = 1000f; // Assume market size of 1000kg for base calculation
             float impactFactor = quantity / marketSize;
             
-            if (type == TransactionType.Sale)
+            if (type == MarketTransactionType.Sale)
             {
                 // Selling increases supply, decreases price pressure
                 marketData.SupplyLevel += impactFactor * 0.1f;
@@ -676,7 +682,7 @@ namespace ProjectChimera.Systems.Economy
         public float UnitPrice;
         public float TotalValue;
         public bool IsRetail;
-        public TransactionType TransactionType;
+        public MarketTransactionType TransactionType;
         public System.DateTime Timestamp;
     }
     
@@ -720,7 +726,7 @@ namespace ProjectChimera.Systems.Economy
         public float[] ProjectedDemandLevels;
     }
     
-    public enum TransactionType
+    public enum MarketTransactionType
     {
         Sale,
         Purchase

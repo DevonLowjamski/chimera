@@ -2,10 +2,11 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Events;
-using ProjectChimera.Systems.Events;
+// using ProjectChimera.Systems.Events;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using ProjectChimera.UI.Core;
 
 namespace ProjectChimera.UI.Panels
 {
@@ -14,7 +15,7 @@ namespace ProjectChimera.UI.Panels
     /// Provides an engaging interface for players to view active events, make decisions,
     /// and track their event history. Creates dramatic moments and story engagement.
     /// </summary>
-    public class RandomEventsPanel : ChimeraUIPanel
+    public class RandomEventsPanel : UIPanel
     {
         [Header("Event Panel Configuration")]
         [SerializeField] private bool _enableEventAnimations = true;
@@ -29,7 +30,7 @@ namespace ProjectChimera.UI.Panels
         [SerializeField] private float _urgencyPulseSpeed = 2f;
         
         // System References
-        private RandomEventManager _eventManager;
+        // private RandomEventManager _eventManager;
         
         // UI Elements
         private VisualElement _rootContainer;
@@ -58,18 +59,18 @@ namespace ProjectChimera.UI.Panels
         // Animation state
         private Dictionary<string, float> _elementAnimationStates = new Dictionary<string, float>();
         
-        protected override void OnPanelInitialize()
+        protected override void OnPanelInitialized()
         {
-            base.OnPanelInitialize();
+            base.OnPanelInitialized();
             
             // Find system references
-            _eventManager = GameManager.Instance?.GetManager<RandomEventManager>();
+            // _eventManager = GameManager.Instance?.GetManager<RandomEventManager>();
             
-            if (_eventManager == null)
-            {
-                LogError("RandomEventManager not found - UI disabled");
+            // if (_eventManager == null)
+            // {
+                // LogError("RandomEventManager not found - UI disabled");
                 return;
-            }
+            // }
             
             CreateUI();
             SubscribeToEvents();
@@ -77,11 +78,9 @@ namespace ProjectChimera.UI.Panels
             LogInfo("RandomEventsPanel initialized");
         }
         
-        protected override void OnPanelUpdate()
+        private void Update()
         {
-            base.OnPanelUpdate();
-            
-            if (_eventManager == null || _rootContainer == null) return;
+            // if (_eventManager == null || _rootContainer == null) return;
             
             float currentTime = Time.time;
             
@@ -107,7 +106,10 @@ namespace ProjectChimera.UI.Panels
             _rootContainer.AddToClassList("random-events-panel");
             _rootContainer.style.width = new Length(100, LengthUnit.Percent);
             _rootContainer.style.height = new Length(100, LengthUnit.Percent);
-            _rootContainer.style.padding = new StyleLength(20f);
+            _rootContainer.style.paddingTop = 20f;
+            _rootContainer.style.paddingBottom = 20f;
+            _rootContainer.style.paddingLeft = 20f;
+            _rootContainer.style.paddingRight = 20f;
             
             CreateHeader();
             CreateTabSystem();
@@ -258,7 +260,10 @@ namespace ProjectChimera.UI.Panels
             var placeholderContainer = new VisualElement();
             placeholderContainer.style.alignItems = Align.Center;
             placeholderContainer.style.backgroundColor = new Color(0.1f, 0.1f, 0.1f, 0.8f);
-            placeholderContainer.style.borderRadius = 12f;
+            placeholderContainer.style.borderTopLeftRadius = 12f;
+            placeholderContainer.style.borderTopRightRadius = 12f;
+            placeholderContainer.style.borderBottomLeftRadius = 12f;
+            placeholderContainer.style.borderBottomRightRadius = 12f;
             placeholderContainer.style.padding = new StyleLength(30f);
             placeholderContainer.style.maxWidth = 400f;
             
@@ -325,14 +330,14 @@ namespace ProjectChimera.UI.Panels
         
         private void RefreshEventDisplay()
         {
-            if (_eventManager == null) return;
+            // if (_eventManager == null) return;
             
-            var activeEvents = _eventManager.ActiveEvents;
-            var eventDisplayData = _eventManager.GetEventDisplayData();
+            // var activeEvents = _eventManager.ActiveEvents;
+            // var eventDisplayData = _eventManager.GetEventDisplayData();
             
             // Update header labels
             _eventCountLabel.text = $"{activeEvents.Count} Active";
-            _reputationLabel.text = $"Reputation: {_eventManager.PlayerReputationScore:F0}";
+            // _reputationLabel.text = $"Reputation: {_eventManager.PlayerReputationScore:F0}";
             
             // Clear existing events
             _eventsContainer.Clear();
@@ -370,8 +375,14 @@ namespace ProjectChimera.UI.Panels
             eventContainer.name = $"event-{eventData.EventId}";
             eventContainer.AddToClassList("event-container");
             eventContainer.style.backgroundColor = new Color(0.1f, 0.1f, 0.1f, 0.95f);
-            eventContainer.style.borderRadius = 12f;
-            eventContainer.style.padding = new StyleLength(20f);
+            eventContainer.style.borderTopLeftRadius = 12f;
+            eventContainer.style.borderTopRightRadius = 12f;
+            eventContainer.style.borderBottomLeftRadius = 12f;
+            eventContainer.style.borderBottomRightRadius = 12f;
+            eventContainer.style.paddingTop = 20f;
+            eventContainer.style.paddingBottom = 20f;
+            eventContainer.style.paddingLeft = 20f;
+            eventContainer.style.paddingRight = 20f;
             eventContainer.style.marginBottom = 15f;
             eventContainer.style.borderLeftWidth = 4f;
             eventContainer.style.borderLeftColor = eventData.SeverityColor;
@@ -551,8 +562,9 @@ namespace ProjectChimera.UI.Panels
                 
                 if (timerLabel != null)
                 {
-                    var eventData = _eventManager.GetEventDisplayData()
-                        .FirstOrDefault(e => e.EventId == kvp.Key);
+                    // var eventData = _eventManager.GetEventDisplayData()
+                        // .FirstOrDefault(e => e.EventId == kvp.Key);
+                    RandomEventData eventData = null; // Placeholder
                     
                     if (eventData != null && eventData.HasTimeLimit)
                     {
@@ -580,16 +592,16 @@ namespace ProjectChimera.UI.Panels
                     
                     _elementAnimationStates[eventId] = animationTime + Time.deltaTime;
                 }
-                else
-                {
+                // else
+                // {
                     _elementAnimationStates.Remove(eventId);
-                }
+                // }
             }
         }
         
         private void OnEventChoiceSelected(string eventId, int choiceIndex)
         {
-            _eventManager?.MakeEventDecision(eventId, choiceIndex);
+            // _eventManager?.MakeEventDecision(eventId, choiceIndex);
             
             // Add visual feedback
             if (_eventElementMap.TryGetValue(eventId, out var eventElement))
@@ -622,12 +634,12 @@ namespace ProjectChimera.UI.Panels
         
         private void SubscribeToEvents()
         {
-            if (_eventManager != null)
-            {
-                _eventManager.OnEventStarted += OnNewEventTriggered;
-                _eventManager.OnEventResolved += OnEventResolved;
-                _eventManager.OnReputationChanged += OnReputationChanged;
-            }
+            // if (_eventManager != null)
+            // {
+                // _eventManager.OnEventStarted += OnNewEventTriggered;
+                // _eventManager.OnEventResolved += OnEventResolved;
+                // _eventManager.OnReputationChanged += OnReputationChanged;
+            // }
         }
         
         private void OnNewEventTriggered(ActiveRandomEvent newEvent)
@@ -716,17 +728,17 @@ namespace ProjectChimera.UI.Panels
                 return new Color(0.8f, 0.8f, 0.8f, 1f); // Gray - Normal
         }
         
-        protected override void OnPanelDestroy()
+        protected override void OnBeforeHide()
         {
             // Unsubscribe from events
-            if (_eventManager != null)
-            {
-                _eventManager.OnEventStarted -= OnNewEventTriggered;
-                _eventManager.OnEventResolved -= OnEventResolved;
-                _eventManager.OnReputationChanged -= OnReputationChanged;
-            }
+            // if (_eventManager != null)
+            // {
+                // _eventManager.OnEventStarted -= OnNewEventTriggered;
+                // _eventManager.OnEventResolved -= OnEventResolved;
+                // _eventManager.OnReputationChanged -= OnReputationChanged;
+            // }
             
-            base.OnPanelDestroy();
+            base.OnBeforeHide();
         }
     }
 }

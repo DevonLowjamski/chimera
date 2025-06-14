@@ -7,9 +7,10 @@ using ProjectChimera.UI.Core;
 using ProjectChimera.UI.Events;
 using ProjectChimera.UI.Components;
 using ProjectChimera.Data;
-using ProjectChimera.Systems.Environment;
-using ProjectChimera.Systems.Facilities;
-using ProjectChimera.Systems.Automation;
+using ProjectChimera.Data.UI;
+// using ProjectChimera.Systems.Environment;
+// using ProjectChimera.Systems.Facilities;
+// using ProjectChimera.Systems.Automation;
 
 namespace ProjectChimera.UI.Panels
 {
@@ -94,18 +95,18 @@ namespace ProjectChimera.UI.Panels
         private List<FacilityAlert> _activeAlerts;
         
         // Game managers
-        private EnvironmentalManager _environmentalManager;
-        private FacilityManager _facilityManager;
-        private AutomationManager _automationManager;
+        // private EnvironmentalManager _environmentalManager;
+        // private FacilityManager _facilityManager;
+        // private AutomationManager _automationManager;
         
         protected override void SetupUIElements()
         {
             base.SetupUIElements();
             
             // Get manager references
-            _environmentalManager = GameManager.Instance?.GetManager<EnvironmentalManager>();
-            _facilityManager = GameManager.Instance?.GetManager<FacilityManager>();
-            _automationManager = GameManager.Instance?.GetManager<AutomationManager>();
+            // _environmentalManager = GameManager.Instance?.GetManager<EnvironmentalManager>();
+            // _facilityManager = GameManager.Instance?.GetManager<FacilityManager>();
+            // _automationManager = GameManager.Instance?.GetManager<AutomationManager>();
             
             // Initialize data structures
             _availableFacilities = new List<string>();
@@ -166,21 +167,21 @@ namespace ProjectChimera.UI.Panels
             var mainContainer = new VisualElement();
             mainContainer.name = "facility-main-container";
             mainContainer.style.flexGrow = 1;
-            mainContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundDark;
+            // mainContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundDark;
             mainContainer.style.flexDirection = FlexDirection.Column;
             
             // Header
             _headerContainer = new VisualElement();
             _headerContainer.name = "facility-header";
             _headerContainer.style.height = 80;
-            _headerContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // _headerContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             _headerContainer.style.flexDirection = FlexDirection.Row;
             _headerContainer.style.alignItems = Align.Center;
             _headerContainer.style.justifyContent = Justify.SpaceBetween;
             _headerContainer.style.paddingLeft = 24;
             _headerContainer.style.paddingRight = 24;
             _headerContainer.style.borderBottomWidth = 2;
-            _headerContainer.style.borderBottomColor = _uiManager.DesignSystem.ColorPalette.PrimaryGreen;
+            // _headerContainer.style.borderBottomColor = _uiManager.DesignSystem.ColorPalette.PrimaryGreen;
             
             // Content area
             _contentContainer = new VisualElement();
@@ -224,7 +225,7 @@ namespace ProjectChimera.UI.Panels
             
             _titleLabel = new Label("Facility Management");
             _titleLabel.style.fontSize = 24;
-            _titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // _titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             _titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             _titleLabel.style.marginRight = 20;
             
@@ -247,7 +248,7 @@ namespace ProjectChimera.UI.Panels
             _closeButton.style.width = 40;
             _closeButton.style.height = 40;
             _closeButton.style.fontSize = 20;
-            _uiManager.ApplyDesignSystemStyle(_closeButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_closeButton, UIStyleToken.SecondaryButton);
             
             _headerContainer.Add(leftSection);
             _headerContainer.Add(_closeButton);
@@ -279,7 +280,7 @@ namespace ProjectChimera.UI.Panels
             systemContainer.style.marginBottom = 16;
             
             var systemLabel = new Label("System Enabled");
-            systemLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // systemLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             
             _hvacSystemToggle = new Toggle();
             _hvacSystemToggle.value = true;
@@ -328,7 +329,7 @@ namespace ProjectChimera.UI.Panels
             _hvacPresetButton = new Button();
             _hvacPresetButton.text = "Load Presets";
             _hvacPresetButton.style.marginTop = 12;
-            _uiManager.ApplyDesignSystemStyle(_hvacPresetButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_hvacPresetButton, UIStyleToken.SecondaryButton);
             _hvacControls.Add(_hvacPresetButton);
             
             _controlPanelContainer.Add(_hvacControls);
@@ -349,7 +350,7 @@ namespace ProjectChimera.UI.Panels
             systemContainer.style.marginBottom = 16;
             
             var systemLabel = new Label("Lighting Enabled");
-            systemLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // systemLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             
             _lightingSystemToggle = new Toggle();
             _lightingSystemToggle.value = true;
@@ -368,7 +369,7 @@ namespace ProjectChimera.UI.Panels
             spectrumContainer.style.marginBottom = 16;
             
             var spectrumLabel = new Label("Light Spectrum");
-            spectrumLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // spectrumLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             spectrumLabel.style.marginBottom = 8;
             
             _lightSpectrumDropdown = new DropdownField(new List<string> { "Full Spectrum", "Vegetative", "Flowering", "Custom" }, 0);
@@ -386,7 +387,7 @@ namespace ProjectChimera.UI.Panels
             _dailyLightIntegralBar = new UIProgressBar(60f);
             _dailyLightIntegralBar.Value = 42f;
             _dailyLightIntegralBar.Format = "DLI: {0:F1} mol/m²/day";
-            _dailyLightIntegralBar.SetColor(_uiManager.DesignSystem.ColorPalette.AccentGold);
+            // _dailyLightIntegralBar.SetColor(_uiManager.DesignSystem.ColorPalette.AccentGold);
             _dailyLightIntegralBar.style.marginTop = 16;
             _lightingControls.Add(_dailyLightIntegralBar);
             
@@ -408,7 +409,7 @@ namespace ProjectChimera.UI.Panels
             systemContainer.style.marginBottom = 16;
             
             var systemLabel = new Label("Irrigation Enabled");
-            systemLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // systemLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             
             _irrigationSystemToggle = new Toggle();
             _irrigationSystemToggle.value = true;
@@ -432,7 +433,7 @@ namespace ProjectChimera.UI.Panels
             scheduleContainer.style.marginBottom = 16;
             
             var scheduleLabel = new Label("Schedule");
-            scheduleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // scheduleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             scheduleLabel.style.marginBottom = 8;
             
             _irrigationScheduleDropdown = new DropdownField(new List<string> { "Every 4 hours", "Every 6 hours", "Daily", "Custom" }, 1);
@@ -475,7 +476,7 @@ namespace ProjectChimera.UI.Panels
             automationContainer.style.marginBottom = 16;
             
             var automationLabel = new Label("Automation Enabled");
-            automationLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // automationLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             
             _automationEnabledToggle = new Toggle();
             _automationEnabledToggle.value = true;
@@ -489,7 +490,7 @@ namespace ProjectChimera.UI.Panels
             modeContainer.style.marginBottom = 16;
             
             var modeLabel = new Label("Automation Mode");
-            modeLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // modeLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             modeLabel.style.marginBottom = 8;
             
             _automationModeDropdown = new DropdownField(new List<string> { "Basic", "Advanced", "AI Optimized", "Manual Override" }, 1);
@@ -506,7 +507,7 @@ namespace ProjectChimera.UI.Panels
             // Preset button
             _automationPresetButton = new Button();
             _automationPresetButton.text = "Configure Presets";
-            _uiManager.ApplyDesignSystemStyle(_automationPresetButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_automationPresetButton, UIStyleToken.SecondaryButton);
             _automationControls.Add(_automationPresetButton);
             
             _controlPanelContainer.Add(_automationControls);
@@ -519,7 +520,7 @@ namespace ProjectChimera.UI.Panels
         {
             var section = new VisualElement();
             section.name = title.ToLower().Replace(" ", "-") + "-section";
-            section.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // section.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             section.style.borderTopLeftRadius = 12;
             section.style.borderTopRightRadius = 12;
             section.style.borderBottomLeftRadius = 12;
@@ -542,7 +543,7 @@ namespace ProjectChimera.UI.Panels
             
             var titleLabel = new Label(title);
             titleLabel.style.fontSize = 16;
-            titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             header.Add(iconLabel);
@@ -567,11 +568,11 @@ namespace ProjectChimera.UI.Panels
             headerContainer.style.marginBottom = 8;
             
             var labelElement = new Label(label);
-            labelElement.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // labelElement.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             
             var valueLabel = new Label($"{defaultValue:F1} {unit}");
             valueLabel.name = "value-label";
-            valueLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
+            // valueLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
             
             headerContainer.Add(labelElement);
             headerContainer.Add(valueLabel);
@@ -610,28 +611,28 @@ namespace ProjectChimera.UI.Panels
             _temperatureChart.style.width = Length.Percent(48);
             _temperatureChart.style.marginBottom = 16;
             _temperatureChart.SetRange(15f, 35f);
-            _temperatureChart.LineColor = _uiManager.DesignSystem.ColorPalette.Error;
+            // _temperatureChart.LineColor = _uiManager.DesignSystem.ColorPalette.Error;
             
             // Humidity chart
             _humidityChart = new UISimpleChart("Humidity Trend");
             _humidityChart.style.width = Length.Percent(48);
             _humidityChart.style.marginBottom = 16;
             _humidityChart.SetRange(30f, 90f);
-            _humidityChart.LineColor = _uiManager.DesignSystem.ColorPalette.Info;
+            // _humidityChart.LineColor = _uiManager.DesignSystem.ColorPalette.Info;
             
             // CO2 chart
             _co2Chart = new UISimpleChart("CO₂ Trend");
             _co2Chart.style.width = Length.Percent(48);
             _co2Chart.style.marginBottom = 16;
             _co2Chart.SetRange(400f, 2000f);
-            _co2Chart.LineColor = _uiManager.DesignSystem.ColorPalette.Success;
+            // _co2Chart.LineColor = _uiManager.DesignSystem.ColorPalette.Success;
             
             // Power consumption chart
             _powerConsumptionChart = new UISimpleChart("Power Consumption");
             _powerConsumptionChart.style.width = Length.Percent(48);
             _powerConsumptionChart.style.marginBottom = 16;
             _powerConsumptionChart.SetRange(0f, 5000f);
-            _powerConsumptionChart.LineColor = _uiManager.DesignSystem.ColorPalette.Warning;
+            // _powerConsumptionChart.LineColor = _uiManager.DesignSystem.ColorPalette.Warning;
             
             // Sample data
             PopulateChartsWithSampleData();
@@ -653,7 +654,7 @@ namespace ProjectChimera.UI.Panels
             _alertsContainer = new VisualElement();
             _alertsContainer.name = "alerts-container";
             _alertsContainer.style.marginTop = 20;
-            _alertsContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // _alertsContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             _alertsContainer.style.borderTopLeftRadius = 12;
             _alertsContainer.style.borderTopRightRadius = 12;
             _alertsContainer.style.borderBottomLeftRadius = 12;
@@ -665,7 +666,7 @@ namespace ProjectChimera.UI.Panels
             
             var alertsTitle = new Label("System Alerts");
             alertsTitle.style.fontSize = 16;
-            alertsTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // alertsTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             alertsTitle.style.unityFontStyleAndWeight = FontStyle.Bold;
             alertsTitle.style.marginBottom = 12;
             
@@ -755,7 +756,7 @@ namespace ProjectChimera.UI.Panels
         /// </summary>
         private void UpdateEnvironmentalData()
         {
-            if (_environmentalManager == null) return;
+            // if (_environmentalManager == null) return;
             
             // Update current readings
             UpdateCurrentReadings();
@@ -796,30 +797,30 @@ namespace ProjectChimera.UI.Panels
             
             // Temperature color
             var tempDiff = Mathf.Abs(temp - tempSetpoint);
-            if (tempDiff < 1f)
-                _currentTemperatureCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.Success);
-            else if (tempDiff < 2f)
-                _currentTemperatureCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.Warning);
-            else
-                _currentTemperatureCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.Error);
+            // if (tempDiff < 1f)
+                // _currentTemperatureCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.Success);
+            // else if (tempDiff < 2f)
+                // _currentTemperatureCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.Warning);
+            // else
+                // _currentTemperatureCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.Error);
             
             // Humidity color
             var humidityDiff = Mathf.Abs(humidity - humiditySetpoint);
-            if (humidityDiff < 3f)
-                _currentHumidityCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.Success);
-            else if (humidityDiff < 5f)
-                _currentHumidityCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.Warning);
-            else
-                _currentHumidityCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.Error);
+            // if (humidityDiff < 3f)
+                // _currentHumidityCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.Success);
+            // else if (humidityDiff < 5f)
+                // _currentHumidityCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.Warning);
+            // else
+                // _currentHumidityCard.SetValueColor(_uiManager.DesignSystem.ColorPalette.Error);
             
             // CO2 color
             var co2Diff = Mathf.Abs(co2 - co2Setpoint);
-            if (co2Diff < 50f)
-                _currentCO2Card.SetValueColor(_uiManager.DesignSystem.ColorPalette.Success);
-            else if (co2Diff < 100f)
-                _currentCO2Card.SetValueColor(_uiManager.DesignSystem.ColorPalette.Warning);
-            else
-                _currentCO2Card.SetValueColor(_uiManager.DesignSystem.ColorPalette.Error);
+            // if (co2Diff < 50f)
+                // _currentCO2Card.SetValueColor(_uiManager.DesignSystem.ColorPalette.Success);
+            // else if (co2Diff < 100f)
+                // _currentCO2Card.SetValueColor(_uiManager.DesignSystem.ColorPalette.Warning);
+            // else
+                // _currentCO2Card.SetValueColor(_uiManager.DesignSystem.ColorPalette.Error);
         }
         
         /// <summary>
@@ -844,11 +845,11 @@ namespace ProjectChimera.UI.Panels
                 _overallStatus.Status = UIStatus.Success;
                 _overallStatus.Label = "All Systems Operational";
             }
-            else
-            {
+            // else
+            // {
                 _overallStatus.Status = UIStatus.Warning;
                 _overallStatus.Label = "Some Systems Offline";
-            }
+            // }
             
             // Update automation status
             if (_automationEnabledToggle.value)
@@ -856,11 +857,11 @@ namespace ProjectChimera.UI.Panels
                 _automationStatus.Status = UIStatus.Success;
                 _automationStatus.Label = "Automation Active";
             }
-            else
-            {
+            // else
+            // {
                 _automationStatus.Status = UIStatus.Info;
                 _automationStatus.Label = "Manual Control";
-            }
+            // }
         }
         
         // Event handlers

@@ -108,6 +108,9 @@ namespace ProjectChimera.Data.Equipment
         public List<EquipmentDataSO> IncompatibleEquipment => _incompatibleEquipment;
         public List<SkillRequirement> SkillRequirements => _skillRequirements;
         
+        // Additional properties for compatibility
+        public string EquipmentId => name; // Use ScriptableObject name as ID
+        
         /// <summary>
         /// Calculates the total cost of ownership over the equipment's lifespan.
         /// </summary>

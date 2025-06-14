@@ -7,9 +7,10 @@ using ProjectChimera.UI.Core;
 using ProjectChimera.UI.Events;
 using ProjectChimera.UI.Components;
 using ProjectChimera.Data;
-using ProjectChimera.Systems.Cultivation;
-using ProjectChimera.Systems.Environment;
-using ProjectChimera.Systems.Genetics;
+using ProjectChimera.Data.UI;
+// using ProjectChimera.Systems.Cultivation;
+// using ProjectChimera.Systems.Environment;
+// using ProjectChimera.Systems.Genetics;
 
 namespace ProjectChimera.UI.Panels
 {
@@ -98,18 +99,18 @@ namespace ProjectChimera.UI.Panels
         private Dictionary<string, PlantCareTask> _pendingTasks;
         
         // Game managers
-        private CultivationManager _cultivationManager;
-        private EnvironmentalManager _environmentalManager;
-        private GeneticsManager _geneticsManager;
+        // private CultivationManager _cultivationManager;
+        // private EnvironmentalManager _environmentalManager;
+        // private GeneticsManager _geneticsManager;
         
         protected override void SetupUIElements()
         {
             base.SetupUIElements();
             
             // Get manager references
-            _cultivationManager = GameManager.Instance?.GetManager<CultivationManager>();
-            _environmentalManager = GameManager.Instance?.GetManager<EnvironmentalManager>();
-            _geneticsManager = GameManager.Instance?.GetManager<GeneticsManager>();
+            // _cultivationManager = GameManager.Instance?.GetManager<CultivationManager>();
+            // _environmentalManager = GameManager.Instance?.GetManager<EnvironmentalManager>();
+            // _geneticsManager = GameManager.Instance?.GetManager<GeneticsManager>();
             
             // Initialize data structures
             _allPlants = new List<PlantData>();
@@ -162,21 +163,21 @@ namespace ProjectChimera.UI.Panels
             var mainContainer = new VisualElement();
             mainContainer.name = "plant-main-container";
             mainContainer.style.flexGrow = 1;
-            mainContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundDark;
+            // mainContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundDark;
             mainContainer.style.flexDirection = FlexDirection.Column;
             
             // Header
             _headerContainer = new VisualElement();
             _headerContainer.name = "plant-header";
             _headerContainer.style.height = 80;
-            _headerContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // _headerContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             _headerContainer.style.flexDirection = FlexDirection.Row;
             _headerContainer.style.alignItems = Align.Center;
             _headerContainer.style.justifyContent = Justify.SpaceBetween;
             _headerContainer.style.paddingLeft = 24;
             _headerContainer.style.paddingRight = 24;
             _headerContainer.style.borderBottomWidth = 2;
-            _headerContainer.style.borderBottomColor = _uiManager.DesignSystem.ColorPalette.PrimaryGreen;
+            // _headerContainer.style.borderBottomColor = _uiManager.DesignSystem.ColorPalette.PrimaryGreen;
             
             // Content area
             _contentContainer = new VisualElement();
@@ -232,7 +233,7 @@ namespace ProjectChimera.UI.Panels
             
             _titleLabel = new Label("Plant Management");
             _titleLabel.style.fontSize = 24;
-            _titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // _titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             _titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             _titleLabel.style.marginRight = 20;
             
@@ -267,7 +268,7 @@ namespace ProjectChimera.UI.Panels
             _addPlantButton.name = "add-plant-button";
             _addPlantButton.text = "+ Add Plant";
             _addPlantButton.style.marginRight = 15;
-            _uiManager.ApplyDesignSystemStyle(_addPlantButton, UIStyleToken.PrimaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_addPlantButton, UIStyleToken.PrimaryButton);
             
             _closeButton = new Button();
             _closeButton.name = "plant-close-button";
@@ -275,7 +276,7 @@ namespace ProjectChimera.UI.Panels
             _closeButton.style.width = 40;
             _closeButton.style.height = 40;
             _closeButton.style.fontSize = 20;
-            _uiManager.ApplyDesignSystemStyle(_closeButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_closeButton, UIStyleToken.SecondaryButton);
             
             rightSection.Add(_addPlantButton);
             rightSection.Add(_closeButton);
@@ -291,7 +292,7 @@ namespace ProjectChimera.UI.Panels
         {
             // List header
             var listHeader = new VisualElement();
-            listHeader.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // listHeader.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             listHeader.style.borderTopLeftRadius = 12;
             listHeader.style.borderTopRightRadius = 12;
             listHeader.style.paddingTop = 16;
@@ -309,12 +310,12 @@ namespace ProjectChimera.UI.Panels
             
             var listTitle = new Label("Plants");
             listTitle.style.fontSize = 16;
-            listTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // listTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             listTitle.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             _plantCountLabel = new Label("0 plants");
             _plantCountLabel.style.fontSize = 12;
-            _plantCountLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // _plantCountLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             titleContainer.Add(listTitle);
             titleContainer.Add(_plantCountLabel);
@@ -341,7 +342,7 @@ namespace ProjectChimera.UI.Panels
             // Plant list scroll view
             _plantListView = new ScrollView();
             _plantListView.name = "plant-list-scroll";
-            _plantListView.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundMedium;
+            // _plantListView.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundMedium;
             _plantListView.style.flexGrow = 1;
             _plantListView.style.borderBottomLeftRadius = 12;
             _plantListView.style.borderBottomRightRadius = 12;
@@ -357,7 +358,7 @@ namespace ProjectChimera.UI.Panels
         /// </summary>
         private void CreatePlantDetails()
         {
-            _plantDetailsContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // _plantDetailsContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             _plantDetailsContainer.style.borderTopLeftRadius = 12;
             _plantDetailsContainer.style.borderTopRightRadius = 12;
             _plantDetailsContainer.style.borderBottomLeftRadius = 12;
@@ -388,7 +389,7 @@ namespace ProjectChimera.UI.Panels
             _plantImageContainer = new VisualElement();
             _plantImageContainer.style.width = 80;
             _plantImageContainer.style.height = 80;
-            _plantImageContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundMedium;
+            // _plantImageContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundMedium;
             _plantImageContainer.style.borderTopLeftRadius = 8;
             _plantImageContainer.style.borderTopRightRadius = 8;
             _plantImageContainer.style.borderBottomLeftRadius = 8;
@@ -401,18 +402,18 @@ namespace ProjectChimera.UI.Panels
             
             _plantNameLabel = new Label("Select a plant");
             _plantNameLabel.style.fontSize = 20;
-            _plantNameLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // _plantNameLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             _plantNameLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             _plantNameLabel.style.marginBottom = 4;
             
             _plantStrainLabel = new Label("No strain selected");
             _plantStrainLabel.style.fontSize = 14;
-            _plantStrainLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
+            // _plantStrainLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
             _plantStrainLabel.style.marginBottom = 4;
             
             _plantAgeLabel = new Label("Age: --");
             _plantAgeLabel.style.fontSize = 12;
-            _plantAgeLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // _plantAgeLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             plantInfoContainer.Add(_plantNameLabel);
             plantInfoContainer.Add(_plantStrainLabel);
@@ -467,7 +468,7 @@ namespace ProjectChimera.UI.Panels
         {
             var envTitle = new Label("Local Environment");
             envTitle.style.fontSize = 14;
-            envTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // envTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             envTitle.style.unityFontStyleAndWeight = FontStyle.Bold;
             envTitle.style.marginBottom = 12;
             
@@ -511,14 +512,14 @@ namespace ProjectChimera.UI.Panels
             _heightGrowthChart.style.width = Length.Percent(48);
             _heightGrowthChart.style.height = 150;
             _heightGrowthChart.SetRange(0f, 200f);
-            _heightGrowthChart.LineColor = _uiManager.DesignSystem.ColorPalette.PrimaryGreen;
+            // _heightGrowthChart.LineColor = _uiManager.DesignSystem.ColorPalette.PrimaryGreen;
             
             // Health trend chart
             _healthTrendChart = new UISimpleChart("Health Trend");
             _healthTrendChart.style.width = Length.Percent(48);
             _healthTrendChart.style.height = 150;
             _healthTrendChart.SetRange(0f, 100f);
-            _healthTrendChart.LineColor = _uiManager.DesignSystem.ColorPalette.Success;
+            // _healthTrendChart.LineColor = _uiManager.DesignSystem.ColorPalette.Success;
             
             _growthChartsContainer.Add(_heightGrowthChart);
             _growthChartsContainer.Add(_healthTrendChart);
@@ -529,14 +530,14 @@ namespace ProjectChimera.UI.Panels
             
             var progressTitle = new Label("Growth Stage Progress");
             progressTitle.style.fontSize = 14;
-            progressTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // progressTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             progressTitle.style.unityFontStyleAndWeight = FontStyle.Bold;
             progressTitle.style.marginBottom = 8;
             
             _growthStageProgress = new UIProgressBar(100f);
             _growthStageProgress.Value = 0f;
             _growthStageProgress.Format = "Stage Progress: {0:F0}%";
-            _growthStageProgress.SetColor(_uiManager.DesignSystem.ColorPalette.Info);
+            // _growthStageProgress.SetColor(_uiManager.DesignSystem.ColorPalette.Info);
             
             progressContainer.Add(progressTitle);
             progressContainer.Add(_growthStageProgress);
@@ -550,7 +551,7 @@ namespace ProjectChimera.UI.Panels
         /// </summary>
         private void CreateCareActions()
         {
-            _careActionsContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // _careActionsContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             _careActionsContainer.style.borderTopLeftRadius = 12;
             _careActionsContainer.style.borderTopRightRadius = 12;
             _careActionsContainer.style.borderBottomLeftRadius = 12;
@@ -568,7 +569,7 @@ namespace ProjectChimera.UI.Panels
             
             var actionsTitle = new Label("Plant Care Actions");
             actionsTitle.style.fontSize = 16;
-            actionsTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // actionsTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             actionsTitle.style.unityFontStyleAndWeight = FontStyle.Bold;
             actionsTitle.style.marginBottom = 16;
             
@@ -599,7 +600,7 @@ namespace ProjectChimera.UI.Panels
             
             var tasksTitle = new Label("Scheduled Tasks");
             tasksTitle.style.fontSize = 16;
-            tasksTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // tasksTitle.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             tasksTitle.style.unityFontStyleAndWeight = FontStyle.Bold;
             tasksTitle.style.marginBottom = 16;
             
@@ -634,7 +635,7 @@ namespace ProjectChimera.UI.Panels
             
             var textLabel = new Label(label);
             textLabel.style.fontSize = 11;
-            textLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // textLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             content.Add(iconLabel);
             content.Add(textLabel);
@@ -644,7 +645,7 @@ namespace ProjectChimera.UI.Panels
             button.style.height = 60;
             button.style.marginBottom = 8;
             button.style.marginRight = 8;
-            button.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundMedium;
+            // button.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundMedium;
             button.style.borderTopWidth = 0;
             button.style.borderRightWidth = 0;
             button.style.borderBottomWidth = 0;
@@ -684,7 +685,7 @@ namespace ProjectChimera.UI.Panels
                 taskItem.style.paddingBottom = 8;
                 taskItem.style.paddingLeft = 12;
                 taskItem.style.paddingRight = 12;
-                taskItem.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundMedium;
+                // taskItem.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundMedium;
                 taskItem.style.borderTopLeftRadius = 6;
                 taskItem.style.borderTopRightRadius = 6;
                 taskItem.style.borderBottomLeftRadius = 6;
@@ -696,7 +697,7 @@ namespace ProjectChimera.UI.Panels
                 
                 var taskText = new Label(text);
                 taskText.style.fontSize = 12;
-                taskText.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+                // taskText.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
                 taskText.style.flexGrow = 1;
                 
                 var taskStatus = new UIStatusIndicator(status, "");
@@ -799,7 +800,7 @@ namespace ProjectChimera.UI.Panels
         {
             var item = new VisualElement();
             item.name = $"plant-item-{plant.Id}";
-            item.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // item.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             item.style.borderTopLeftRadius = 8;
             item.style.borderTopRightRadius = 8;
             item.style.borderBottomLeftRadius = 8;
@@ -820,18 +821,18 @@ namespace ProjectChimera.UI.Panels
             
             var nameLabel = new Label(plant.Name);
             nameLabel.style.fontSize = 14;
-            nameLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // nameLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             nameLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             nameLabel.style.marginBottom = 2;
             
             var strainLabel = new Label(plant.StrainName);
             strainLabel.style.fontSize = 12;
-            strainLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
+            // strainLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
             strainLabel.style.marginBottom = 2;
             
             var detailsLabel = new Label($"{plant.GrowthStage} • {plant.Age} days • {plant.Health:F0}% health");
             detailsLabel.style.fontSize = 10;
-            detailsLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // detailsLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             infoContainer.Add(nameLabel);
             infoContainer.Add(strainLabel);
@@ -855,7 +856,7 @@ namespace ProjectChimera.UI.Panels
             {
                 var alertLabel = new Label("⚠️");
                 alertLabel.style.fontSize = 16;
-                alertLabel.style.color = _uiManager.DesignSystem.ColorPalette.Warning;
+                // alertLabel.style.color = _uiManager.DesignSystem.ColorPalette.Warning;
                 statusContainer.Add(alertLabel);
             }
             
@@ -869,8 +870,8 @@ namespace ProjectChimera.UI.Panels
             
             // Hover effect
             item.AddHoverEffects(
-                _uiManager.DesignSystem.ColorPalette.InteractiveHover,
-                _uiManager.DesignSystem.ColorPalette.SurfaceDark
+                // _uiManager.DesignSystem.ColorPalette.InteractiveHover,
+                // _uiManager.DesignSystem.ColorPalette.SurfaceDark
             );
             
             return item;
@@ -1114,11 +1115,11 @@ namespace ProjectChimera.UI.Panels
             LogInfo($"Performed {action} on plant {_selectedPlant.Name}");
             
             // Show success notification
-            if (_uiManager != null)
-            {
-                var hud = _uiManager.GetPanel("gameplay-hud") as GameplayHUDPanel;
+            // if (_uiManager != null)
+            // {
+                // var hud = _uiManager.GetPanel("gameplay-hud") as GameplayHUDPanel;
                 hud?.ShowNotification(message, UIStatus.Success);
-            }
+            // }
             
             _onCareTaskCompleted?.Raise();
         }

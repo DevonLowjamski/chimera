@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using System;
+using UnityEngine;
 using ProjectChimera.Data.Equipment;
 using ProjectChimera.Data.Genetics;
 
@@ -606,5 +608,28 @@ namespace ProjectChimera.Data.Environment
         Acknowledged,
         Cleared,
         Disabled
+    }
+
+    // Additional types needed by AdvancedGrowLightSystem
+    public enum GrowLightType
+    {
+        LED,
+        HPS,
+        CMH,
+        Fluorescent,
+        FullSpectrum,
+        Quantum,
+        Hybrid
+    }
+
+    [System.Serializable]
+    public class LightPerformanceMetrics
+    {
+        public float PPFD; // μmol/m²/s
+        public float PowerConsumption; // Watts
+        public float Efficiency; // μmol/J
+        public float Temperature; // °C
+        public float Lifetime; // hours
+        public float DegradationRate; // % per 1000 hours
     }
 }

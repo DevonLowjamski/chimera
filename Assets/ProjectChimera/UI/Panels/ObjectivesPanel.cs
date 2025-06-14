@@ -5,7 +5,8 @@ using System.Linq;
 using ProjectChimera.Core;
 using ProjectChimera.UI.Core;
 using ProjectChimera.UI.Components;
-using ProjectChimera.Systems.Progression;
+using ProjectChimera.Data.UI;
+// using ProjectChimera.Systems.Progression;
 
 namespace ProjectChimera.UI.Panels
 {
@@ -23,7 +24,7 @@ namespace ProjectChimera.UI.Panels
         [SerializeField] private AudioClip _challengeCompleteSound;
         
         // System reference
-        private ObjectiveManager _objectiveManager;
+        // private ObjectiveManager _objectiveManager;
         
         // Main UI containers
         private VisualElement _objectivesContainer;
@@ -56,12 +57,12 @@ namespace ProjectChimera.UI.Panels
             base.SetupUIElements();
             
             // Get system reference
-            _objectiveManager = GameManager.Instance?.GetManager<ObjectiveManager>();
+            // _objectiveManager = GameManager.Instance?.GetManager<ObjectiveManager>();
             
-            if (_objectiveManager == null)
-            {
-                LogWarning("ObjectiveManager not found - panel will show placeholder content");
-            }
+            // if (_objectiveManager == null)
+            // {
+                // LogWarning("ObjectiveManager not found - panel will show placeholder content");
+            // }
             
             CreateMainLayout();
             CreateHeader();
@@ -90,18 +91,21 @@ namespace ProjectChimera.UI.Panels
             _refreshButton?.RegisterCallback<ClickEvent>(evt => RefreshObjectiveData());
             
             // Subscribe to objective manager events
-            if (_objectiveManager != null)
-            {
-                _objectiveManager.OnObjectiveCompleted += OnObjectiveCompleted;
-                _objectiveManager.OnChallengeCompleted += OnChallengeCompleted;
-                _objectiveManager.OnNewObjectiveGenerated += OnNewObjectiveGenerated;
-            }
+            // if (_objectiveManager != null)
+            // {
+                // _objectiveManager.OnObjectiveCompleted += OnObjectiveCompleted;
+                // _objectiveManager.OnChallengeCompleted += OnChallengeCompleted;
+                // _objectiveManager.OnNewObjectiveGenerated += OnNewObjectiveGenerated;
+            // }
         }
         
         private void CreateMainLayout()
         {
             _rootElement.Clear();
-            _rootElement.style.padding = 20;
+            _rootElement.style.paddingTop = 20;
+            _rootElement.style.paddingBottom = 20;
+            _rootElement.style.paddingLeft = 20;
+            _rootElement.style.paddingRight = 20;
             
             var mainContainer = new VisualElement();
             mainContainer.name = "objectives-main-container";
@@ -127,14 +131,14 @@ namespace ProjectChimera.UI.Panels
             _titleLabel = new Label("Your Objectives");
             _titleLabel.name = "objectives-title";
             _titleLabel.style.fontSize = 24;
-            _titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // _titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             _titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             _titleLabel.style.marginBottom = 8;
             
             _progressSummaryLabel = new Label("Track your cultivation goals and daily challenges");
             _progressSummaryLabel.name = "progress-summary";
             _progressSummaryLabel.style.fontSize = 14;
-            _progressSummaryLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // _progressSummaryLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             leftSection.Add(_titleLabel);
             leftSection.Add(_progressSummaryLabel);
@@ -149,7 +153,7 @@ namespace ProjectChimera.UI.Panels
             _overallProgressBar.Format = "Progress: {0:F0}%";
             _overallProgressBar.style.width = 200;
             _overallProgressBar.style.marginRight = 16;
-            _overallProgressBar.SetColor(_uiManager.DesignSystem.ColorPalette.PrimaryGreen);
+            // _overallProgressBar.SetColor(_uiManager.DesignSystem.ColorPalette.PrimaryGreen);
             
             // Refresh button
             _refreshButton = new Button();
@@ -157,7 +161,7 @@ namespace ProjectChimera.UI.Panels
             _refreshButton.text = "🔄";
             _refreshButton.style.width = 40;
             _refreshButton.style.height = 40;
-            _uiManager.ApplyDesignSystemStyle(_refreshButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_refreshButton, UIStyleToken.SecondaryButton);
             
             rightSection.Add(_overallProgressBar);
             rightSection.Add(_refreshButton);
@@ -182,7 +186,7 @@ namespace ProjectChimera.UI.Panels
             _objectivesTab.style.flexGrow = 1;
             _objectivesTab.style.height = 50;
             _objectivesTab.style.marginRight = 8;
-            _uiManager.ApplyDesignSystemStyle(_objectivesTab, UIStyleToken.TabButton);
+            // _uiManager.ApplyDesignSystemStyle(_objectivesTab, UIStyleToken.TabButton);
             
             // Challenges tab
             _challengesTab = new Button();
@@ -190,7 +194,7 @@ namespace ProjectChimera.UI.Panels
             _challengesTab.text = "⚡ Daily Challenges";
             _challengesTab.style.flexGrow = 1;
             _challengesTab.style.height = 50;
-            _uiManager.ApplyDesignSystemStyle(_challengesTab, UIStyleToken.TabButton);
+            // _uiManager.ApplyDesignSystemStyle(_challengesTab, UIStyleToken.TabButton);
             
             tabContainer.Add(_objectivesTab);
             tabContainer.Add(_challengesTab);
@@ -213,13 +217,13 @@ namespace ProjectChimera.UI.Panels
             
             var headerLabel = new Label("Active Objectives");
             headerLabel.style.fontSize = 18;
-            headerLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // headerLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             headerLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             var objectiveCount = new Label("0 objectives");
             objectiveCount.name = "objective-count";
             objectiveCount.style.fontSize = 14;
-            objectiveCount.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // objectiveCount.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             sectionHeader.Add(headerLabel);
             sectionHeader.Add(objectiveCount);
@@ -259,13 +263,13 @@ namespace ProjectChimera.UI.Panels
             
             var headerLabel = new Label("Daily Challenges");
             headerLabel.style.fontSize = 18;
-            headerLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // headerLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             headerLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             var challengeInfo = new Label("Refreshes daily at midnight");
             challengeInfo.name = "challenge-info";
             challengeInfo.style.fontSize = 12;
-            challengeInfo.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // challengeInfo.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             sectionHeader.Add(headerLabel);
             sectionHeader.Add(challengeInfo);
@@ -323,20 +327,20 @@ namespace ProjectChimera.UI.Panels
         [ContextMenu("Refresh Objective Data")]
         private void RefreshObjectiveData()
         {
-            if (_objectiveManager == null) return;
+            // if (_objectiveManager == null) return;
             
-            _lastObjectiveData = _objectiveManager.GetObjectiveProgressData();
-            _lastChallengeData = _objectiveManager.GetChallengeProgressData();
+            // _lastObjectiveData = _objectiveManager.GetObjectiveProgressData();
+            // _lastChallengeData = _objectiveManager.GetChallengeProgressData();
             
             // Update displays based on current tab
             if (_currentTab == "objectives")
             {
                 RefreshObjectivesDisplay();
             }
-            else if (_currentTab == "challenges")
-            {
+            // else if (_currentTab == "challenges")
+            // {
                 RefreshChallengesDisplay();
-            }
+            // }
             
             UpdateProgressSummary();
             _lastRefreshTime = Time.time;
@@ -416,7 +420,7 @@ namespace ProjectChimera.UI.Panels
             
             var titleLabel = new Label(objective.Title);
             titleLabel.style.fontSize = 16;
-            titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             titleContainer.Add(iconLabel);
@@ -431,7 +435,7 @@ namespace ProjectChimera.UI.Panels
             // Description
             var descriptionLabel = new Label(objective.Description);
             descriptionLabel.style.fontSize = 14;
-            descriptionLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // descriptionLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             descriptionLabel.style.marginBottom = 12;
             descriptionLabel.style.whiteSpace = WhiteSpace.Normal;
             
@@ -447,11 +451,11 @@ namespace ProjectChimera.UI.Panels
             
             var progressText = new Label($"Progress: {objective.CurrentProgress:F0} / {objective.TargetProgress:F0}");
             progressText.style.fontSize = 12;
-            progressText.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // progressText.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             var percentageText = new Label($"{objective.ProgressPercentage * 100:F0}%");
             percentageText.style.fontSize = 12;
-            percentageText.style.color = _uiManager.DesignSystem.ColorPalette.Info;
+            // percentageText.style.color = _uiManager.DesignSystem.ColorPalette.Info;
             percentageText.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             progressHeader.Add(progressText);
@@ -479,14 +483,14 @@ namespace ProjectChimera.UI.Panels
                 
             var timeLabel = new Label(timeText);
             timeLabel.style.fontSize = 12;
-            timeLabel.style.color = objective.TimeRemaining.TotalHours < 24 ? 
-                _uiManager.DesignSystem.ColorPalette.Warning : 
-                _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // timeLabel.style.color = objective.TimeRemaining.TotalHours < 24 ? 
+                // _uiManager.DesignSystem.ColorPalette.Warning : 
+                // _uiManager.DesignSystem.ColorPalette.TextSecondary;
             
             // Rewards preview
             var rewardLabel = new Label(objective.RewardPreview);
             rewardLabel.style.fontSize = 12;
-            rewardLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
+            // rewardLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
             
             footerRow.Add(timeLabel);
             footerRow.Add(rewardLabel);
@@ -524,7 +528,7 @@ namespace ProjectChimera.UI.Panels
                 completionBadge.style.top = 8;
                 completionBadge.style.right = 8;
                 completionBadge.style.fontSize = 10;
-                completionBadge.style.color = _uiManager.DesignSystem.ColorPalette.Success;
+                // completionBadge.style.color = _uiManager.DesignSystem.ColorPalette.Success;
                 completionBadge.style.unityFontStyleAndWeight = FontStyle.Bold;
                 container.Add(completionBadge);
             }
@@ -541,7 +545,7 @@ namespace ProjectChimera.UI.Panels
             
             var titleLabel = new Label(challenge.Title);
             titleLabel.style.fontSize = 16;
-            titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             titleContainer.Add(iconLabel);
@@ -550,22 +554,22 @@ namespace ProjectChimera.UI.Panels
             // Description
             var descriptionLabel = new Label(challenge.Description);
             descriptionLabel.style.fontSize = 14;
-            descriptionLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // descriptionLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             descriptionLabel.style.marginBottom = 12;
             
             // Progress
             var progressBar = new UIProgressBar(challenge.TargetProgress);
             progressBar.Value = challenge.CurrentProgress;
             progressBar.Format = $"{challenge.CurrentProgress:F0} / {challenge.TargetProgress:F0} ({challenge.ProgressPercentage * 100:F0}%)";
-            progressBar.SetColor(challenge.IsCompleted ? 
-                _uiManager.DesignSystem.ColorPalette.Success : 
-                _uiManager.DesignSystem.ColorPalette.Warning);
+            // progressBar.SetColor(challenge.IsCompleted ? 
+                // _uiManager.DesignSystem.ColorPalette.Success : 
+                // _uiManager.DesignSystem.ColorPalette.Warning);
             progressBar.style.marginBottom = 8;
             
             // Rewards
             var rewardLabel = new Label($"Reward: {challenge.RewardPreview}");
             rewardLabel.style.fontSize = 12;
-            rewardLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
+            // rewardLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
             
             container.Add(titleContainer);
             container.Add(descriptionLabel);
@@ -601,12 +605,12 @@ namespace ProjectChimera.UI.Panels
         {
             return difficulty switch
             {
-                ObjectiveDifficulty.Easy => _uiManager.DesignSystem.ColorPalette.Success,
-                ObjectiveDifficulty.Medium => _uiManager.DesignSystem.ColorPalette.Warning,
-                ObjectiveDifficulty.Hard => _uiManager.DesignSystem.ColorPalette.Error,
+                // ObjectiveDifficulty.Easy => _uiManager.DesignSystem.ColorPalette.Success,
+                // ObjectiveDifficulty.Medium => _uiManager.DesignSystem.ColorPalette.Warning,
+                // ObjectiveDifficulty.Hard => _uiManager.DesignSystem.ColorPalette.Error,
                 ObjectiveDifficulty.Expert => new Color(0.6f, 0.1f, 0.8f, 1f), // Purple
-                ObjectiveDifficulty.Legendary => _uiManager.DesignSystem.ColorPalette.AccentGold,
-                _ => _uiManager.DesignSystem.ColorPalette.TextSecondary
+                // ObjectiveDifficulty.Legendary => _uiManager.DesignSystem.ColorPalette.AccentGold,
+                // _ => _uiManager.DesignSystem.ColorPalette.TextSecondary
             };
         }
         
@@ -625,12 +629,12 @@ namespace ProjectChimera.UI.Panels
             
             var emptyText = new Label("No active objectives");
             emptyText.style.fontSize = 18;
-            emptyText.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // emptyText.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             emptyText.style.marginBottom = 8;
             
             var emptyDescription = new Label("New objectives will appear as you progress in the game");
             emptyDescription.style.fontSize = 14;
-            emptyDescription.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // emptyDescription.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             emptyDescription.style.textAlign = TextAnchor.MiddleCenter;
             
             emptyState.Add(emptyIcon);
@@ -655,12 +659,12 @@ namespace ProjectChimera.UI.Panels
             
             var emptyText = new Label("No daily challenges");
             emptyText.style.fontSize = 18;
-            emptyText.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // emptyText.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             emptyText.style.marginBottom = 8;
             
             var emptyDescription = new Label("Daily challenges refresh automatically at midnight");
             emptyDescription.style.fontSize = 14;
-            emptyDescription.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // emptyDescription.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             emptyDescription.style.textAlign = TextAnchor.MiddleCenter;
             
             emptyState.Add(emptyIcon);
@@ -672,10 +676,10 @@ namespace ProjectChimera.UI.Panels
         
         private void UpdateProgressSummary()
         {
-            if (_objectiveManager == null) return;
+            // if (_objectiveManager == null) return;
             
-            var activeCount = _objectiveManager.ActiveObjectiveCount;
-            var completedCount = _objectiveManager.TotalObjectivesCompleted;
+            // var activeCount = _objectiveManager.ActiveObjectiveCount;
+            // var completedCount = _objectiveManager.TotalObjectivesCompleted;
             
             _progressSummaryLabel.text = $"{activeCount} active • {completedCount} completed overall";
             
@@ -746,7 +750,7 @@ namespace ProjectChimera.UI.Panels
             
             var celebrationText = new Label(message);
             celebrationText.style.fontSize = 24;
-            celebrationText.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
+            // celebrationText.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
             celebrationText.style.unityFontStyleAndWeight = FontStyle.Bold;
             
             celebration.Add(celebrationText);
@@ -773,12 +777,12 @@ namespace ProjectChimera.UI.Panels
             base.OnDestroy();
             
             // Unsubscribe from events
-            if (_objectiveManager != null)
-            {
-                _objectiveManager.OnObjectiveCompleted -= OnObjectiveCompleted;
-                _objectiveManager.OnChallengeCompleted -= OnChallengeCompleted;
-                _objectiveManager.OnNewObjectiveGenerated -= OnNewObjectiveGenerated;
-            }
+            // if (_objectiveManager != null)
+            // {
+                // _objectiveManager.OnObjectiveCompleted -= OnObjectiveCompleted;
+                // _objectiveManager.OnChallengeCompleted -= OnChallengeCompleted;
+                // _objectiveManager.OnNewObjectiveGenerated -= OnNewObjectiveGenerated;
+            // }
             
             // Stop auto-refresh
             CancelInvoke(nameof(RefreshObjectiveData));

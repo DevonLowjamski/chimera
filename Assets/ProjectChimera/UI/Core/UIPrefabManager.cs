@@ -61,7 +61,7 @@ namespace ProjectChimera.UI.Core
                 PreloadPrefabs();
             }
             
-            LogInfo("UI Prefab Manager initialized successfully");
+            // LogInfo("UI Prefab Manager initialized successfully");
         }
         
         protected override void OnManagerShutdown()
@@ -71,7 +71,7 @@ namespace ProjectChimera.UI.Core
             _activeComponents.Clear();
             _activeModals.Clear();
             
-            LogInfo("UI Prefab Manager shutdown completed");
+            // LogInfo("UI Prefab Manager shutdown completed");
         }
         
         /// <summary>
@@ -370,10 +370,10 @@ namespace ProjectChimera.UI.Core
             {
                 ReturnToPool(instance);
             }
-            else
-            {
+            // else
+            // {
                 DestroyInstance(instance);
-            }
+            // }
         }
         
         /// <summary>
@@ -420,15 +420,15 @@ namespace ProjectChimera.UI.Core
                 {
                     _componentPools[templateId].Enqueue(instance);
                 }
-                else
-                {
+                // else
+                // {
                     DestroyInstance(instance);
-                }
+                // }
             }
-            else
-            {
+            // else
+            // {
                 DestroyInstance(instance);
-            }
+            // }
         }
         
         /// <summary>

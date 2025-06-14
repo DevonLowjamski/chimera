@@ -237,10 +237,10 @@ namespace ProjectChimera.UI.Core
             {
                 StartShowAnimation();
             }
-            else
-            {
+            // else
+            // {
                 OnNotificationShown?.Invoke(this);
-            }
+            // }
             
             LogInfo($"Notification shown: {_title ?? _message}");
         }
@@ -259,10 +259,10 @@ namespace ProjectChimera.UI.Core
             {
                 StartHideAnimation();
             }
-            else
-            {
+            // else
+            // {
                 CompleteDismiss();
-            }
+            // }
             
             LogInfo($"Notification dismissed: {_title ?? _message}");
         }

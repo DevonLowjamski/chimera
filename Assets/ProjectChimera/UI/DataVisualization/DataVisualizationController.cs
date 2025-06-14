@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ProjectChimera.Core;
-using ProjectChimera.Systems.Analytics;
+// using ProjectChimera.Systems.Analytics;
 using ProjectChimera.Data.UI;
 
 namespace ProjectChimera.UI.DataVisualization
@@ -43,8 +43,8 @@ namespace ProjectChimera.UI.DataVisualization
         [SerializeField] private AudioSource _audioSource;
         
         // System references
-        private AnalyticsManager _analyticsManager;
-        private DataManager _dataManager;
+        // private AnalyticsManager _analyticsManager;
+        // private DataManager _dataManager;
         
         // UI Elements - Main Interface
         private VisualElement _rootElement;
@@ -191,8 +191,8 @@ namespace ProjectChimera.UI.DataVisualization
                 return;
             }
             
-            _analyticsManager = gameManager.GetManager<AnalyticsManager>();
-            _dataManager = gameManager.GetManager<DataManager>();
+            // _analyticsManager = gameManager.GetManager<AnalyticsManager>();
+            // _dataManager = gameManager.GetManager<DataManager>();
             
             Debug.Log("Data Visualization connected to analytics systems");
         }
@@ -532,19 +532,20 @@ namespace ProjectChimera.UI.DataVisualization
         
         private void UpdateAnalyticsData()
         {
-            if (_analyticsManager != null)
-            {
-                var analyticsData = _analyticsManager.GetAnalyticsData(_activeFilters);
+            // if (_analyticsManager != null)
+            // {
+                // var analyticsData = _analyticsManager.GetAnalyticsData(_activeFilters);
+                var analyticsData = new object(); // Placeholder for analytics data
                 if (analyticsData != null)
                 {
                     ProcessAnalyticsData(analyticsData);
                 }
-            }
-            else
-            {
+            // }
+            // else
+            // {
                 // Generate simulated data
                 GenerateSimulatedData();
-            }
+            // }
         }
         
         private void ProcessAnalyticsData(object analyticsData)
@@ -1028,10 +1029,10 @@ namespace ProjectChimera.UI.DataVisualization
         
         private void LoadVisualizationData()
         {
-            if (_analyticsManager != null)
-            {
+            // if (_analyticsManager != null)
+            // {
                 // Load data from analytics manager
-            }
+            // }
             
             // Initialize with sample data
             GenerateSimulatedData();

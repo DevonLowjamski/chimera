@@ -108,10 +108,10 @@ namespace ProjectChimera.UI.Core
                 
                 SpeakImmediate(announcement.Message);
             }
-            else
-            {
+            // else
+            // {
                 _announcementQueue.Enqueue(announcement);
-            }
+            // }
             
             OnAnnouncementRequested?.Invoke(text, priority);
         }

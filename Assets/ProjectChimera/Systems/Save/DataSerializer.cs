@@ -17,13 +17,13 @@ namespace ProjectChimera.Systems.Save
     {
         private readonly bool _enableCompression;
         private readonly bool _enableEncryption;
-        private readonly CompressionLevel _compressionLevel;
+        private readonly System.IO.Compression.CompressionLevel _compressionLevel;
         private readonly string _encryptionKey;
         
         // Performance metrics
         private SerializationMetrics _metrics = new SerializationMetrics();
         
-        public DataSerializer(bool enableCompression = true, bool enableEncryption = false, CompressionLevel compressionLevel = CompressionLevel.Optimal)
+        public DataSerializer(bool enableCompression = true, bool enableEncryption = false, System.IO.Compression.CompressionLevel compressionLevel = System.IO.Compression.CompressionLevel.Optimal)
         {
             _enableCompression = enableCompression;
             _enableEncryption = enableEncryption;

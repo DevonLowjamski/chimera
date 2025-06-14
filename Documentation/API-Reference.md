@@ -2,7 +2,188 @@
 
 ## 📚 Comprehensive API Documentation
 
-This reference provides detailed information about all public APIs, interfaces, and extension points in Project Chimera. Use this guide for development, modding, and integration purposes.
+This reference provides detailed information about all public APIs, interfaces, and extension points in Project Chimera. This includes the advanced SpeedTree integration, complete cultivation simulation, and all 50+ manager systems that make up the ultimate cannabis cultivation experience.
+
+---
+
+## 🌿 SpeedTree Integration APIs
+
+### AdvancedSpeedTreeManager
+**Core SpeedTree cannabis plant simulation system**
+
+```csharp
+public class AdvancedSpeedTreeManager : ChimeraManager
+{
+    public int ActivePlantInstances { get; }
+    public bool SpeedTreeEnabled { get; }
+    public SpeedTreePerformanceMetrics PerformanceMetrics { get; }
+    
+    // Plant instance management
+    public SpeedTreePlantInstance CreatePlantInstance(CannabisGenotype genotype, Vector3 position, Transform parent = null);
+    public void DestroyPlantInstance(int instanceId);
+    public SpeedTreePlantInstance GetPlantInstance(int instanceId);
+    public List<SpeedTreePlantInstance> GetAllActiveInstances();
+    
+    // Genetic variation
+    public SpeedTreePlantInstance CreateGeneticVariation(string baseStrainId, EnvironmentalConditions conditions);
+    public void ApplyGeneticTraits(SpeedTreePlantInstance instance, CannabisGenotype genotype);
+    public CannabisGenotype GenerateOffspringGenetics(CannabisGenotype parent1, CannabisGenotype parent2);
+    
+    // Environmental integration
+    public void UpdateEnvironmentalResponse(int instanceId, EnvironmentalConditions conditions);
+    public void ProcessStressResponse(int instanceId, EnvironmentalStressData stressData);
+    public void TriggerAdaptation(int instanceId, EnvironmentalAdaptation adaptation);
+    
+    // Performance monitoring
+    public SpeedTreeSystemReport GetSystemReport();
+    public void OptimizePerformance();
+    public void SetQualityLevel(QualityLevel level);
+}
+```
+
+### CannabisGeneticsEngine
+**Scientific cannabis genetics simulation**
+
+```csharp
+public class CannabisGeneticsEngine : ChimeraManager
+{
+    public int TotalGenotypes { get; }
+    public int ActiveBreedingPrograms { get; }
+    
+    // Genetic operations
+    public CannabisGenotype CreateBaseGenotype(string strainId, CannabisStrainSO strainData);
+    public CannabisGenotype GenerateGeneticVariation(string baseStrainId, EnvironmentalConditions conditions = null);
+    public BreedingResult CrossBreed(CannabisGenotype parent1, CannabisGenotype parent2, string offspringName);
+    
+    // Trait analysis
+    public float CalculateTraitExpression(CannabisGenotype genotype, string traitName, EnvironmentalConditions conditions);
+    public PhenotypeProfile GeneratePhenotypeProfile(CannabisGenotype genotype, EnvironmentalConditions conditions);
+    public GeneticCompatibility AnalyzeBreedingCompatibility(CannabisGenotype parent1, CannabisGenotype parent2);
+    
+    // Inheritance simulation
+    public AlleleInheritance SimulateMendelianInheritance(GeneticLocus locus, CannabisGenotype parent1, CannabisGenotype parent2);
+    public float CalculatePolygeneticTrait(CannabisGenotype genotype, List<GeneticLocus> contributingLoci);
+    public EpigeneticFactors CalculateEpigeneticInfluence(EnvironmentalConditions conditions, float exposureDuration);
+}
+```
+
+### SpeedTreeEnvironmentalSystem
+**Real-time environmental response and adaptation**
+
+```csharp
+public class SpeedTreeEnvironmentalSystem : ChimeraManager
+{
+    public int MonitoredPlants { get; }
+    public EnvironmentalSystemMetrics SystemMetrics { get; }
+    
+    // Plant monitoring
+    public void RegisterPlantForMonitoring(SpeedTreePlantInstance instance);
+    public void UnregisterPlant(int instanceId);
+    public PlantEnvironmentalState GetPlantState(int instanceId);
+    public void UpdatePlantEnvironment(int instanceId, EnvironmentalConditions conditions);
+    
+    // Stress simulation
+    public EnvironmentalStressData CalculateStressLevels(PlantEnvironmentalState plantState, EnvironmentalConditions conditions);
+    public void ProcessStressAccumulation(PlantEnvironmentalState plantState, float deltaTime);
+    public void TriggerStressRecovery(int instanceId, float recoveryRate);
+    
+    // Adaptation system
+    public EnvironmentalAdaptation ProcessAdaptation(PlantEnvironmentalState plantState, AdaptationPressure pressure);
+    public void ApplyAdaptation(int instanceId, EnvironmentalAdaptation adaptation);
+    public AdaptationProgress GetAdaptationProgress(int instanceId);
+    
+    // Environmental zones
+    public void CreateEnvironmentalZone(string zoneId, Bounds zoneBounds, EnvironmentalConditions conditions);
+    public void UpdateZoneConditions(string zoneId, EnvironmentalConditions newConditions);
+    public EnvironmentalZone GetZoneAtPosition(Vector3 position);
+}
+```
+
+### SpeedTreeGrowthSystem
+**Sophisticated growth animation and lifecycle management**
+
+```csharp
+public class SpeedTreeGrowthSystem : ChimeraManager
+{
+    public int ActiveGrowingPlants { get; }
+    public GrowthPerformanceMetrics PerformanceMetrics { get; }
+    
+    // Growth management
+    public void RegisterPlantForGrowth(SpeedTreePlantInstance instance);
+    public void UnregisterPlantFromGrowth(int instanceId);
+    public PlantGrowthState GetPlantGrowthState(int instanceId);
+    public void TriggerStageTransition(int instanceId, PlantGrowthStage targetStage);
+    
+    // Animation system
+    public void SetGrowthAnimationEnabled(bool enabled);
+    public GrowthAnimationData GetGrowthAnimationData(int instanceId);
+    public void UpdatePlantVisualProgression(int instanceId);
+    
+    // Specialized growth systems
+    public BudDevelopmentData GetBudDevelopment(int instanceId);
+    public TrichromeData GetTrichromeProgress(int instanceId);
+    public LifecycleProgressData GetLifecycleProgress(int instanceId);
+    public List<GrowthMilestone> GetAchievedMilestones(int instanceId);
+    
+    // Growth configuration
+    public void SetGrowthTimeMultiplier(float multiplier);
+    public void SetAcceleratedGrowth(bool enabled);
+    public GrowthSystemReport GetSystemReport();
+}
+```
+
+### SpeedTreeOptimizationSystem
+**Advanced performance optimization for large-scale cultivation**
+
+```csharp
+public class SpeedTreeOptimizationSystem : ChimeraManager
+{
+    public PerformanceMetrics CurrentMetrics { get; }
+    public QualityLevel CurrentQualityLevel { get; }
+    public int VisiblePlantCount { get; }
+    
+    // Plant optimization
+    public void RegisterPlantForOptimization(SpeedTreePlantInstance instance);
+    public void UnregisterPlantFromOptimization(int instanceId);
+    public PlantPerformanceData GetPlantPerformanceData(int instanceId);
+    public OptimizationState GetOptimizationState(int instanceId);
+    
+    // Quality management
+    public void ChangeQualityLevel(QualityLevel newQuality);
+    public void EnableDynamicQuality();
+    public void ForceQualityLevel(QualityLevel quality);
+    
+    // Performance control
+    public void SetTargetFrameRate(int frameRate);
+    public void SetMaxVisiblePlants(int maxPlants);
+    public void SetOptimizationEnabled(bool enabled);
+    public OptimizationSystemReport GetSystemReport();
+}
+```
+
+**Usage Examples**:
+```csharp
+// Create SpeedTree cannabis plant with genetics
+var geneticsEngine = GameManager.Instance.GetManager<CannabisGeneticsEngine>();
+var genotype = geneticsEngine.CreateBaseGenotype("white_widow", whiteWidowStrain);
+var speedTreeManager = GameManager.Instance.GetManager<AdvancedSpeedTreeManager>();
+var plantInstance = speedTreeManager.CreatePlantInstance(genotype, Vector3.zero);
+
+// Monitor environmental response
+var environmentalSystem = GameManager.Instance.GetManager<SpeedTreeEnvironmentalSystem>();
+environmentalSystem.RegisterPlantForMonitoring(plantInstance);
+environmentalSystem.UpdatePlantEnvironment(plantInstance.InstanceId, currentConditions);
+
+// Track growth progression
+var growthSystem = GameManager.Instance.GetManager<SpeedTreeGrowthSystem>();
+var growthState = growthSystem.GetPlantGrowthState(plantInstance.InstanceId);
+var budProgress = growthSystem.GetBudDevelopment(plantInstance.InstanceId);
+
+// Optimize performance for hundreds of plants
+var optimizationSystem = GameManager.Instance.GetManager<SpeedTreeOptimizationSystem>();
+optimizationSystem.RegisterPlantForOptimization(plantInstance);
+optimizationSystem.SetMaxVisiblePlants(500);
+```
 
 ---
 
@@ -76,6 +257,225 @@ _timeManager.SetTimeScale(2.0f); // 2x speed
 
 // Offline progression
 _timeManager.ProcessOfflineTime(System.TimeSpan.FromHours(8));
+```
+
+---
+
+## 🎮 Advanced Gameplay System APIs
+
+### AdvancedCameraController
+**Comprehensive camera system with multiple view modes**
+
+```csharp
+public class AdvancedCameraController : ChimeraManager
+{
+    public CameraMode CurrentMode { get; }
+    public bool IsTransitioning { get; }
+    public CameraControlSettings Settings { get; set; }
+    
+    // View mode management
+    public void SetCameraMode(CameraMode mode);
+    public void TransitionToMode(CameraMode mode, float duration);
+    public void SetTarget(Transform target);
+    public void SetPosition(Vector3 position, Quaternion rotation);
+    
+    // Interactive controls
+    public void EnableOrbitControls(bool enabled);
+    public void EnableFlyControls(bool enabled);
+    public void SetMovementSpeed(float speed);
+    public void SetRotationSensitivity(float sensitivity);
+    
+    // Advanced features
+    public void FocusOnObject(GameObject target, float duration = 1f);
+    public void SetupOverheadView(Bounds area);
+    public void BeginVirtualTour(List<Transform> waypoints);
+    public CameraState SaveCameraState();
+    public void RestoreCameraState(CameraState state);
+}
+```
+
+### InteractivePlantComponent
+**Advanced plant interaction and cultivation mechanics**
+
+```csharp
+public class InteractivePlantComponent : MonoBehaviour
+{
+    public string PlantId { get; }
+    public PlantGrowthStage CurrentStage { get; }
+    public float Health { get; }
+    public bool IsInteractable { get; }
+    
+    // Interaction system
+    public void OnPlayerInteract();
+    public void StartHarvest();
+    public void ApplyTreatment(TreatmentType treatment);
+    public void TakeClone();
+    public void InspectPlant();
+    
+    // Visual feedback
+    public void HighlightPlant(Color highlightColor);
+    public void ShowInfoPanel();
+    public void DisplayHealthStatus();
+    public void ShowGrowthProgress();
+    
+    // Events
+    public event System.Action<InteractivePlantComponent> OnPlantInteracted;
+    public event System.Action<InteractivePlantComponent> OnHarvestCompleted;
+    public event System.Action<InteractivePlantComponent, PlantGrowthStage> OnStageChanged;
+}
+```
+
+### ProceduralSceneGenerator
+**Dynamic scene generation and environment creation**
+
+```csharp
+public class ProceduralSceneGenerator : ChimeraManager
+{
+    public SceneGenerationSettings Settings { get; set; }
+    public bool IsGenerating { get; }
+    
+    // Scene generation
+    public void GenerateGrowRoom(GrowRoomConfiguration config);
+    public void GenerateOutdoorFarm(OutdoorFarmConfiguration config);
+    public void GenerateProcessingFacility(ProcessingConfiguration config);
+    public void GenerateRetailSpace(RetailConfiguration config);
+    
+    // Dynamic loading
+    public void LoadSceneAsync(string sceneName, System.Action onComplete);
+    public void UnloadScene(string sceneName);
+    public void TransitionToScene(string sceneName, TransitionType transition);
+    
+    // Environment management
+    public void SetTimeOfDay(float time);
+    public void SetWeatherConditions(WeatherType weather);
+    public void UpdateLighting(LightingPreset preset);
+}
+```
+
+### InteractiveFacilityConstructor
+**Modular building system with economic integration**
+
+```csharp
+public class InteractiveFacilityConstructor : ChimeraManager
+{
+    public bool IsInBuildMode { get; }
+    public ConstructionProject ActiveProject { get; }
+    public float AvailableBudget { get; }
+    
+    // Construction operations
+    public void StartConstruction(ConstructionTemplate template);
+    public void PlaceModule(ModuleDefinition module, Vector3 position, Quaternion rotation);
+    public void RemoveModule(ModuleInstance module);
+    public void CompleteConstruction();
+    
+    // Economic integration
+    public void PurchaseModule(ModuleDefinition module);
+    public bool CanAffordModule(ModuleDefinition module);
+    public ConstructionCostBreakdown CalculateCosts(ConstructionTemplate template);
+    public void ProcessPayment(float amount);
+    
+    // Project management
+    public List<ConstructionProject> GetActiveProjects();
+    public void SaveProject(string projectName);
+    public void LoadProject(string projectName);
+    
+    // Events
+    public event System.Action<ConstructionProject> OnProjectCompleted;
+    public event System.Action<ConstructionProject, string> OnMilestoneReached;
+}
+```
+
+### AdvancedEffectsManager
+**Comprehensive particle effects and visual feedback**
+
+```csharp
+public class AdvancedEffectsManager : ChimeraManager
+{
+    public bool EffectsEnabled { get; set; }
+    public EffectQuality QualityLevel { get; set; }
+    
+    // Effect playback
+    public void PlayEffect(EffectType type, Vector3 position, Transform parent = null, float duration = 0f);
+    public void PlayEffectAtTarget(EffectType type, Transform target, float duration = 0f);
+    public void StopEffect(int effectId);
+    public void StopAllEffects();
+    
+    // Audio effects
+    public void PlayAudioEffect(AudioClip clip, Vector3 position, float volume = 1f);
+    public void PlayAmbientSound(AudioClip ambient, float volume = 1f, bool loop = true);
+    public void StopAmbientSound();
+    
+    // Visual feedback
+    public void TriggerScreenFlash(Color color, float intensity, float duration);
+    public void TriggerScreenShake(float intensity, float duration);
+    public void ShowParticleEffect(ParticleEffectType type, Vector3 position, float duration);
+    
+    // Effect management
+    public void PreloadEffect(EffectType type);
+    public void SetEffectPoolSize(EffectType type, int poolSize);
+    public EffectPerformanceMetrics GetPerformanceMetrics();
+}
+```
+
+### ComprehensiveProgressionManager
+**Complete progression system with skills, research, and achievements**
+
+```csharp
+public class ComprehensiveProgressionManager : ChimeraManager
+{
+    public PlayerProgressionData PlayerProgression { get; }
+    public ProgressionMetrics Metrics { get; }
+    public bool ProgressionEnabled { get; }
+    
+    // Experience and skills
+    public void GainExperience(string skillId, float amount, string source = "");
+    public int GetSkillLevel(string skillId);
+    public float GetSkillProgress(string skillId);
+    public void SetProgressionMultiplier(float multiplier);
+    
+    // Research system
+    public void StartResearch(string researchId);
+    public List<string> GetAvailableResearch();
+    public ResearchProgress GetResearchProgress(string researchId);
+    
+    // Achievement system
+    public List<AchievementSO> GetAvailableAchievements();
+    public bool IsContentUnlocked(string contentId);
+    public void UnlockContent(string contentId, string source = "");
+    
+    // Progression reporting
+    public ProgressionSystemReport GetSystemReport();
+    public void SetExperienceMultiplier(float multiplier);
+    
+    // Events
+    public event System.Action<string, int> OnSkillLevelUp;
+    public event System.Action<string> OnResearchCompleted;
+    public event System.Action<string> OnAchievementUnlocked;
+    public event System.Action<string> OnContentUnlocked;
+}
+```
+
+**Usage Examples**:
+```csharp
+// Advanced camera control
+var cameraController = GameManager.Instance.GetManager<AdvancedCameraController>();
+cameraController.SetCameraMode(CameraMode.Orbit);
+cameraController.FocusOnObject(selectedPlant.gameObject, 2f);
+
+// Interactive plant cultivation
+var plant = GetComponent<InteractivePlantComponent>();
+plant.OnPlantInteracted += (p) => Debug.Log($"Interacted with {p.PlantId}");
+plant.StartHarvest();
+
+// Facility construction
+var constructor = GameManager.Instance.GetManager<InteractiveFacilityConstructor>();
+var growRoomTemplate = Resources.Load<ConstructionTemplate>("Templates/BasicGrowRoom");
+constructor.StartConstruction(growRoomTemplate);
+
+// Progression tracking
+var progressionManager = GameManager.Instance.GetManager<ComprehensiveProgressionManager>();
+progressionManager.GainExperience("cultivation", 100f, "Plant Harvested");
+progressionManager.StartResearch("advanced_genetics");
 ```
 
 ---
@@ -762,4 +1162,207 @@ public static class ChimeraValidation
 }
 ```
 
-This comprehensive API reference provides all the information needed to develop with, extend, or integrate Project Chimera systems. For implementation examples and best practices, refer to the Developer Documentation.
+---
+
+## 📊 SpeedTree Data Structures
+
+### Core SpeedTree Types
+**Cannabis-specific data structures for SpeedTree integration**
+
+```csharp
+// Cannabis Genotype
+[System.Serializable]
+public class CannabisGenotype
+{
+    public string GenotypeId;
+    public string StrainId;
+    public string StrainName;
+    public int Generation;
+    public DateTime CreationDate;
+    public List<string> ParentGenotypes;
+    public Dictionary<string, AlleleData> Alleles;
+    
+    // Cannabis-specific traits
+    public float PlantSize;
+    public float GrowthRate;
+    public float FloweringSpeed;
+    public float YieldPotential;
+    public float TrichromeAmount;
+    public float BudDensity;
+    public Color BudColor;
+    public TerpeneProfile TerpeneProfile;
+    public DiseaseResistanceProfile ResistanceProfile;
+}
+
+// SpeedTree Plant Instance
+public class SpeedTreePlantInstance
+{
+    public int InstanceId;
+    public string PlantName;
+    public Vector3 Position;
+    public Vector3 Scale;
+    public PlantGrowthStage GrowthStage;
+    public float Health;
+    public float Age;
+    public CannabisGenotype GeneticData;
+    public PlantStrainSO StrainAsset;
+    public Renderer Renderer;
+    public Dictionary<string, float> EnvironmentalModifiers;
+    
+    // Growth progression
+    public float GrowthProgress;
+    public float StageProgress;
+    public DateTime PlantingDate;
+    public DateTime LastUpdate;
+}
+
+// Environmental Conditions
+[System.Serializable]
+public class EnvironmentalConditions
+{
+    public float Temperature;
+    public float Humidity;
+    public float LightIntensity;
+    public float CO2Level;
+    public float AirVelocity;
+    public float SoilMoisture;
+    public float SoilPH;
+    public Vector3 LightDirection;
+    public Color LightColor;
+    public float UVIndex;
+    public float VPD; // Vapor Pressure Deficit
+    public float DailyLightIntegral;
+    public float Timestamp;
+}
+
+// Growth Animation Data
+[System.Serializable]
+public class GrowthAnimationData
+{
+    public int InstanceId;
+    public float AnimationStartTime;
+    public GrowthAnimationPhase CurrentAnimationPhase;
+    public float AnimationSpeed;
+    public Vector3 TargetSize;
+    public float CurrentSize;
+    public Vector3 TargetRotation;
+    public Dictionary<string, float> AnimationParameters;
+    public bool IsAnimating;
+    public List<AnimationKeyframe> Keyframes;
+}
+```
+
+### Performance and Optimization Types
+**Advanced optimization data structures**
+
+```csharp
+// Plant Performance Data
+[System.Serializable]
+public class PlantPerformanceData
+{
+    public int InstanceId;
+    public SpeedTreePlantInstance PlantInstance;
+    public float LastVisibleTime;
+    public float RenderTime;
+    public float DistanceToCamera;
+    public int CurrentLODLevel;
+    public bool IsCulled;
+    public bool IsBatched;
+    public float MemoryFootprint;
+    public int OptimizationPriority;
+}
+
+// Performance Metrics
+[System.Serializable]
+public class PerformanceMetrics
+{
+    public float FrameTime;
+    public float AverageFrameRate;
+    public int VisiblePlants;
+    public int DrawCalls;
+    public int Batches;
+    public float MemoryUsage;
+    public int CulledPlants;
+    public int LODTransitions;
+    public DateTime LastUpdate;
+}
+
+// Quality Settings
+[System.Serializable]
+public class QualitySettings
+{
+    public int MaxVisiblePlants;
+    public float LODDistanceMultiplier;
+    public float CullingDistance;
+    public ShadowQuality ShadowQuality;
+    public int TextureQuality;
+    public AnisotropicFiltering AnisotropicFiltering;
+    public int AntiAliasing;
+    public int VSyncCount;
+    public int TargetFrameRate;
+}
+```
+
+---
+
+## 🎯 Configuration ScriptableObjects
+
+### SpeedTree Configuration
+**ScriptableObject-based configuration system for SpeedTree**
+
+```csharp
+[CreateAssetMenu(fileName = "SpeedTree Config", menuName = "Project Chimera/SpeedTree/Core Config")]
+public class SpeedTreeConfigSO : ScriptableObject
+{
+    [Header("Performance Settings")]
+    public int MaxSimultaneousPlants = 500;
+    public float DefaultLODDistance = 50f;
+    public bool EnableAutoOptimization = true;
+    public QualityLevel DefaultQuality = QualityLevel.High;
+    
+    [Header("Genetics Settings")]
+    public bool EnableGeneticVariation = true;
+    public float MutationRate = 0.01f;
+    public int MaxGenerations = 10;
+    
+    [Header("Environmental Settings")]
+    public bool EnableEnvironmentalResponse = true;
+    public float StressThreshold = 0.7f;
+    public float AdaptationRate = 0.1f;
+    
+    [Header("Growth Settings")]
+    public bool EnableRealTimeGrowth = true;
+    public float GrowthSpeedMultiplier = 1f;
+    public bool EnableStageProgression = true;
+}
+
+[CreateAssetMenu(fileName = "Cannabis Strain", menuName = "Project Chimera/SpeedTree/Cannabis Strain")]
+public class CannabisStrainSO : ScriptableObject
+{
+    [Header("Basic Information")]
+    public string StrainName;
+    public string Description;
+    public StrainType Type; // Indica, Sativa, Hybrid
+    public Sprite StrainImage;
+    
+    [Header("Growth Characteristics")]
+    public Vector2 HeightRange = new Vector2(1.5f, 3f);
+    public Vector2 WidthRange = new Vector2(1f, 2f);
+    public Vector2 FloweringTimeRange = new Vector2(8f, 12f); // weeks
+    public float TypicalYield = 500f; // grams
+    
+    [Header("Genetic Traits")]
+    public Vector2 THCRange = new Vector2(15f, 25f);
+    public Vector2 CBDRange = new Vector2(0.1f, 2f);
+    public TerpeneProfile TerpeneProfile;
+    public Color BudColor = Color.green;
+    
+    [Header("Environmental Preferences")]
+    public Vector2 OptimalTemperature = new Vector2(20f, 28f);
+    public Vector2 OptimalHumidity = new Vector2(50f, 70f);
+    public Vector2 OptimalLighting = new Vector2(600f, 1000f);
+    public DiseaseResistance DiseaseResistance;
+}
+```
+
+This comprehensive API reference provides all the information needed to develop with, extend, or integrate Project Chimera's advanced systems including the sophisticated SpeedTree integration, complete cultivation simulation, and performance optimization. For implementation examples and best practices, refer to the Developer Documentation.

@@ -1,8 +1,5 @@
 using UnityEngine;
 using ProjectChimera.Core;
-using ProjectChimera.Systems.Cultivation;
-using ProjectChimera.Systems.Progression;
-using ProjectChimera.Data.Genetics;
 
 namespace ProjectChimera.Testing
 {

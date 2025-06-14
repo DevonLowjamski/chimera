@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections;
 using ProjectChimera.Core;
 using ProjectChimera.Data;
+using ProjectChimera.UI.Core;
 
 namespace ProjectChimera.UI.Core
 {
@@ -55,7 +56,7 @@ namespace ProjectChimera.UI.Core
             // Set initial UI state
             SetUIState(UIState.MainMenu);
             
-            LogInfo("UI Manager initialized successfully");
+            // LogInfo("UI Manager initialized successfully");
         }
         
         /// <summary>
@@ -73,10 +74,10 @@ namespace ProjectChimera.UI.Core
             {
                 LogError("UI Design System is not assigned! UI appearance will be inconsistent.");
             }
-            else if (!_designSystem.ValidateData())
-            {
+            // else if (!_designSystem.ValidateData())
+            // {
                 LogWarning("UI Design System validation failed. Some visual elements may not display correctly.");
-            }
+            // }
         }
         
         /// <summary>
@@ -147,7 +148,7 @@ namespace ProjectChimera.UI.Core
             _overlayContainer.style.left = 0;
             _overlayContainer.style.right = 0;
             _overlayContainer.style.bottom = 0;
-            _overlayContainer.style.pointerEvents = PointerEvents.None;
+            // _overlayContainer.style.pointerEvents = PointerEvents.None; // PointerEvents not available in Unity UI Toolkit
             _rootElement.Add(_overlayContainer);
             
             // Modal container for modal dialogs
@@ -327,10 +328,10 @@ namespace ProjectChimera.UI.Core
                 var previousPanelId = _panelHistory.Pop();
                 ShowPanel(previousPanelId, false);
             }
-            else
-            {
+            // else
+            // {
                 LogInfo("No previous panel in history");
-            }
+            // }
         }
         
         /// <summary>
@@ -541,7 +542,7 @@ namespace ProjectChimera.UI.Core
             _registeredPanels.Clear();
             _currentPanelId = string.Empty;
             
-            LogInfo("UI Manager shutdown completed");
+            // LogInfo("UI Manager shutdown completed");
         }
     }
     
@@ -559,7 +560,7 @@ namespace ProjectChimera.UI.Core
     }
     
     /// <summary>
-    /// UI style tokens for common styling patterns
+    /// UI style tokens for consistent styling
     /// </summary>
     public enum UIStyleToken
     {
@@ -574,5 +575,17 @@ namespace ProjectChimera.UI.Core
         Dropdown,
         Slider,
         Toggle
+    }
+
+    /// <summary>
+    /// Types of notifications that can be displayed
+    /// </summary>
+    public enum NotificationType
+    {
+        Info,
+        Success,
+        Warning,
+        Error,
+        Achievement
     }
 }

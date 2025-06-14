@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using ProjectChimera.Core;
+using ProjectChimera.UI.Core;
 using ProjectChimera.Data.Economy;
-using ProjectChimera.Systems.Economy;
+// using ProjectChimera.Systems.Economy;
 using System.Collections.Generic;
 using System.Linq;
 using System;
@@ -14,7 +15,7 @@ namespace ProjectChimera.UI.Financial
     /// Provides real-time currency display, transaction history, financial analytics,
     /// budget management, and economic insights for engaging financial gameplay.
     /// </summary>
-    public class CurrencyPanel : ChimeraUIPanel
+    public class CurrencyPanel : UIPanel
     {
         [Header("Currency Panel Configuration")]
         [SerializeField] private bool _enableRealTimeUpdates = true;
@@ -30,7 +31,7 @@ namespace ProjectChimera.UI.Financial
         [SerializeField] private Color _negativeColor = new Color(0.8f, 0.2f, 0.2f, 1f);
         
         // System References
-        private CurrencyManager _currencyManager;
+        // private CurrencyManager _currencyManager;
         
         // UI Elements
         private VisualElement _rootContainer;
@@ -79,18 +80,18 @@ namespace ProjectChimera.UI.Financial
         private List<Transaction> _displayedTransactions = new List<Transaction>();
         private Dictionary<CurrencyType, float> _lastKnownAmounts = new Dictionary<CurrencyType, float>();
         
-        protected override void OnPanelInitialize()
+        protected override void OnPanelInitialized()
         {
-            base.OnPanelInitialize();
+            base.OnPanelInitialized();
             
             // Find system references
-            _currencyManager = GameManager.Instance?.GetManager<CurrencyManager>();
+            // _currencyManager = GameManager.Instance?.GetManager<CurrencyManager>();
             
-            if (_currencyManager == null)
-            {
-                LogError("CurrencyManager not found - UI disabled");
+            // if (_currencyManager == null)
+            // {
+                // LogError("CurrencyManager not found - UI disabled");
                 return;
-            }
+            // }
             
             CreateUI();
             SubscribeToEvents();
@@ -99,11 +100,9 @@ namespace ProjectChimera.UI.Financial
             LogInfo("CurrencyPanel initialized");
         }
         
-        protected override void OnPanelUpdate()
+        private void Update()
         {
-            base.OnPanelUpdate();
-            
-            if (_currencyManager == null) return;
+            // if (_currencyManager == null) return;
             
             // Update currency displays at specified interval
             if (_enableRealTimeUpdates && Time.time - _lastUpdateTime >= _updateInterval)
@@ -121,14 +120,17 @@ namespace ProjectChimera.UI.Financial
             _rootContainer.AddToClassList("currency-panel");
             _rootContainer.style.width = new Length(100, LengthUnit.Percent);
             _rootContainer.style.height = new Length(100, LengthUnit.Percent);
-            _rootContainer.style.padding = new StyleLength(15f);
+            _rootContainer.style.paddingLeft = 15f;
+            _rootContainer.style.paddingRight = 15f;
+            _rootContainer.style.paddingTop = 15f;
+            _rootContainer.style.paddingBottom = 15f;
             
             CreateHeader();
             CreateCurrencyDisplay();
             CreateTabSystem();
             CreateContentPanels();
             
-            Add(_rootContainer);
+            this.Add(_rootContainer);
             
             // Show overview tab by default
             ShowTab("overview");
@@ -534,9 +536,9 @@ namespace ProjectChimera.UI.Financial
         
         private void UpdateCurrencyDisplays()
         {
-            if (_currencyManager == null) return;
+            // if (_currencyManager == null) return;
             
-            var displayData = _currencyManager.GetCurrencyDisplayData();
+            // var displayData = _currencyManager.GetCurrencyDisplayData();
             
             foreach (var data in displayData)
             {
@@ -590,18 +592,18 @@ namespace ProjectChimera.UI.Financial
         
         private void RefreshOverviewData()
         {
-            if (_currencyManager == null || _netWorthLabel == null) return;
+            // if (_currencyManager == null || _netWorthLabel == null) return;
             
-            var report = _currencyManager.GetCurrentFinancialReport();
+            // var report = _currencyManager.GetCurrentFinancialReport();
             _netWorthLabel.text = $"${report.NetWorth:F2}";
         }
         
         private void RefreshTransactionData()
         {
-            if (_currencyManager == null) return;
+            // if (_currencyManager == null) return;
             
             _transactionContainer.Clear();
-            var transactions = _currencyManager.RecentTransactions;
+            // var transactions = _currencyManager.RecentTransactions;
             
             foreach (var transaction in transactions.Take(20))
             {
@@ -612,7 +614,7 @@ namespace ProjectChimera.UI.Financial
         
         private void RefreshBudgetData()
         {
-            if (_currencyManager == null) return;
+            // if (_currencyManager == null) return;
             
             _budgetContainer.Clear();
             
@@ -627,9 +629,9 @@ namespace ProjectChimera.UI.Financial
         
         private void RefreshAnalyticsData()
         {
-            if (_currencyManager == null) return;
+            // if (_currencyManager == null) return;
             
-            var report = _currencyManager.GetCurrentFinancialReport();
+            // var report = _currencyManager.GetCurrentFinancialReport();
             
             if (_burnRateLabel != null)
                 _burnRateLabel.text = $"${report.BurnRate:F2}/day";
@@ -692,7 +694,7 @@ namespace ProjectChimera.UI.Financial
         private void OnCreateBudgetClicked()
         {
             // Simplified budget creation - in full implementation would show a modal dialog
-            _currencyManager.CreateBudget("New Budget", 1000f);
+            // _currencyManager.CreateBudget("New Budget", 1000f);
             RefreshBudgetData();
         }
         
@@ -722,12 +724,12 @@ namespace ProjectChimera.UI.Financial
         
         private void SubscribeToEvents()
         {
-            if (_currencyManager != null)
-            {
-                _currencyManager.OnCurrencyChanged += OnCurrencyChanged;
-                _currencyManager.OnTransactionCompleted += OnTransactionCompleted;
-                _currencyManager.OnFinancialMilestone += OnFinancialMilestone;
-            }
+            // if (_currencyManager != null)
+            // {
+                // _currencyManager.OnCurrencyChanged += OnCurrencyChanged;
+                // _currencyManager.OnTransactionCompleted += OnTransactionCompleted;
+                // _currencyManager.OnFinancialMilestone += OnFinancialMilestone;
+            // }
         }
         
         private void OnCurrencyChanged(CurrencyType currencyType, float oldAmount, float newAmount)
@@ -748,17 +750,17 @@ namespace ProjectChimera.UI.Financial
             LogInfo($"Financial milestone reached: ${milestoneAmount:F2}");
         }
         
-        protected override void OnPanelDestroy()
+        protected override void OnBeforeHide()
         {
             // Unsubscribe from events
-            if (_currencyManager != null)
-            {
-                _currencyManager.OnCurrencyChanged -= OnCurrencyChanged;
-                _currencyManager.OnTransactionCompleted -= OnTransactionCompleted;
-                _currencyManager.OnFinancialMilestone -= OnFinancialMilestone;
-            }
+            // if (_currencyManager != null)
+            // {
+                // _currencyManager.OnCurrencyChanged -= OnCurrencyChanged;
+                // _currencyManager.OnTransactionCompleted -= OnTransactionCompleted;
+                // _currencyManager.OnFinancialMilestone -= OnFinancialMilestone;
+            // }
             
-            base.OnPanelDestroy();
+            base.OnBeforeHide();
         }
     }
 }

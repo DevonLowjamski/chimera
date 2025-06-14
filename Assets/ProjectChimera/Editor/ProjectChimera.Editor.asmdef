@@ -1,19 +1,20 @@
 {
-    "name": "ProjectChimera.Editor",
-    "rootNamespace": "ProjectChimera.Editor",
-    "references": [
-        "GUID:365498379ff0240e68a20a8f327e0755",
-        "GUID:6cca6c5303192494bbddc11201b0e867"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
-    "excludePlatforms": [],
-    "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [],
-    "noEngineReferences": false
-} 
+  "name": "ProjectChimera.Editor",
+  "rootNamespace": "ProjectChimera.Editor",
+  "references": [
+    "ProjectChimera.Core",
+    "ProjectChimera.Data",
+    "ProjectChimera.Systems"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

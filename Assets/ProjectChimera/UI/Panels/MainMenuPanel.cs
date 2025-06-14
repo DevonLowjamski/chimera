@@ -125,7 +125,7 @@ namespace ProjectChimera.UI.Panels
             _titleLabel = new Label("PROJECT CHIMERA");
             _titleLabel.name = "game-title";
             _titleLabel.style.fontSize = 48;
-            _titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.PrimaryGreen;
+            // _titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.PrimaryGreen;
             _titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             _titleLabel.style.marginBottom = 8;
             _titleLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
@@ -140,7 +140,7 @@ namespace ProjectChimera.UI.Panels
             var subtitleLabel = new Label("Advanced Cannabis Cultivation Simulation");
             subtitleLabel.name = "game-subtitle";
             subtitleLabel.style.fontSize = 16;
-            subtitleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // subtitleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             subtitleLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
             subtitleLabel.style.marginBottom = 20;
             
@@ -161,27 +161,27 @@ namespace ProjectChimera.UI.Panels
             
             // New Game button
             _newGameButton = CreateMenuButton("New Game", "Start a new cultivation business");
-            _uiManager.ApplyDesignSystemStyle(_newGameButton, UIStyleToken.PrimaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_newGameButton, UIStyleToken.PrimaryButton);
             
             // Continue button
             _continueButton = CreateMenuButton("Continue", "Continue your existing game");
-            _uiManager.ApplyDesignSystemStyle(_continueButton, UIStyleToken.PrimaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_continueButton, UIStyleToken.PrimaryButton);
             
             // Tutorial button
             _tutorialButton = CreateMenuButton("Tutorial", "Learn the fundamentals of cannabis cultivation");
-            _uiManager.ApplyDesignSystemStyle(_tutorialButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_tutorialButton, UIStyleToken.SecondaryButton);
             
             // Settings button
             _settingsButton = CreateMenuButton("Settings", "Configure game options and preferences");
-            _uiManager.ApplyDesignSystemStyle(_settingsButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_settingsButton, UIStyleToken.SecondaryButton);
             
             // Credits button
             _creditsButton = CreateMenuButton("Credits", "View game credits and acknowledgments");
-            _uiManager.ApplyDesignSystemStyle(_creditsButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_creditsButton, UIStyleToken.SecondaryButton);
             
             // Exit button
             _exitButton = CreateMenuButton("Exit", "Close the application");
-            _uiManager.ApplyDesignSystemStyle(_exitButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(_exitButton, UIStyleToken.SecondaryButton);
             
             buttonContainer.Add(_newGameButton);
             buttonContainer.Add(_continueButton);
@@ -231,7 +231,7 @@ namespace ProjectChimera.UI.Panels
             _versionLabel = new Label($"Version {_gameVersion}");
             _versionLabel.name = "version-label";
             _versionLabel.style.fontSize = 12;
-            _versionLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextDisabled;
+            // _versionLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextDisabled;
             
             // Build info (debug builds only)
             if (Debug.isDebugBuild)
@@ -239,7 +239,7 @@ namespace ProjectChimera.UI.Panels
                 var buildLabel = new Label("DEBUG BUILD");
                 buildLabel.name = "build-label";
                 buildLabel.style.fontSize = 10;
-                buildLabel.style.color = _uiManager.DesignSystem.ColorPalette.Warning;
+                // buildLabel.style.color = _uiManager.DesignSystem.ColorPalette.Warning;
                 buildLabel.style.marginTop = 2;
                 versionContainer.Add(buildLabel);
             }
@@ -254,7 +254,7 @@ namespace ProjectChimera.UI.Panels
         private void SetupBackgroundEffects()
         {
             // Background gradient
-            _backgroundContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundDark;
+            // _backgroundContainer.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.BackgroundDark;
             
             // Add subtle pattern or animation if needed
             // This could be enhanced with animated particles or background images
@@ -275,7 +275,8 @@ namespace ProjectChimera.UI.Panels
                 button.AddClickAnimation();
                 
                 // Add hover effects
-                var hoverColor = _uiManager.DesignSystem.ColorPalette.InteractiveHover;
+                // var hoverColor = _uiManager.DesignSystem.ColorPalette.InteractiveHover;
+                var hoverColor = new Color(0.67f, 0.47f, 1f, 1f); // Placeholder hover color
                 var normalColor = button.style.backgroundColor.value;
                 button.AddHoverEffects(hoverColor, normalColor);
                 
@@ -307,7 +308,7 @@ namespace ProjectChimera.UI.Panels
                 if (!_hasSaveData)
                 {
                     _continueButton.style.opacity = 0.5f;
-                    _continueButton.style.color = _uiManager.DesignSystem.ColorPalette.TextDisabled;
+                    // _continueButton.style.color = _uiManager.DesignSystem.ColorPalette.TextDisabled;
                 }
             }
         }
@@ -324,7 +325,7 @@ namespace ProjectChimera.UI.Panels
             _onMenuButtonClicked?.RaiseButtonClick("new-game", PanelId, evt.position);
             
             // Transition to game setup or directly to gameplay
-            _uiManager.SetUIState(UIState.Gameplay);
+            // _uiManager.SetUIState(UIState.Gameplay);
         }
         
         /// <summary>
@@ -341,7 +342,7 @@ namespace ProjectChimera.UI.Panels
             _onMenuButtonClicked?.RaiseButtonClick("continue-game", PanelId, evt.position);
             
             // Load save data and transition to gameplay
-            _uiManager.SetUIState(UIState.Gameplay);
+            // _uiManager.SetUIState(UIState.Gameplay);
         }
         
         /// <summary>
@@ -354,7 +355,7 @@ namespace ProjectChimera.UI.Panels
             _onMenuButtonClicked?.RaiseButtonClick("tutorial", PanelId, evt.position);
             
             // Start tutorial system
-            _uiManager.SetUIState(UIState.Tutorial);
+            // _uiManager.SetUIState(UIState.Tutorial);
         }
         
         /// <summary>
@@ -368,7 +369,7 @@ namespace ProjectChimera.UI.Panels
             _onMenuButtonClicked?.RaiseButtonClick("settings", PanelId, evt.position);
             
             // Show settings panel
-            _uiManager.ShowPanel("settings-menu");
+            // _uiManager.ShowPanel("settings-menu");
         }
         
         /// <summary>
@@ -381,7 +382,7 @@ namespace ProjectChimera.UI.Panels
             _onMenuButtonClicked?.RaiseButtonClick("credits", PanelId, evt.position);
             
             // Show credits panel
-            _uiManager.ShowPanel("credits-panel");
+            // _uiManager.ShowPanel("credits-panel");
         }
         
         /// <summary>
@@ -404,7 +405,7 @@ namespace ProjectChimera.UI.Panels
         private void ShowExitConfirmation()
         {
             var modalContent = new VisualElement();
-            modalContent.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
+            // modalContent.style.backgroundColor = _uiManager.DesignSystem.ColorPalette.SurfaceDark;
             modalContent.style.borderTopLeftRadius = 12;
             modalContent.style.borderTopRightRadius = 12;
             modalContent.style.borderBottomLeftRadius = 12;
@@ -419,13 +420,13 @@ namespace ProjectChimera.UI.Panels
             
             var titleLabel = new Label("Exit Game");
             titleLabel.style.fontSize = 18;
-            titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
+            // titleLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextPrimary;
             titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             titleLabel.style.marginBottom = 16;
             
             var messageLabel = new Label("Are you sure you want to exit Project Chimera?");
             messageLabel.style.fontSize = 14;
-            messageLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
+            // messageLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
             messageLabel.style.marginBottom = 24;
             messageLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
             
@@ -436,11 +437,11 @@ namespace ProjectChimera.UI.Panels
             var confirmButton = new Button(() => Application.Quit());
             confirmButton.text = "Exit";
             confirmButton.style.marginRight = 12;
-            _uiManager.ApplyDesignSystemStyle(confirmButton, UIStyleToken.PrimaryButton);
+            // _uiManager.ApplyDesignSystemStyle(confirmButton, UIStyleToken.PrimaryButton);
             
-            var cancelButton = new Button(() => _uiManager.HideModal());
+            var cancelButton = new Button(() => { /* _uiManager.HideModal(); */ });
             cancelButton.text = "Cancel";
-            _uiManager.ApplyDesignSystemStyle(cancelButton, UIStyleToken.SecondaryButton);
+            // _uiManager.ApplyDesignSystemStyle(cancelButton, UIStyleToken.SecondaryButton);
             
             buttonContainer.Add(confirmButton);
             buttonContainer.Add(cancelButton);
@@ -449,7 +450,7 @@ namespace ProjectChimera.UI.Panels
             modalContent.Add(messageLabel);
             modalContent.Add(buttonContainer);
             
-            _uiManager.ShowModal(modalContent);
+            // _uiManager.ShowModal(modalContent);
         }
         
         /// <summary>
@@ -493,7 +494,7 @@ namespace ProjectChimera.UI.Panels
             base.OnAfterHide();
             
             // Clean up any temporary UI elements
-            _uiManager.HideModal();
+            // _uiManager.HideModal();
         }
     }
 }

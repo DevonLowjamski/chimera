@@ -7,6 +7,15 @@ using ProjectChimera.Data.Economy;
 namespace ProjectChimera.Systems.Economy
 {
     /// <summary>
+    /// Trading-specific transaction types to avoid conflicts with currency system
+    /// </summary>
+    public enum TradingTransactionType
+    {
+        Purchase,
+        Sale
+    }
+
+    /// <summary>
     /// Manages trading operations, transaction processing, inventory management,
     /// and financial tracking for the cannabis marketplace simulation.
     /// </summary>
@@ -143,7 +152,7 @@ namespace ProjectChimera.Systems.Economy
             var pendingTransaction = new PendingTransaction
             {
                 TransactionId = result.TransactionId,
-                TransactionType = TransactionType.Purchase,
+                TransactionType = TradingTransactionType.Purchase,
                 Product = product,
                 Quantity = quantity,
                 UnitPrice = unitPrice,
@@ -214,7 +223,7 @@ namespace ProjectChimera.Systems.Economy
             var pendingTransaction = new PendingTransaction
             {
                 TransactionId = result.TransactionId,
-                TransactionType = TransactionType.Sale,
+                TransactionType = TradingTransactionType.Sale,
                 Product = inventoryItem.Product,
                 Quantity = quantity,
                 UnitPrice = unitPrice,
@@ -288,7 +297,7 @@ namespace ProjectChimera.Systems.Economy
         /// <summary>
         /// Evaluates profitability of a potential transaction.
         /// </summary>
-        public TradingProfitabilityAnalysis AnalyzeProfitability(MarketProductSO product, float quantity, TransactionType transactionType)
+        public TradingProfitabilityAnalysis AnalyzeProfitability(MarketProductSO product, float quantity, TradingTransactionType transactionType)
         {
             var analysis = new TradingProfitabilityAnalysis
             {
@@ -304,7 +313,7 @@ namespace ProjectChimera.Systems.Economy
                 return analysis;
             }
             
-            if (transactionType == TransactionType.Purchase)
+            if (transactionType == TradingTransactionType.Purchase)
             {
                 // Analyze buy opportunity
                 float buyPrice = marketManager.GetCurrentPrice(product, false) * quantity;
@@ -489,7 +498,7 @@ namespace ProjectChimera.Systems.Economy
         {
             try
             {
-                if (transaction.TransactionType == TransactionType.Purchase)
+                if (transaction.TransactionType == TradingTransactionType.Purchase)
                 {
                     return CompletePurchaseTransaction(transaction);
                 }
@@ -634,11 +643,11 @@ namespace ProjectChimera.Systems.Economy
                 .ToList();
             
             float monthlyRevenue = recentTransactions
-                .Where(t => t.TransactionType == TransactionType.Sale && t.Success)
+                .Where(t => t.TransactionType == TradingTransactionType.Sale && t.Success)
                 .Sum(t => t.TotalValue);
             
             float monthlyExpenses = recentTransactions
-                .Where(t => t.TransactionType == TransactionType.Purchase && t.Success)
+                .Where(t => t.TransactionType == TradingTransactionType.Purchase && t.Success)
                 .Sum(t => t.TotalValue);
             
             _playerFinances.MonthlyProfit = monthlyRevenue - monthlyExpenses;
@@ -1033,7 +1042,7 @@ namespace ProjectChimera.Systems.Economy
     public class PendingTransaction
     {
         public string TransactionId;
-        public TransactionType TransactionType;
+        public TradingTransactionType TransactionType;
         public MarketProductSO Product;
         public float Quantity;
         public float UnitPrice;
@@ -1050,7 +1059,7 @@ namespace ProjectChimera.Systems.Economy
     public class CompletedTransaction
     {
         public string TransactionId;
-        public TransactionType TransactionType;
+        public TradingTransactionType TransactionType;
         public MarketProductSO Product;
         public float Quantity;
         public float UnitPrice;
@@ -1096,7 +1105,7 @@ namespace ProjectChimera.Systems.Economy
     {
         public MarketProductSO Product;
         public float Quantity;
-        public TransactionType TransactionType;
+        public TradingTransactionType TransactionType;
         public float EstimatedCost;
         public float EstimatedRevenue;
         public float EstimatedProfit;

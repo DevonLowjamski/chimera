@@ -264,6 +264,14 @@ namespace ProjectChimera.UI.Tutorial
         }
         
         /// <summary>
+        /// Clear all highlights and hide overlay
+        /// </summary>
+        public void ClearHighlights()
+        {
+            HideOverlay();
+        }
+        
+        /// <summary>
         /// Start fade animation
         /// </summary>
         private void StartFadeAnimation(bool fadeIn)
@@ -283,7 +291,7 @@ namespace ProjectChimera.UI.Tutorial
             {
                 if (element != null)
                 {
-                    element.style.pointerEvents = PointerEvents.Auto;
+                    element.pickingMode = PickingMode.Position;
                 }
             }
             

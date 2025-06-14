@@ -73,6 +73,10 @@ namespace ProjectChimera.Systems.Cultivation
         // Achievement tracking - now event-based
         private CultivationEventTracker _eventTracker;
         
+        // Events for other systems to subscribe to
+        public System.Action<PlantInstance> OnPlantAdded;
+        public System.Action<PlantInstance> OnPlantHarvested;
+        public System.Action<PlantInstance> OnPlantStageChanged;
         
         public override ManagerPriority Priority => ManagerPriority.High;
         
@@ -200,6 +204,9 @@ namespace ProjectChimera.Systems.Cultivation
             plant.OnGrowthStageChanged += OnPlantGrowthStageChanged;
             plant.OnHealthChanged += OnPlantHealthChanged;
             plant.OnPlantDied += OnPlantDied;
+            
+            // Invoke OnPlantAdded event for other systems
+            OnPlantAdded?.Invoke(plant);
             
             if (_enableDetailedLogging)
                 LogInfo($"Registered plant: {plant.PlantID}");
@@ -332,6 +339,9 @@ namespace ProjectChimera.Systems.Cultivation
                 _eventTracker.OnPlantHarvested(plant, harvestResults);
             }
             
+            // Invoke OnPlantHarvested event for other systems
+            OnPlantHarvested?.Invoke(plant);
+            
             // Trigger harvest events for progression system to listen to
             _onPlantHarvested?.Raise();
             
@@ -424,6 +434,9 @@ namespace ProjectChimera.Systems.Cultivation
         {
             LogInfo($"Plant {plant.PlantID} advanced to {plant.CurrentGrowthStage}");
             _onPlantGrowthStageChanged?.Raise(plant);
+            
+            // Invoke OnPlantStageChanged event for other systems
+            OnPlantStageChanged?.Invoke(plant);
             
             // Track achievement progress
             if (_enableAchievementTracking && _eventTracker != null)

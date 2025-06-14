@@ -2,7 +2,6 @@ using UnityEngine;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Progression;
 using ProjectChimera.Systems.Cultivation;
-using ProjectChimera.Systems.Economy;
 using System.Collections.Generic;
 using System.Linq;
 using System;
@@ -39,7 +38,6 @@ namespace ProjectChimera.Systems.Progression
         // System references
         private ProgressionManager _progressionManager;
         private PlantManager _plantManager;
-        private MarketManager _marketManager;
         private ObjectiveManager _objectiveManager;
         
         // Competitive data
@@ -292,7 +290,6 @@ namespace ProjectChimera.Systems.Progression
             {
                 _progressionManager = gameManager.GetManager<ProgressionManager>();
                 _plantManager = gameManager.GetManager<PlantManager>();
-                _marketManager = gameManager.GetManager<MarketManager>();
                 _objectiveManager = gameManager.GetManager<ObjectiveManager>();
             }
         }

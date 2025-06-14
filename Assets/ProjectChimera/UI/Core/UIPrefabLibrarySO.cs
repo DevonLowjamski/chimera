@@ -337,10 +337,10 @@ namespace ProjectChimera.UI.Core
                     LogError($"Duplicate prefab ID: {entry.PrefabId}");
                     isValid = false;
                 }
-                else
-                {
+                // else
+                // {
                     usedIds.Add(entry.PrefabId);
-                }
+                // }
                 
                 // Validate prefab component
                 if (!entry.Prefab.ValidateComponent())
