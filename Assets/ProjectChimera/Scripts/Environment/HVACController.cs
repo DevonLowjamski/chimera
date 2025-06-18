@@ -2,7 +2,7 @@ using UnityEngine;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Environment;
 
-namespace ProjectChimera.Systems.Environment
+namespace ProjectChimera.Scripts.Environment
 {
     /// <summary>
     /// Controls HVAC (Heating, Ventilation, Air Conditioning) systems for environmental management.
@@ -171,7 +171,7 @@ namespace ProjectChimera.Systems.Environment
             }
             
             OnSystemStateChanged?.Invoke(this);
-            Debug.Log($"HVAC {SystemId} automation {(enabled ? \"enabled\" : \"disabled\")}");
+            Debug.Log($"HVAC {SystemId} automation {(enabled ? "enabled" : "disabled")}");
         }
         
         /// <summary>
@@ -248,6 +248,95 @@ namespace ProjectChimera.Systems.Environment
             OnSystemStateChanged?.Invoke(this);
             
             Debug.Log($"HVAC {SystemId} shut down");
+        }
+        
+        /// <summary>
+        /// Set cooling power level (0-1)
+        /// </summary>
+        public void SetCoolingPower(float power)
+        {
+            power = Mathf.Clamp01(power);
+            SetCooling(power > 0f, power);
+        }
+        
+        /// <summary>
+        /// Set heating power level (0-1)
+        /// </summary>
+        public void SetHeatingPower(float power)
+        {
+            power = Mathf.Clamp01(power);
+            SetHeating(power > 0f, power);
+        }
+        
+        /// <summary>
+        /// Set dehumidifier power level (0-1)
+        /// </summary>
+        public void SetDehumidifierPower(float power)
+        {
+            power = Mathf.Clamp01(power);
+            SetHumidification(false, power > 0f);
+        }
+        
+        /// <summary>
+        /// Set humidifier power level (0-1)
+        /// </summary>
+        public void SetHumidifierPower(float power)
+        {
+            power = Mathf.Clamp01(power);
+            SetHumidification(power > 0f, false);
+        }
+        
+        /// <summary>
+        /// Set eco-friendly mode
+        /// </summary>
+        public void SetEcoMode(bool enabled)
+        {
+            if (enabled)
+            {
+                // Reduce power consumption by lowering efficiency slightly
+                _energyEfficiency = Mathf.Max(0.7f, _energyEfficiency * 0.9f);
+            }
+            else
+            {
+                _energyEfficiency = 0.85f; // Reset to default
+            }
+        }
+        
+        /// <summary>
+        /// Make preemptive adjustment to temperature
+        /// </summary>
+        public void MakePreemptiveAdjustment(float targetTemp)
+        {
+            SetTargetTemperature(targetTemp);
+            // Increase response speed for preemptive adjustments
+            _responseTime = Mathf.Max(1f, _responseTime * 0.5f);
+        }
+        
+        /// <summary>
+        /// Make preemptive humidity adjustment
+        /// </summary>
+        public void MakePreemptiveHumidityAdjustment(float targetHumidity)
+        {
+            SetTargetHumidity(targetHumidity);
+        }
+        
+        /// <summary>
+        /// Set emergency mode for immediate response
+        /// </summary>
+        public void SetEmergencyMode(bool enabled)
+        {
+            if (enabled)
+            {
+                _responseTime = 0.5f; // Immediate response
+                _energyEfficiency = 1.0f; // Maximum efficiency
+                Debug.Log("[HVAC] Emergency mode activated - immediate response enabled");
+            }
+            else
+            {
+                _responseTime = 5f; // Normal response time
+                _energyEfficiency = 0.85f; // Normal efficiency
+                Debug.Log("[HVAC] Emergency mode deactivated - normal operation resumed");
+            }
         }
         
         #endregion

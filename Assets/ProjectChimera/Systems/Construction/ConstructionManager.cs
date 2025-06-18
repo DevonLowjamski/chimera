@@ -1,9 +1,14 @@
 using UnityEngine;
-using ProjectChimera.Core;
-using ProjectChimera.Data.Construction;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
+using ProjectChimera.Core;
+using ProjectChimera.Data.Construction;
+// Explicit alias for Data layer types to resolve ambiguity
+using DataIssueType = ProjectChimera.Data.Construction.IssueType;
+using DataIssueSeverity = ProjectChimera.Data.Construction.IssueSeverity;
+using DataIssueCategory = ProjectChimera.Data.Construction.IssueCategory;
+using DataIssueStatus = ProjectChimera.Data.Construction.IssueStatus;
 
 namespace ProjectChimera.Systems.Construction
 {
@@ -45,7 +50,7 @@ namespace ProjectChimera.Systems.Construction
         // Scheduling and Progress
         private Dictionary<string, ConstructionSchedule> _projectSchedules = new Dictionary<string, ConstructionSchedule>();
         private List<ConstructionTask> _activeTasks = new List<ConstructionTask>();
-        private Dictionary<string, List<ConstructionIssue>> _projectIssues = new Dictionary<string, List<ConstructionIssue>>();
+        private Dictionary<string, List<ProjectChimera.Data.Construction.ConstructionIssue>> _projectIssues = new Dictionary<string, List<ProjectChimera.Data.Construction.ConstructionIssue>>();
         
         // Quality and Compliance
         private Dictionary<string, QualityMetrics> _projectQuality = new Dictionary<string, QualityMetrics>();
@@ -68,10 +73,10 @@ namespace ProjectChimera.Systems.Construction
         public int ActiveProjectCount => _activeProjects.Count(p => p.CurrentStage != ConstructionStage.Completed);
         
         // Events
-        public System.Action<BuildingProject> OnProjectStarted;
-        public System.Action<BuildingProject> OnProjectCompleted;
+        public System.Action<object> OnProjectStarted;
+        public System.Action<object> OnProjectCompleted;
         public System.Action<BuildingProject, string> OnMilestoneReached;
-        public System.Action<ConstructionIssue> OnIssueReported;
+        public System.Action<ProjectChimera.Data.Construction.ConstructionIssue> OnIssueReported;
         public System.Action<ConstructionInspection> OnInspectionCompleted;
         public System.Action<BuildingProject, float> OnBudgetExceeded;
         
@@ -142,10 +147,13 @@ namespace ProjectChimera.Systems.Construction
                 TotalBudget = CalculateProjectBudget(blueprint, quality),
                 SpentAmount = 0f,
                 Priority = ConstructionPriority.Normal,
-                Issues = new List<ConstructionIssue>(),
+                Issues = new List<ProjectChimera.Data.Construction.ConstructionIssue>(),
                 CompletedMilestones = new List<string>(),
                 IsOnSchedule = true,
-                IsOnBudget = true
+                IsOnBudget = true,
+                QualityScores = new QualityMetrics(),
+                QualityInspections = new List<QualityInspection>(),
+                QualityRating = 0f
             };
             
             // Calculate budget breakdown
@@ -172,7 +180,7 @@ namespace ProjectChimera.Systems.Construction
             _projectSchedules[projectId] = schedule;
             
             _activeProjects.Add(project);
-            _projectIssues[projectId] = new List<ConstructionIssue>();
+            _projectIssues[projectId] = new List<ProjectChimera.Data.Construction.ConstructionIssue>();
             _projectPermits[projectId] = new List<ConstructionPermit>(project.RequiredPermits);
             
             _onProjectStarted?.Raise();
@@ -271,22 +279,23 @@ namespace ProjectChimera.Systems.Construction
         /// <summary>
         /// Report a construction issue
         /// </summary>
-        public string ReportIssue(string projectId, string title, string description, IssueSeverity severity, IssueCategory category)
+        public string ReportIssue(string projectId, string title, string description, DataIssueSeverity severity, DataIssueCategory category)
         {
             var project = GetProject(projectId);
             if (project == null) return null;
             
             string issueId = Guid.NewGuid().ToString();
-            var issue = new ConstructionIssue
+            var issue = new ProjectChimera.Data.Construction.ConstructionIssue
             {
                 IssueId = issueId,
                 Title = title,
                 Description = description,
+                IssueType = DataIssueType.QualityFailure, // Default type
                 Severity = severity,
                 Category = category,
                 ReportedDate = DateTime.Now,
                 ReportedBy = "System", // In real implementation, would use current user
-                Status = IssueStatus.Open,
+                Status = DataIssueStatus.Open,
                 CostImpact = EstimateIssueCostImpact(severity, category),
                 DelayDays = EstimateIssueDelayImpact(severity, category)
             };
@@ -295,7 +304,7 @@ namespace ProjectChimera.Systems.Construction
             _projectIssues[projectId].Add(issue);
             
             // Update project status
-            if (severity >= IssueSeverity.High)
+            if (severity >= DataIssueSeverity.High)
             {
                 project.IsOnSchedule = false;
                 if (issue.CostImpact > 0)
@@ -887,7 +896,7 @@ namespace ProjectChimera.Systems.Construction
                 if (project.RemainingBudget / project.TotalBudget < 0.1f && project.IsOnBudget)
                 {
                     ReportIssue(project.ProjectId, "Budget Alert", 
-                        "Project budget is running low", IssueSeverity.High, IssueCategory.Budget);
+                        "Project budget is running low", DataIssueSeverity.High, DataIssueCategory.Budget);
                 }
                 
                 // Check for schedule alerts
@@ -897,7 +906,7 @@ namespace ProjectChimera.Systems.Construction
                 if (project.OverallProgress < progressExpected - 0.1f && project.IsOnSchedule)
                 {
                     ReportIssue(project.ProjectId, "Schedule Alert", 
-                        "Project is falling behind schedule", IssueSeverity.Medium, IssueCategory.Schedule);
+                        "Project is falling behind schedule", DataIssueSeverity.Medium, DataIssueCategory.Schedule);
                 }
             }
         }
@@ -1051,28 +1060,28 @@ namespace ProjectChimera.Systems.Construction
         /// <summary>
         /// Estimate cost impact of a construction issue
         /// </summary>
-        private float EstimateIssueCostImpact(IssueSeverity severity, IssueCategory category)
+        private float EstimateIssueCostImpact(DataIssueSeverity severity, DataIssueCategory category)
         {
             float baseCost = category switch
             {
-                IssueCategory.Safety => 5000f,
-                IssueCategory.Quality => 2000f,
-                IssueCategory.Schedule => 1500f,
-                IssueCategory.Budget => 3000f,
-                IssueCategory.Materials => 1000f,
-                IssueCategory.Labor => 2500f,
-                IssueCategory.Permits => 800f,
-                IssueCategory.Weather => 1200f,
-                IssueCategory.Design_Change => 4000f,
+                DataIssueCategory.Safety => 5000f,
+                DataIssueCategory.Quality => 2000f,
+                DataIssueCategory.Schedule => 1500f,
+                DataIssueCategory.Budget => 3000f,
+                DataIssueCategory.Materials => 1000f,
+                DataIssueCategory.Labor => 2500f,
+                DataIssueCategory.Permits => 800f,
+                DataIssueCategory.Weather => 1200f,
+                DataIssueCategory.Design_Change => 4000f,
                 _ => 500f
             };
             
             float multiplier = severity switch
             {
-                IssueSeverity.Critical => 3.0f,
-                IssueSeverity.High => 2.0f,
-                IssueSeverity.Medium => 1.5f,
-                IssueSeverity.Low => 1.0f,
+                DataIssueSeverity.Critical => 3.0f,
+                DataIssueSeverity.High => 2.0f,
+                DataIssueSeverity.Medium => 1.5f,
+                DataIssueSeverity.Low => 1.0f,
                 _ => 0.5f
             };
             
@@ -1082,28 +1091,28 @@ namespace ProjectChimera.Systems.Construction
         /// <summary>
         /// Estimate delay impact of a construction issue
         /// </summary>
-        private int EstimateIssueDelayImpact(IssueSeverity severity, IssueCategory category)
+        private int EstimateIssueDelayImpact(DataIssueSeverity severity, DataIssueCategory category)
         {
             int baseDays = category switch
             {
-                IssueCategory.Safety => 7,
-                IssueCategory.Quality => 3,
-                IssueCategory.Schedule => 2,
-                IssueCategory.Budget => 5,
-                IssueCategory.Materials => 1,
-                IssueCategory.Labor => 4,
-                IssueCategory.Permits => 2,
-                IssueCategory.Weather => 1,
-                IssueCategory.Design_Change => 6,
+                DataIssueCategory.Safety => 7,
+                DataIssueCategory.Quality => 3,
+                DataIssueCategory.Schedule => 2,
+                DataIssueCategory.Budget => 5,
+                DataIssueCategory.Materials => 1,
+                DataIssueCategory.Labor => 4,
+                DataIssueCategory.Permits => 2,
+                DataIssueCategory.Weather => 1,
+                DataIssueCategory.Design_Change => 6,
                 _ => 1
             };
             
             int multiplier = severity switch
             {
-                IssueSeverity.Critical => 3,
-                IssueSeverity.High => 2,
-                IssueSeverity.Medium => 1,
-                IssueSeverity.Low => 1,
+                DataIssueSeverity.Critical => 3,
+                DataIssueSeverity.High => 2,
+                DataIssueSeverity.Medium => 1,
+                DataIssueSeverity.Low => 1,
                 _ => 0
             };
             
@@ -1356,8 +1365,8 @@ namespace ProjectChimera.Systems.Construction
             // Random chance of issues occurring
             if (UnityEngine.Random.Range(0f, 1f) < 0.05f) // 5% chance per day
             {
-                var categories = Enum.GetValues(typeof(IssueCategory)).Cast<IssueCategory>().ToArray();
-                var severities = Enum.GetValues(typeof(IssueSeverity)).Cast<IssueSeverity>().ToArray();
+                var categories = Enum.GetValues(typeof(DataIssueCategory)).Cast<DataIssueCategory>().ToArray();
+                var severities = Enum.GetValues(typeof(DataIssueSeverity)).Cast<DataIssueSeverity>().ToArray();
                 
                 var category = categories[UnityEngine.Random.Range(0, categories.Length)];
                 var severity = severities[UnityEngine.Random.Range(0, severities.Length)];

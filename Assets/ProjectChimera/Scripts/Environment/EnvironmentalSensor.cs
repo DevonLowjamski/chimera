@@ -2,9 +2,11 @@ using UnityEngine;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Environment;
 using ProjectChimera.Cultivation;
+using ProjectChimera.Data.Automation;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using AutomationSensorType = ProjectChimera.Data.Automation.SensorType;
 
 namespace ProjectChimera.Environment
 {
@@ -214,6 +216,39 @@ namespace ProjectChimera.Environment
             }
             
             SetDefaultThresholds();
+        }
+        
+        /// <summary>
+        /// Initialize sensor with AutomationDataStructures.SensorType (overload for compatibility)
+        /// </summary>
+        public void Initialize(ProjectChimera.Data.Automation.SensorType automationSensorType, AdvancedGrowRoomController parentRoom)
+        {
+            // Map AutomationDataStructures.SensorType to local SensorType
+            SensorType localSensorType = MapAutomationSensorType(automationSensorType);
+            Initialize(localSensorType, parentRoom);
+        }
+        
+        /// <summary>
+        /// Map AutomationDataStructures.SensorType to local SensorType enum
+        /// </summary>
+        private SensorType MapAutomationSensorType(ProjectChimera.Data.Automation.SensorType automationSensorType)
+        {
+            return automationSensorType switch
+            {
+                ProjectChimera.Data.Automation.SensorType.Temperature => SensorType.Temperature,
+                ProjectChimera.Data.Automation.SensorType.Humidity => SensorType.Humidity,
+                ProjectChimera.Data.Automation.SensorType.Light_Intensity => SensorType.LightLevel,
+                ProjectChimera.Data.Automation.SensorType.LightLevel => SensorType.LightLevel,
+                ProjectChimera.Data.Automation.SensorType.CO2 => SensorType.CO2Level,
+                ProjectChimera.Data.Automation.SensorType.CO2Level => SensorType.CO2Level,
+                ProjectChimera.Data.Automation.SensorType.AirFlow => SensorType.AirFlow,
+                ProjectChimera.Data.Automation.SensorType.Air_Velocity => SensorType.AirFlow,
+                ProjectChimera.Data.Automation.SensorType.Soil_Moisture => SensorType.SoilMoisture,
+                ProjectChimera.Data.Automation.SensorType.pH => SensorType.pH,
+                ProjectChimera.Data.Automation.SensorType.EC_Conductivity => SensorType.EC,
+                ProjectChimera.Data.Automation.SensorType.Air_Pressure => SensorType.Pressure,
+                _ => SensorType.Temperature // Default fallback
+            };
         }
         
         #endregion

@@ -41,8 +41,8 @@ namespace ProjectChimera.UI.AIAdvisor
         [SerializeField] private AudioClip _notificationSound;
         [SerializeField] private AudioSource _audioSource;
         
-        // System references
-        // private AIAdvisorManager _aiAdvisorManager;
+        // System references - accessed through GameManager
+        private ChimeraManager _aiAdvisorManager;
         // private AutomationManager _automationManager;
         
         // UI Elements - Main Interface
@@ -181,6 +181,7 @@ namespace ProjectChimera.UI.AIAdvisor
             }
             
             // _aiAdvisorManager = gameManager.GetManager<AIAdvisorManager>();
+            // Use event-based communication instead of direct manager reference
             // _automationManager = gameManager.GetManager<AutomationManager>();
             
             Debug.Log("AI Advisor connected to game systems");
@@ -745,10 +746,8 @@ namespace ProjectChimera.UI.AIAdvisor
         
         private void LoadAIData()
         {
-            // Load saved AI data and chat history
-            // if (_aiAdvisorManager != null)
             // {
-                // var savedData = _aiAdvisorManager.GetAIData();
+                var savedData = _aiAdvisorManager?.GetAIData();
                 if (savedData != null)
                 {
                     // Since GetAIData returns an object, we'll initialize with default values

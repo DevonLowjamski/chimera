@@ -1,10 +1,15 @@
 using UnityEngine;
 using Cinemachine;
 using ProjectChimera.Core;
+using ProjectChimera.Scripts.Cultivation;
+using ProjectChimera.Scripts.Facilities;
+using ProjectChimera.Data.Environment;
 using System.Collections.Generic;
 using System.Collections;
+// Explicit alias to resolve PostProcessingController ambiguity
+using PostProcessingController = ProjectChimera.Data.Environment.PostProcessingController;
 
-namespace ProjectChimera.Camera
+namespace ProjectChimera.Scripts.Camera
 {
     /// <summary>
     /// Advanced camera system providing multiple camera views, smooth transitions,
@@ -23,7 +28,7 @@ namespace ProjectChimera.Camera
         
         [Header("Camera Settings")]
         [SerializeField] private float _transitionDuration = 1.5f;
-        [SerializeField] private float _mousesensitivity = 2f;
+        [SerializeField] private float _mouseSensitivity = 2f;
         [SerializeField] private float _zoomSpeed = 5f;
         [SerializeField] private float _panSpeed = 3f;
         [SerializeField] private bool _enableCameraShake = true;

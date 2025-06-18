@@ -1,18 +1,28 @@
 using UnityEngine;
 using ProjectChimera.Core;
+using ProjectChimera.Core.Interfaces;
 using ProjectChimera.Data.Genetics;
 using ProjectChimera.Data.Environment;
+using ProjectChimera.Data.Facilities;
+using EnvironmentSystems = ProjectChimera.Systems.Environment;
+using CultivationSystems = ProjectChimera.Systems.Cultivation;
 using System;
 using System.Collections.Generic;
+// Explicit aliases to resolve type conflicts
+using HarvestResult = ProjectChimera.Data.Facilities.HarvestResult;
+using HarvestResults = ProjectChimera.Systems.Cultivation.HarvestResults;
+using PlantInstance = ProjectChimera.Systems.Cultivation.PlantInstance;
+using Camera = UnityEngine.Camera;
+using GameManager = ProjectChimera.Core.GameManager;
 
-namespace ProjectChimera.Systems.Cultivation
+namespace ProjectChimera.Scripts.Cultivation
 {
     /// <summary>
     /// Unity component that represents a physical plant instance in the scene.
     /// Bridges the PlantInstance data with Unity GameObject visualization and interaction.
     /// </summary>
     [RequireComponent(typeof(Collider))]
-    public class PlantInstanceComponent : MonoBehaviour
+    public class PlantInstanceComponent : MonoBehaviour, IWaterableComponent
     {
         [Header("Plant Configuration")]
         [SerializeField] private PlantStrainSO _strainData;
@@ -32,9 +42,10 @@ namespace ProjectChimera.Systems.Cultivation
         [SerializeField] private bool _enableHover = true;
         
         // Plant Data
-        private PlantInstance _plantInstance;
-        private PlantManager _plantManager;
-        private EnvironmentalManager _environmentalManager;
+        private CultivationSystems.PlantInstance _plantInstance;
+        private CultivationSystems.PlantManager _plantManager;
+        private CultivationSystems.CultivationManager _cultivationManager;
+        private EnvironmentSystems.EnvironmentalManager _environmentalManager;
         
         // Visual Components
         private Renderer _renderer;
@@ -45,7 +56,7 @@ namespace ProjectChimera.Systems.Cultivation
         // Interaction State
         private bool _isHovered = false;
         private bool _isSelected = false;
-        private Camera _playerCamera;
+        private UnityEngine.Camera _playerCamera;
         
         // Performance
         private float _lastUpdateTime;
@@ -58,12 +69,34 @@ namespace ProjectChimera.Systems.Cultivation
         public System.Action<PlantInstanceComponent> OnPlantHealthChanged;
         
         // Properties
-        public PlantInstance PlantData => _plantInstance;
+        public CultivationSystems.PlantInstance PlantData => _plantInstance;
         public PlantStrainSO StrainData => _strainData;
         public bool IsAlive => _plantInstance?.CurrentHealth > 0;
         public float GrowthProgress => _plantInstance?.GrowthProgress ?? 0f;
         public PlantGrowthStage CurrentStage => _plantInstance?.CurrentStage ?? PlantGrowthStage.Seed;
         public bool IsHarvestable => _plantInstance?.IsHarvestable ?? false;
+        
+        // IWaterableComponent Implementation
+        public string ComponentId => _plantInstance?.PlantId ?? Guid.NewGuid().ToString();
+        public float WaterLevel => _plantInstance?.WaterLevel ?? 0f;
+        public float MaxWaterCapacity => 100f;
+        public bool NeedsWatering => WaterLevel < 30f;
+        public Transform Transform => transform;
+        
+        public void AddWater(float amount)
+        {
+            WaterPlant(amount);
+        }
+        
+        public float GetMoistureLevel()
+        {
+            return WaterLevel;
+        }
+        
+        public bool IsWithinRange(Vector3 sourcePosition, float range)
+        {
+            return Vector3.Distance(transform.position, sourcePosition) <= range;
+        }
         
         private void Awake()
         {
@@ -136,9 +169,9 @@ namespace ProjectChimera.Systems.Cultivation
                 _visualRoot = transform;
             
             // Get player camera
-            _playerCamera = Camera.main;
+            _playerCamera = UnityEngine.Camera.main;
             if (_playerCamera == null)
-                _playerCamera = FindObjectOfType<Camera>();
+                _playerCamera = FindObjectOfType<UnityEngine.Camera>();
         }
         
         /// <summary>
@@ -156,8 +189,9 @@ namespace ProjectChimera.Systems.Cultivation
             }
             
             // Get managers
-            _plantManager = GameManager.Instance?.GetManager<PlantManager>();
-            _environmentalManager = GameManager.Instance?.GetManager<EnvironmentalManager>();
+            _plantManager = GameManager.Instance?.GetManager<CultivationSystems.PlantManager>();
+            _cultivationManager = GameManager.Instance?.GetManager<CultivationSystems.CultivationManager>();
+            _environmentalManager = GameManager.Instance?.GetManager<EnvironmentSystems.EnvironmentalManager>();
             
             if (_plantManager == null)
             {
@@ -165,28 +199,23 @@ namespace ProjectChimera.Systems.Cultivation
                 return;
             }
             
-            // Create plant instance data
-            _plantInstance = new PlantInstance
+            // Get or add PlantInstance component
+            _plantInstance = GetComponent<PlantInstance>();
+            if (_plantInstance == null)
             {
-                PlantId = Guid.NewGuid().ToString(),
-                StrainId = _strainData.StrainId,
-                PlantedDate = DateTime.Now,
-                CurrentStage = PlantGrowthStage.Seed,
-                CurrentHealth = 100f,
-                GrowthProgress = 0f,
-                WaterLevel = 50f,
-                NutrientLevel = 50f,
-                Position = transform.position,
-                IsIndoor = true // Default to indoor
-            };
+                _plantInstance = gameObject.AddComponent<PlantInstance>();
+            }
+            
+            // Initialize plant instance data through proper methods
+            _plantInstance.InitializeFromStrain(_strainData);
             
             // Register with plant manager
-            _plantManager.RegisterPlantInstance(_plantInstance, this);
+            _plantManager.RegisterPlantInstance(_plantInstance);
             
             // Initialize visual state
             UpdatePlantVisualization();
             
-            Debug.Log($"Initialized plant: {_strainData.Name} at {transform.position}");
+            Debug.Log($"Initialized plant: {_strainData.StrainName} at {transform.position}");
         }
         
         #endregion
@@ -225,7 +254,7 @@ namespace ProjectChimera.Systems.Cultivation
         /// <summary>
         /// Harvest the plant
         /// </summary>
-        public HarvestResult HarvestPlant()
+        public HarvestResults HarvestPlant()
         {
             if (_plantInstance == null || !IsHarvestable)
             {
@@ -240,7 +269,7 @@ namespace ProjectChimera.Systems.Cultivation
                 ShowHarvestEffect();
                 gameObject.SetActive(false);
                 
-                Debug.Log($"Harvested plant {name} - Yield: {harvestResult.TotalYield:F1}g");
+                Debug.Log($"Harvested plant {name} - Yield: {harvestResult.TotalYieldGrams:F1}g");
             }
             
             return harvestResult;
@@ -251,9 +280,9 @@ namespace ProjectChimera.Systems.Cultivation
         /// </summary>
         public void RemovePlant()
         {
-            if (_plantInstance != null && _plantManager != null)
+            if (_plantInstance != null && _cultivationManager != null)
             {
-                _plantManager.RemovePlant(_plantInstance.PlantId);
+                _cultivationManager.RemovePlant(_plantInstance.PlantId);
             }
             
             Destroy(gameObject);
@@ -467,7 +496,7 @@ namespace ProjectChimera.Systems.Cultivation
             return new PlantStatusInfo
             {
                 PlantId = _plantInstance.PlantId,
-                StrainName = _strainData?.Name ?? "Unknown",
+                StrainName = _strainData?.StrainName ?? "Unknown",
                 CurrentStage = _plantInstance.CurrentStage,
                 Health = _plantInstance.CurrentHealth,
                 GrowthProgress = _plantInstance.GrowthProgress,

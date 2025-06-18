@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using ProjectChimera.Core;
 
-namespace ProjectChimera.Testing
+namespace ProjectChimera.Testing.Core
 {
     /// <summary>
     /// Base class for all Project Chimera test classes

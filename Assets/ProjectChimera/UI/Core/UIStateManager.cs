@@ -325,6 +325,55 @@ namespace ProjectChimera.UI.Core
         }
         
         /// <summary>
+        /// Save state with UIStateData object (compatibility method)
+        /// </summary>
+        public void SaveState(string stateKey, UIStateData stateData)
+        {
+            if (!_isInitialized)
+            {
+                LogWarning("UI State Manager not initialized");
+                return;
+            }
+            
+            if (string.IsNullOrEmpty(stateKey) || stateData == null)
+            {
+                LogWarning("Invalid state key or data");
+                return;
+            }
+            
+            SaveState(stateData.ElementId ?? stateKey, stateData.Category, stateData.Data);
+        }
+        
+        /// <summary>
+        /// Load state with UIStateData return (compatibility method)
+        /// </summary>
+        public UIStateData LoadState(string stateKey)
+        {
+            if (!_isInitialized)
+            {
+                LogWarning("UI State Manager not initialized");
+                return null;
+            }
+            
+            if (string.IsNullOrEmpty(stateKey))
+            {
+                LogWarning("Invalid state key");
+                return null;
+            }
+            
+            // Try to find the state in current states
+            foreach (var kvp in _currentStates)
+            {
+                if (kvp.Key.Contains(stateKey) || kvp.Value.ElementId == stateKey)
+                {
+                    return kvp.Value;
+                }
+            }
+            
+            return null;
+        }
+        
+        /// <summary>
         /// Save state immediately to storage
         /// </summary>
         private void SaveStateImmediate(string stateKey, UIStateData stateData)
@@ -725,6 +774,11 @@ namespace ProjectChimera.UI.Core
         public object Data;
         public System.DateTime Timestamp;
         public int Version;
+        
+        // Compatibility properties for testing
+        public string StateId { get => ElementId; set => ElementId = value; }
+        public int StateVersion { get => Version; set => Version = value; }
+        public object StateData { get => Data; set => Data = value; }
     }
     
     /// <summary>

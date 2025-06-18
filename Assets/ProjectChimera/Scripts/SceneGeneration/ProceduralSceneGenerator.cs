@@ -2,7 +2,13 @@ using UnityEngine;
 using ProjectChimera.Core;
 using ProjectChimera.Cultivation;
 using ProjectChimera.Environment;
-using ProjectChimera.Systems.Environment;
+using ProjectChimera.Scripts.Environment;
+using ProjectChimera.Data.Construction;
+using ProjectChimera.Data.Automation;
+using ProjectChimera.Data.Facilities;
+// Explicit aliases to resolve ambiguity
+using SensorType = ProjectChimera.Data.Automation.SensorType;
+using RoomLayout = ProjectChimera.Data.Facilities.RoomLayout;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
@@ -17,7 +23,7 @@ namespace ProjectChimera.SceneGeneration
     public class ProceduralSceneGenerator : MonoBehaviour
     {
         [Header("Generation Parameters")]
-        [SerializeField] private SceneType _sceneType = SceneType.IndoorFacility;
+        [SerializeField] private FacilitySceneType _sceneType = FacilitySceneType.IndoorFacility;
         [SerializeField] private Vector2Int _facilitySize = new Vector2Int(50, 30);
         [SerializeField] private int _numberOfRooms = 8;
         [SerializeField] private float _roomMinSize = 8f;
@@ -92,7 +98,7 @@ namespace ProjectChimera.SceneGeneration
         private Transform _decorationContainer;
         
         // Properties
-        public SceneType CurrentSceneType => _sceneType;
+        public FacilitySceneType CurrentFacilitySceneType => _sceneType;
         public List<RoomLayout> GeneratedRooms => _generatedRooms;
         public bool IsGenerating { get; private set; }
         
@@ -236,23 +242,23 @@ namespace ProjectChimera.SceneGeneration
             
             switch (_sceneType)
             {
-                case SceneType.IndoorFacility:
+                case FacilitySceneType.IndoorFacility:
                     yield return StartCoroutine(GenerateIndoorTerrain());
                     break;
                     
-                case SceneType.OutdoorFarm:
+                case FacilitySceneType.OutdoorFarm:
                     yield return StartCoroutine(GenerateOutdoorTerrain());
                     break;
                     
-                case SceneType.Greenhouse:
+                case FacilitySceneType.Greenhouse:
                     yield return StartCoroutine(GenerateGreenhouseTerrain());
                     break;
                     
-                case SceneType.MixedFacility:
+                case FacilitySceneType.MixedFacility:
                     yield return StartCoroutine(GenerateMixedTerrain());
                     break;
                     
-                case SceneType.UrbanRooftop:
+                case FacilitySceneType.UrbanRooftop:
                     yield return StartCoroutine(GenerateUrbanTerrain());
                     break;
             }
@@ -265,7 +271,7 @@ namespace ProjectChimera.SceneGeneration
             _generatedObjects.Add(floor);
             
             // Generate surrounding walls if needed
-            if (_sceneType == SceneType.IndoorFacility)
+            if (_sceneType == FacilitySceneType.IndoorFacility)
             {
                 yield return StartCoroutine(GenerateExteriorWalls());
             }
@@ -690,8 +696,7 @@ namespace ProjectChimera.SceneGeneration
                     RoomName = GenerateRoomName(placement.RoomType),
                     RoomType = placement.RoomType.ToString(),
                     Position = placement.Position,
-                    Dimensions = placement.Dimensions,
-                    Area = placement.Dimensions.x * placement.Dimensions.z
+                    Dimensions = placement.Dimensions
                 };
                 
                 _generatedRooms.Add(roomLayout);
@@ -1413,7 +1418,7 @@ namespace ProjectChimera.SceneGeneration
         
         private IEnumerator GenerateOutdoorVegetation()
         {
-            if (_sceneType == SceneType.OutdoorFarm || _sceneType == SceneType.MixedFacility)
+            if (_sceneType == FacilitySceneType.OutdoorFarm || _sceneType == FacilitySceneType.MixedFacility)
             {
                 yield return StartCoroutine(GenerateWildGrass());
                 yield return StartCoroutine(GenerateWildPlants());
@@ -1619,13 +1624,13 @@ namespace ProjectChimera.SceneGeneration
             bed.transform.position = position;
             
             // Bed base
-            GameObject base = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            base.name = "Bed Base";
-            base.transform.SetParent(bed.transform);
-            base.transform.localPosition = Vector3.zero;
-            base.transform.localScale = new Vector3(3f, 0.2f, 2f);
+            GameObject bedBase = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            bedBase.name = "Bed Base";
+            bedBase.transform.SetParent(bed.transform);
+            bedBase.transform.localPosition = Vector3.zero;
+            bedBase.transform.localScale = new Vector3(3f, 0.2f, 2f);
             
-            var baseRenderer = base.GetComponent<Renderer>();
+            var baseRenderer = bedBase.GetComponent<Renderer>();
             baseRenderer.material.color = new Color(0.3f, 0.2f, 0.1f);
             
             // Flowers
@@ -1806,7 +1811,7 @@ namespace ProjectChimera.SceneGeneration
         private IEnumerator GenerateEnvironmentalSensors(RoomLayout room)
         {
             // Generate various sensors throughout the room
-            var sensorTypes = new SensorType[]
+            var sensorTypes = new List<SensorType>
             {
                 SensorType.Temperature,
                 SensorType.Humidity,
@@ -2066,7 +2071,7 @@ namespace ProjectChimera.SceneGeneration
         
         private IEnumerator GenerateVehicles()
         {
-            if (_sceneType == SceneType.OutdoorFarm || _sceneType == SceneType.MixedFacility)
+            if (_sceneType == FacilitySceneType.OutdoorFarm || _sceneType == FacilitySceneType.MixedFacility)
             {
                 for (int i = 0; i < _random.Next(1, 3); i++)
                 {
@@ -2404,7 +2409,7 @@ namespace ProjectChimera.SceneGeneration
         
         private IEnumerator GenerateRocks()
         {
-            if (_sceneType == SceneType.OutdoorFarm || _sceneType == SceneType.MixedFacility)
+            if (_sceneType == FacilitySceneType.OutdoorFarm || _sceneType == FacilitySceneType.MixedFacility)
             {
                 int rockCount = _random.Next(10, 25);
                 
@@ -2586,7 +2591,7 @@ namespace ProjectChimera.SceneGeneration
         
         private IEnumerator GenerateWeatherEffects()
         {
-            if (_includeWeatherSystem && (_sceneType == SceneType.OutdoorFarm || _sceneType == SceneType.MixedFacility))
+            if (_includeWeatherSystem && (_sceneType == FacilitySceneType.OutdoorFarm || _sceneType == FacilitySceneType.MixedFacility))
             {
                 yield return StartCoroutine(CreateWeatherSystem());
             }
@@ -2638,7 +2643,7 @@ namespace ProjectChimera.SceneGeneration
         
         private IEnumerator GenerateEnvironmentalParticles()
         {
-            if (_sceneType == SceneType.OutdoorFarm || _sceneType == SceneType.MixedFacility)
+            if (_sceneType == FacilitySceneType.OutdoorFarm || _sceneType == FacilitySceneType.MixedFacility)
             {
                 // Generate pollen particles
                 GameObject pollenSystem = new GameObject("Pollen Particles");
@@ -2780,7 +2785,7 @@ namespace ProjectChimera.SceneGeneration
         /// <summary>
         /// Change scene type and regenerate
         /// </summary>
-        public void ChangeSceneType(SceneType newType)
+        public void ChangeFacilitySceneType(FacilitySceneType newType)
         {
             _sceneType = newType;
             RegenerateScene();
@@ -2793,7 +2798,7 @@ namespace ProjectChimera.SceneGeneration
         {
             return new SceneGenerationStats
             {
-                SceneType = _sceneType,
+                FacilitySceneType = _sceneType,
                 TotalObjects = _generatedObjects.Count,
                 RoomCount = _generatedRooms.Count,
                 PlantCount = _generatedObjects.Count(obj => obj != null && obj.GetComponent<InteractivePlantComponent>() != null),
@@ -2811,7 +2816,7 @@ namespace ProjectChimera.SceneGeneration
         {
             return new SceneConfiguration
             {
-                SceneType = _sceneType,
+                FacilitySceneType = _sceneType,
                 FacilitySize = _facilitySize,
                 NumberOfRooms = _numberOfRooms,
                 GenerationSeed = _generationSeed,
@@ -2829,7 +2834,7 @@ namespace ProjectChimera.SceneGeneration
         /// </summary>
         public void LoadConfiguration(SceneConfiguration config)
         {
-            _sceneType = config.SceneType;
+            _sceneType = config.FacilitySceneType;
             _facilitySize = config.FacilitySize;
             _numberOfRooms = config.NumberOfRooms;
             _generationSeed = config.GenerationSeed;
@@ -2853,32 +2858,13 @@ namespace ProjectChimera.SceneGeneration
     
     // Supporting data structures and enums
     [System.Serializable]
-    public enum SceneType
+    public enum FacilityFacilitySceneType
     {
         IndoorFacility,
         OutdoorFarm,
         Greenhouse,
         MixedFacility,
         UrbanRooftop
-    }
-    
-    [System.Serializable]
-    public enum FacilityRoomType
-    {
-        Vegetative,
-        Flowering,
-        Nursery,
-        Mother,
-        Drying,
-        Curing,
-        Processing,
-        Storage,
-        Laboratory,
-        Office,
-        Break,
-        HVAC,
-        Electrical,
-        Security
     }
     
     [System.Serializable]
@@ -2913,7 +2899,7 @@ namespace ProjectChimera.SceneGeneration
     [System.Serializable]
     public class SceneGenerationStats
     {
-        public SceneType SceneType;
+        public FacilitySceneType FacilitySceneType;
         public int TotalObjects;
         public int RoomCount;
         public int PlantCount;
@@ -2926,7 +2912,7 @@ namespace ProjectChimera.SceneGeneration
     [System.Serializable]
     public class SceneConfiguration
     {
-        public SceneType SceneType;
+        public FacilitySceneType FacilitySceneType;
         public Vector2Int FacilitySize;
         public int NumberOfRooms;
         public int GenerationSeed;
@@ -2942,4 +2928,71 @@ namespace ProjectChimera.SceneGeneration
     public class DoorController : MonoBehaviour { }
     public class SecurityCamera : MonoBehaviour { }
     public class WeatherController : MonoBehaviour { }
+    
+    // Stub classes for missing generators
+    public class TerrainGenerator : MonoBehaviour 
+    { 
+        public void Initialize(System.Random random, Vector2Int facilitySize) { }
+        
+        // Missing methods that are called in the main generator
+        public void GenerateOutdoorTerrain() { }
+        public GameObject GenerateOutdoorTerrain(Vector2Int facilitySize, Material[] groundMaterials) { return new GameObject("OutdoorTerrain"); }
+        public void GenerateHill() { }
+        public GameObject GenerateHill(Vector3 position) { return new GameObject("Hill"); }
+        public GameObject GenerateHill(Vector3 position, int size) { return new GameObject("Hill"); }
+        public void GeneratePath() { }
+        public GameObject GeneratePath(List<Vector3> pathPoints) { return new GameObject("Path"); }
+        public GameObject GeneratePond(Vector3 position) { return new GameObject("Pond"); }
+    }
+    
+    public class BuildingGenerator : MonoBehaviour 
+    { 
+        private System.Random _random;
+        
+        public void Initialize(System.Random random, Dictionary<string, Transform> systemContainers) 
+        { 
+            _random = random;
+        }
+        
+        public List<RoomPlacement> GenerateRoomPlacements(Vector2Int facilitySize, int numberOfRooms, float roomMinSize, float roomMaxSize)
+        {
+            var placements = new List<RoomPlacement>();
+            var roomTypes = System.Enum.GetValues(typeof(FacilityRoomType)).Cast<FacilityRoomType>().ToArray();
+            
+            for (int i = 0; i < numberOfRooms; i++)
+            {
+                var placement = new RoomPlacement
+                {
+                    Position = new Vector3(
+                        _random.Next(-facilitySize.x / 2, facilitySize.x / 2),
+                        0f,
+                        _random.Next(-facilitySize.y / 2, facilitySize.y / 2)
+                    ),
+                    Dimensions = new Vector3(
+                        _random.Next((int)roomMinSize, (int)roomMaxSize),
+                        3f, // Standard room height
+                        _random.Next((int)roomMinSize, (int)roomMaxSize)
+                    ),
+                    RoomType = roomTypes[_random.Next(roomTypes.Length)]
+                };
+                placements.Add(placement);
+            }
+            
+            return placements;
+        }
+        
+        public GameObject GenerateProcessingFacility(Vector3 position) { return new GameObject("ProcessingFacility"); }
+        public GameObject GenerateStorageFacility(Vector3 position) { return new GameObject("StorageFacility"); }
+        public GameObject GenerateLaboratory(Vector3 position) { return new GameObject("Laboratory"); }
+        public GameObject GenerateOfficeBuilding(Vector3 position) { return new GameObject("OfficeBuilding"); }
+        
+        // Missing methods that are called in the main generator
+        public void GenerateGreenhouse() { }
+        public GameObject GenerateGreenhouse(Vector2Int facilitySize) { return new GameObject("Greenhouse"); }
+    }
+    
+    public class VegetationGenerator : MonoBehaviour 
+    { 
+        public void Initialize(System.Random random, Transform vegetationContainer) { }
+    }
 }

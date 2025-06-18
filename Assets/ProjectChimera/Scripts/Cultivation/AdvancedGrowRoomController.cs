@@ -2,8 +2,21 @@ using UnityEngine;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Environment;
 using ProjectChimera.Data.Facilities;
-using ProjectChimera.Systems.Environment;
-using ProjectChimera.Systems.Facilities;
+using ProjectChimera.Data.Genetics;
+using ProjectChimera.Data.Automation;
+using ProjectChimera.SceneGeneration;
+using ProjectChimera.Scripts.Environment;
+using ProjectChimera.Scripts.Facilities;
+using CultivationSystems = ProjectChimera.Systems.Cultivation;
+// Explicit aliases to resolve controller ambiguity
+using HVACController = ProjectChimera.Scripts.Environment.HVACController;
+using LightingController = ProjectChimera.Scripts.Environment.LightingController;
+using VentilationController = ProjectChimera.Scripts.Environment.VentilationController;
+using IrrigationController = ProjectChimera.Scripts.Environment.IrrigationController;
+using EnvironmentalConditions = ProjectChimera.Data.Environment.EnvironmentalConditions;
+using InteractivePlantComponent = ProjectChimera.Systems.Cultivation.InteractivePlantComponent;
+using EnvironmentalSensor = ProjectChimera.Environment.EnvironmentalSensor;
+using SensorType = ProjectChimera.Environment.SensorType;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
@@ -66,7 +79,7 @@ namespace ProjectChimera.Cultivation
         // Room State
         private List<InteractivePlantComponent> _activePlants = new List<InteractivePlantComponent>();
         private List<EnvironmentalSensor> _sensors = new List<EnvironmentalSensor>();
-        private RoomStatus _currentStatus = RoomStatus.Idle;
+        private RoomStatus _currentStatus = RoomStatus.Empty;
         private EnvironmentalConditions _currentConditions;
         private EnvironmentalConditions _targetConditions;
         
@@ -265,11 +278,11 @@ namespace ProjectChimera.Cultivation
                 _sensorContainer.SetParent(transform);
             }
             
-            // Create environmental sensors
-            CreateSensor(SensorType.Temperature, Vector3.zero);
-            CreateSensor(SensorType.Humidity, Vector3.zero);
+            // Create environmental sensors at strategic positions
+            CreateSensor(SensorType.Temperature, new Vector3(-1f, 1.5f, -1f));
+            CreateSensor(SensorType.Humidity, new Vector3(1f, 1.5f, -1f));
+            CreateSensor(SensorType.CO2Level, new Vector3(0f, 1.5f, 1f));
             CreateSensor(SensorType.LightLevel, new Vector3(0f, 2f, 0f));
-            CreateSensor(SensorType.CO2Level, new Vector3(0f, 1f, 0f));
             CreateSensor(SensorType.AirFlow, new Vector3(2f, 2f, 0f));
         }
         
@@ -606,7 +619,7 @@ namespace ProjectChimera.Cultivation
                     Enabled = true,
                     AutoWatering = true,
                     SoilMoistureThreshold = 30f,
-                    WateringSchedule = CreateDefaultWateringSchedule()
+                    Schedule = CreateDefaultWateringSchedule()
                 }
             };
         }
@@ -938,7 +951,7 @@ namespace ProjectChimera.Cultivation
                     // Preemptively adjust HVAC
                     if (_hvacController != null)
                     {
-                        _hvacController.PreemptiveAdjustment(tempTrend);
+                        _hvacController.MakePreemptiveAdjustment(tempTrend);
                     }
                 }
             }
@@ -1176,8 +1189,9 @@ namespace ProjectChimera.Cultivation
             Debug.Log($"Plant ready for harvest in {_roomName}: {plant.PlantData.StrainName}");
         }
         
-        private void OnPlantHealthChanged(InteractivePlantComponent plant, float newHealth)
+        private void OnPlantHealthChanged(InteractivePlantComponent plant)
         {
+            float newHealth = plant.Health * 100f; // Convert to percentage
             if (newHealth < 30f)
             {
                 var alert = new EnvironmentalAlert
@@ -1678,5 +1692,186 @@ namespace ProjectChimera.Cultivation
         ScheduledAction,
         EmergencyResponse,
         OptimizationChange
+    }
+
+    [System.Serializable]
+    public class AutomationProfile
+    {
+        public string ProfileName;
+        public TemperatureAutomation TemperatureControl;
+        public HumidityAutomation HumidityControl;
+        public LightingAutomation LightingControl;
+        public VentilationAutomation VentilationControl;
+        public IrrigationAutomation IrrigationControl;
+    }
+
+    [System.Serializable]
+    public class TemperatureAutomation
+    {
+        public bool Enabled;
+        public float TargetTemperature;
+        public float ToleranceDegrees;
+        public AutomationSpeed ResponseSpeed;
+    }
+
+    [System.Serializable]
+    public class HumidityAutomation
+    {
+        public bool Enabled;
+        public float TargetHumidity;
+        public float TolerancePercent;
+        public AutomationSpeed ResponseSpeed;
+    }
+
+    [System.Serializable]
+    public class LightingAutomation
+    {
+        public bool Enabled;
+        public float TargetIntensity;
+        public AutomationSpeed ResponseSpeed;
+        public LightSchedule Schedule;
+        public bool IntensityControl;
+        public bool SpectrumControl;
+    }
+
+    [System.Serializable]
+    public class VentilationAutomation
+    {
+        public bool Enabled;
+        public float TargetAirFlow;
+        public AutomationSpeed ResponseSpeed;
+        public bool CO2Triggered;
+        public bool TemperatureTriggered;
+    }
+
+    [System.Serializable]
+    public class IrrigationAutomation
+    {
+        public bool Enabled;
+        public WateringSchedule Schedule;
+        public AutomationSpeed ResponseSpeed;
+        public bool AutoWatering;
+        public float SoilMoistureThreshold;
+    }
+
+    [System.Serializable]
+    public class WateringSchedule
+    {
+        public string ScheduleName;
+        public List<TimeSpan> WateringTimes;
+        public int WateringDuration; // in seconds
+        public bool IsActive;
+    }
+
+    [System.Serializable]
+    public enum AutomationSpeed
+    {
+        Slow,
+        Medium,
+        Fast
+    }
+    
+    // Plant data class for proper property access
+    [System.Serializable]
+    public class PlantDataInfo
+    {
+        public float WaterLevel;
+        public float Health;
+        public float GrowthProgress;
+        public PlantGrowthStage CurrentStage;
+        public string StrainName;
+        public string Id;
+        
+        public PlantDataInfo(float waterLevel, float health, float growthProgress, PlantGrowthStage currentStage, string strainName, string id)
+        {
+            WaterLevel = waterLevel;
+            Health = health;
+            GrowthProgress = growthProgress;
+            CurrentStage = currentStage;
+            StrainName = strainName;
+            Id = id;
+        }
+    }
+
+    // Stub class for InteractivePlantComponent (deleted file)
+    public class InteractivePlantComponent : MonoBehaviour
+    {
+        [Header("Plant Properties")]
+        [SerializeField] private float _waterLevel = 0.5f;
+        [SerializeField] private float _health = 1.0f;
+        [SerializeField] private float _growthProgress = 0.0f;
+        [SerializeField] private PlantGrowthStage _currentStage = PlantGrowthStage.Seedling;
+        [SerializeField] private string _strainName = "Unknown Strain";
+        
+        public event System.Action<InteractivePlantComponent> OnPlantDied;
+        public event System.Action<InteractivePlantComponent> OnPlantHarvestReady;
+        public event System.Action<InteractivePlantComponent> OnHealthChanged;
+        
+        // Properties
+        public float WaterLevel 
+        { 
+            get => _waterLevel; 
+            set => _waterLevel = Mathf.Clamp01(value); 
+        }
+        
+        public float Health 
+        { 
+            get => _health; 
+            set 
+            { 
+                _health = Mathf.Clamp01(value);
+                OnHealthChanged?.Invoke(this);
+            } 
+        }
+        
+        public float GrowthProgress 
+        { 
+            get => _growthProgress; 
+            set => _growthProgress = Mathf.Clamp01(value); 
+        }
+        
+        public PlantGrowthStage CurrentStage 
+        { 
+            get => _currentStage; 
+            set => _currentStage = value; 
+        }
+        
+        public string StrainName 
+        { 
+            get => _strainName; 
+            set => _strainName = value; 
+        }
+        
+        public bool IsHarvestable => _currentStage == PlantGrowthStage.Harvest || _currentStage == PlantGrowthStage.Harvestable;
+        
+        public PlantDataInfo PlantData => new PlantDataInfo(
+            _waterLevel, 
+            _health, 
+            _growthProgress, 
+            _currentStage,
+            _strainName,
+            GetInstanceID().ToString()
+        );
+        
+        // Methods
+        public void WaterPlant(float amount = 0.2f)
+        {
+            WaterLevel = Mathf.Min(1.0f, WaterLevel + amount);
+        }
+        
+        public void TriggerPlantDied()
+        {
+            OnPlantDied?.Invoke(this);
+        }
+        
+        public void TriggerPlantHarvestReady()
+        {
+            OnPlantHarvestReady?.Invoke(this);
+        }
+        
+        public void TriggerHealthChanged()
+        {
+            OnHealthChanged?.Invoke(this);
+        }
     }
 }

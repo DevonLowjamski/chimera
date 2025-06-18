@@ -10,6 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 
+// Explicit namespace alias to resolve ambiguity
+using EnvironmentalManager = ProjectChimera.Systems.Environment.EnvironmentalManager;
+
 namespace ProjectChimera.Systems.Events
 {
     /// <summary>

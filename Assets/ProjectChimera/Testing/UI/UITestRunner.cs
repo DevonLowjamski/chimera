@@ -546,10 +546,8 @@ namespace ProjectChimera.Testing.UI
             };
         }
         
-        protected override void Update()
+        private void Update()
         {
-            base.Update();
-            
             // Continuous integration testing
             if (_enableContinuousIntegration && !_isTestRunInProgress)
             {
@@ -564,10 +562,8 @@ namespace ProjectChimera.Testing.UI
             }
         }
         
-        protected override void OnValidate()
+        private void OnValidate()
         {
-            base.OnValidate();
-            
             _ciTestInterval = Mathf.Max(60f, _ciTestInterval);
             _maxHistoryEntries = Mathf.Max(10, _maxHistoryEntries);
             

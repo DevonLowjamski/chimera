@@ -3,7 +3,8 @@ using UnityEngine.TestTools;
 using NUnit.Framework;
 using System.Collections;
 using ProjectChimera.Core;
-using ProjectChimera.Testing;
+using ProjectChimera.Testing.Core;
+using ProjectChimera.Systems.Economy;
 
 namespace ProjectChimera.Testing.Systems.Economy
 {

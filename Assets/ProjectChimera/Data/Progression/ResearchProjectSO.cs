@@ -122,6 +122,10 @@ namespace ProjectChimera.Data.Progression
         public List<string> ContentUnlocks => new List<string>(); // Empty list for now
         public List<PassiveBonus> PassiveBonuses => new List<PassiveBonus>(); // Empty list for now
         
+        // UI Compatibility properties
+        public int ResearchCost => (int)(_requirements?.TotalBudgetRequired ?? 100f); // Default cost of 100 if no requirements
+        public int ResearchTimeMinutes => (int)(EstimatedDurationHours * 60f); // Convert hours to minutes
+        
         /// <summary>
         /// Evaluates if the player can initiate this research project.
         /// </summary>

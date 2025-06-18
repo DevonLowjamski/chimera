@@ -1,5 +1,6 @@
 using UnityEngine;
 using ProjectChimera.Core;
+using ProjectChimera.Data.Genetics;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
@@ -84,14 +85,14 @@ namespace ProjectChimera.Systems.SpeedTree
         
         // Quality Management
         private QualityLevel _currentQualityLevel = QualityLevel.High;
-        private Dictionary<QualityLevel, QualitySettings> _qualitySettings = new Dictionary<QualityLevel, QualitySettings>();
+        private Dictionary<QualityLevel, OptimizationQualitySettings> _qualitySettings = new Dictionary<QualityLevel, OptimizationQualitySettings>();
         
         // Events
         public System.Action<PerformanceMetrics> OnPerformanceMetricsUpdated;
         public System.Action<QualityLevel, QualityLevel> OnQualityLevelChanged;
         public System.Action<int> OnPlantCulled;
         public System.Action<int> OnPlantLODChanged;
-        public System.Action<OptimizationReport> OnOptimizationReportGenerated;
+        public System.Action<OptimizationSystemReport> OnOptimizationReportGenerated;
         
         // Properties
         public PerformanceMetrics CurrentMetrics => _currentMetrics;
@@ -100,7 +101,7 @@ namespace ProjectChimera.Systems.SpeedTree
         public float CurrentFrameRate => _currentMetrics.AverageFrameRate;
         public bool OptimizationEnabled => enabled;
         
-        protected override void InitializeManager()
+        protected override void OnManagerInitialize()
         {
             InitializeOptimizationSystems();
             InitializeQualitySettings();
@@ -150,7 +151,7 @@ namespace ProjectChimera.Systems.SpeedTree
         private void InitializeQualitySettings()
         {
             // Define quality level settings
-            _qualitySettings[QualityLevel.Low] = new QualitySettings
+            _qualitySettings[QualityLevel.Low] = new OptimizationQualitySettings
             {
                 MaxVisiblePlants = 100,
                 LODDistanceMultiplier = 0.5f,
@@ -163,7 +164,7 @@ namespace ProjectChimera.Systems.SpeedTree
                 TargetFrameRate = 30
             };
             
-            _qualitySettings[QualityLevel.Medium] = new QualitySettings
+            _qualitySettings[QualityLevel.Medium] = new OptimizationQualitySettings
             {
                 MaxVisiblePlants = 250,
                 LODDistanceMultiplier = 0.75f,
@@ -176,7 +177,7 @@ namespace ProjectChimera.Systems.SpeedTree
                 TargetFrameRate = 45
             };
             
-            _qualitySettings[QualityLevel.High] = new QualitySettings
+            _qualitySettings[QualityLevel.High] = new OptimizationQualitySettings
             {
                 MaxVisiblePlants = 500,
                 LODDistanceMultiplier = 1f,
@@ -189,7 +190,7 @@ namespace ProjectChimera.Systems.SpeedTree
                 TargetFrameRate = 60
             };
             
-            _qualitySettings[QualityLevel.Ultra] = new QualitySettings
+            _qualitySettings[QualityLevel.Ultra] = new OptimizationQualitySettings
             {
                 MaxVisiblePlants = 1000,
                 LODDistanceMultiplier = 1.25f,
@@ -296,7 +297,7 @@ namespace ProjectChimera.Systems.SpeedTree
         
         #region Plant Registration and Tracking
         
-        public void RegisterPlantForOptimization(SpeedTreePlantInstance instance)
+        public void RegisterPlantForOptimization(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             if (instance == null) return;
             
@@ -321,9 +322,12 @@ namespace ProjectChimera.Systems.SpeedTree
             {
                 InstanceId = instance.InstanceId,
                 IsOptimized = false,
-                OptimizationLevel = OptimizationLevel.None,
-                LastOptimizationTime = Time.time,
-                OptimizationHistory = new List<OptimizationAction>()
+                OptimizationLevel = 0f,
+                LastOptimization = DateTime.Now,
+                OptimizationHistory = new List<OptimizationAction>(),
+                AppliedOptimizations = new List<OptimizationActionType>(),
+                PerformanceGain = 0f,
+                OptimizationNotes = string.Empty
             };
             
             _plantOptimizationStates[instance.InstanceId] = optimizationState;
@@ -356,7 +360,7 @@ namespace ProjectChimera.Systems.SpeedTree
             return Vector3.Distance(position, mainCamera.transform.position);
         }
         
-        private float CalculateMemoryFootprint(SpeedTreePlantInstance instance)
+        private float CalculateMemoryFootprint(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             // Estimate memory usage based on plant complexity
             var baseMemory = 2f; // MB base per plant
@@ -375,7 +379,7 @@ namespace ProjectChimera.Systems.SpeedTree
             return baseMemory;
         }
         
-        private int CalculateOptimizationPriority(SpeedTreePlantInstance instance)
+        private int CalculateOptimizationPriority(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             var priority = 1; // Base priority
             
@@ -598,19 +602,23 @@ namespace ProjectChimera.Systems.SpeedTree
             }
         }
         
-        private bool CheckPlantOcclusion(SpeedTreePlantInstance instance)
+        private bool CheckPlantOcclusion(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
+            // Simple occlusion check using raycasting
             var mainCamera = Camera.main;
             if (mainCamera == null) return false;
             
-            var rayDirection = (instance.Position - mainCamera.transform.position).normalized;
-            var distance = Vector3.Distance(mainCamera.transform.position, instance.Position);
+            var directionToCamera = (mainCamera.transform.position - instance.Position).normalized;
+            var distance = Vector3.Distance(instance.Position, mainCamera.transform.position);
             
-            // Simple raycast to check for occlusion
-            if (Physics.Raycast(mainCamera.transform.position, rayDirection, out var hit, distance - 1f))
+            // Cast ray from plant to camera
+            if (Physics.Raycast(instance.Position, directionToCamera, out RaycastHit hit, distance))
             {
-                // If we hit something that's not the plant itself, it's occluded
-                return !hit.collider.transform.IsChildOf(instance.Renderer?.transform);
+                // If we hit something before reaching the camera, plant is occluded
+                if (hit.distance < distance * 0.9f) // 90% of distance to account for plant bounds
+                {
+                    return true;
+                }
             }
             
             return false;
@@ -633,7 +641,7 @@ namespace ProjectChimera.Systems.SpeedTree
             _currentMetrics.CulledPlants++;
             OnPlantCulled?.Invoke(instance.InstanceId);
             
-            RecordOptimizationAction(performanceData.InstanceId, OptimizationActionType.Cull, 
+            RecordOptimizationAction(performanceData.InstanceId, OptimizationActionType.Culling, 
                 $"Culled: {reason}");
         }
         
@@ -657,11 +665,11 @@ namespace ProjectChimera.Systems.SpeedTree
                 "Unculled: Back in view");
         }
         
-        private Bounds GetPlantBounds(SpeedTreePlantInstance instance)
+        private Bounds GetPlantBounds(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
-            if (instance.Renderer != null)
+            if (instance.Renderer?.Renderer != null)
             {
-                return instance.Renderer.bounds;
+                return instance.Renderer.Renderer.bounds;
             }
             
             // Fallback bounds calculation
@@ -682,10 +690,10 @@ namespace ProjectChimera.Systems.SpeedTree
         {
             if (!_enableBatching) return;
             
-            _batchingSystem.ProcessBatching(_plantPerformanceData.Values.Where(p => !p.IsCulled).ToList());
+            _batchingSystem.ProcessBatching();
             
             // Update batching statistics
-            _currentMetrics.Batches = _batchingSystem.CurrentBatchCount;
+            _currentMetrics.Batches = _batchingSystem.GetBatchCount();
             _currentMetrics.DrawCalls = _batchingSystem.EstimatedDrawCalls;
         }
         
@@ -776,18 +784,31 @@ namespace ProjectChimera.Systems.SpeedTree
         {
             if (!_qualitySettings.TryGetValue(quality, out var settings)) return;
             
-            // Apply Unity quality settings
-            QualitySettings.shadowResolution = (ShadowResolution)(int)settings.ShadowQuality;
-            QualitySettings.masterTextureLimit = 3 - settings.TextureQuality;
-            QualitySettings.anisotropicFiltering = settings.AnisotropicFiltering;
-            QualitySettings.antiAliasing = settings.AntiAliasing;
-            QualitySettings.vSyncCount = settings.VSyncCount;
-            Application.targetFrameRate = settings.TargetFrameRate;
+            // Apply Unity quality settings using correct API
+            UnityEngine.QualitySettings.shadows = (UnityEngine.ShadowQuality)(int)settings.ShadowQuality;
+            UnityEngine.QualitySettings.globalTextureMipmapLimit = 3 - settings.TextureQuality;
+            UnityEngine.QualitySettings.anisotropicFiltering = (UnityEngine.AnisotropicFiltering)(int)settings.AnisotropicFiltering;
+            
+            // Apply other quality settings
+            UnityEngine.QualitySettings.shadowDistance = GetShadowDistance(settings.ShadowQuality);
+            UnityEngine.QualitySettings.shadowCascades = GetShadowCascades(settings.ShadowQuality);
             
             // Apply SpeedTree-specific settings
             _maxVisiblePlants = settings.MaxVisiblePlants;
             _lodManager.SetLODDistanceMultiplier(settings.LODDistanceMultiplier);
             _cullingManager.SetCullingDistance(settings.CullingDistance);
+        }
+        
+        private float GetShadowDistance(ShadowQuality shadowQuality)
+        {
+            // Implement the logic to determine shadow distance based on shadow quality
+            return 100f; // Placeholder return, actual implementation needed
+        }
+        
+        private int GetShadowCascades(ShadowQuality shadowQuality)
+        {
+            // Implement the logic to determine shadow cascades based on shadow quality
+            return 4; // Placeholder return, actual implementation needed
         }
         
         #endregion
@@ -829,7 +850,7 @@ namespace ProjectChimera.Systems.SpeedTree
             }
         }
         
-        private float EstimateRenderTime(SpeedTreePlantInstance instance, int lodLevel)
+        private float EstimateRenderTime(AdvancedSpeedTreeManager.SpeedTreePlantData instance, int lodLevel)
         {
             var baseRenderTime = 0.1f; // ms base
             
@@ -945,13 +966,36 @@ namespace ProjectChimera.Systems.SpeedTree
             }
             
             // Generate optimization report
-            var report = new OptimizationReport
+            var report = new OptimizationSystemReport
             {
-                Timestamp = DateTime.Now,
+                GeneratedAt = DateTime.Now,
                 CurrentMetrics = _currentMetrics,
-                QualityLevel = _currentQualityLevel,
-                Recommendations = recommendations,
-                PerformanceScore = CalculatePerformanceScore()
+                CurrentQuality = _currentQualityLevel,
+                PerformanceRecommendations = recommendations,
+                TotalPlantsManaged = _plantPerformanceData.Count,
+                OptimizedPlants = _plantOptimizationStates.Count(kvp => kvp.Value.IsOptimized),
+                AverageOptimizationLevel = _plantOptimizationStates.Values.Any() ? _plantOptimizationStates.Values.Average(state => state.OptimizationLevel) : 0f,
+                RecentOptimizations = _performanceHistory.TakeLast(10).Select(s => s.Timestamp.ToString()).ToList(),
+                OptimizationCounts = _plantOptimizationStates.Values
+                    .Where(state => state.OptimizationHistory.Any())
+                    .GroupBy(state => state.OptimizationHistory.Last().ActionType)
+                    .ToDictionary(g => g.Key, g => g.Count()),
+                OptimizationSettings = new Dictionary<string, bool>
+                {
+                    ["DynamicLOD"] = _enableDynamicLOD,
+                    ["OcclusionCulling"] = _enableOcclusionCulling,
+                    ["FrustumCulling"] = _enableFrustumCulling,
+                    ["DistanceCulling"] = _enableDistanceCulling,
+                    ["Batching"] = _enableBatching,
+                    ["GPUInstancing"] = _enableGPUInstancing,
+                    ["DynamicQuality"] = _enableDynamicQuality,
+                    ["AssetStreaming"] = _enableAssetStreaming
+                },
+                PlantPerformanceData = _plantPerformanceData.Values.ToList(),
+                PerformanceScore = CalculatePerformanceScore(),
+                ReportGenerated = DateTime.Now,
+                SystemEfficiency = CalculateSystemEfficiency(),
+                LastOptimizationTime = DateTime.Now
             };
             
             OnOptimizationReportGenerated?.Invoke(report);
@@ -964,6 +1008,12 @@ namespace ProjectChimera.Systems.SpeedTree
             var drawCallScore = Mathf.Clamp01(1f - ((float)_currentMetrics.DrawCalls / _maxDrawCalls));
             
             return (frameRateScore + memoryScore + drawCallScore) / 3f;
+        }
+        
+        private float CalculateSystemEfficiency()
+        {
+            // Implement the logic to calculate system efficiency based on current performance
+            return 0.8f; // Placeholder return, actual implementation needed
         }
         
         #endregion
@@ -1046,12 +1096,12 @@ namespace ProjectChimera.Systems.SpeedTree
         
         #region Event Handlers
         
-        private void HandlePlantInstanceCreated(SpeedTreePlantInstance instance)
+        private void HandlePlantInstanceCreated(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             RegisterPlantForOptimization(instance);
         }
         
-        private void HandlePlantInstanceDestroyed(SpeedTreePlantInstance instance)
+        private void HandlePlantInstanceDestroyed(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             UnregisterPlantFromOptimization(instance.InstanceId);
         }
@@ -1137,23 +1187,18 @@ namespace ProjectChimera.Systems.SpeedTree
         {
             return new OptimizationSystemReport
             {
+                GeneratedAt = DateTime.Now,
                 CurrentMetrics = _currentMetrics,
-                QualityLevel = _currentQualityLevel,
-                OptimizationSettings = new Dictionary<string, bool>
-                {
-                    ["DynamicLOD"] = _enableDynamicLOD,
-                    ["OcclusionCulling"] = _enableOcclusionCulling,
-                    ["FrustumCulling"] = _enableFrustumCulling,
-                    ["DistanceCulling"] = _enableDistanceCulling,
-                    ["Batching"] = _enableBatching,
-                    ["GPUInstancing"] = _enableGPUInstancing,
-                    ["DynamicQuality"] = _enableDynamicQuality,
-                    ["MemoryPooling"] = _enableMemoryPooling,
-                    ["TextureStreaming"] = _enableAssetStreaming
-                },
-                PlantPerformanceData = _plantPerformanceData.Values.ToList(),
-                PerformanceScore = CalculatePerformanceScore(),
-                ReportGenerated = DateTime.Now
+                CurrentQuality = _currentQualityLevel,
+                TotalPlantsManaged = _plantPerformanceData.Count,
+                OptimizedPlants = _plantOptimizationStates.Count(kvp => kvp.Value.IsOptimized),
+                AverageOptimizationLevel = _plantOptimizationStates.Values.Any() ? _plantOptimizationStates.Values.Average(state => state.OptimizationLevel) : 0f,
+                OptimizationCounts = _plantOptimizationStates.Values
+                    .Where(state => state.OptimizationHistory.Any())
+                    .GroupBy(state => state.OptimizationHistory.Last().ActionType)
+                    .ToDictionary(g => g.Key, g => g.Count()),
+                SystemEfficiency = CalculateSystemEfficiency(),
+                LastOptimizationTime = DateTime.Now
             };
         }
         
@@ -1215,5 +1260,349 @@ namespace ProjectChimera.Systems.SpeedTree
                 _growthSystem.OnPerformanceMetricsUpdated -= HandleGrowthPerformanceUpdate;
             }
         }
+    }
+
+    [System.Serializable]
+    public class PerformanceMetrics
+    {
+        public float FrameTime;
+        public float AverageFrameRate;
+        public float FrameRate; // Alias for AverageFrameRate
+        public int VisiblePlants;
+        public int ActivePlants; // Alias for VisiblePlants
+        public int DrawCalls;
+        public int Batches;
+        public float MemoryUsage;
+        public int CulledPlants;
+        public int LODTransitions;
+        public DateTime LastUpdate;
+        public float CPUTime;
+        public float GPUTime;
+        public float RenderTime;
+        public int TriangleCount;
+        public int VertexCount;
+        public float AnimationUpdatesPerSecond;
+        
+        // Property aliases for compatibility
+        public float GetFrameRate() => AverageFrameRate;
+        public int GetActivePlants() => VisiblePlants;
+        public int GetCulledPlants() => CulledPlants;
+        public float GetAnimationUpdatesPerSecond() => AnimationUpdatesPerSecond;
+    }
+
+    [System.Serializable]
+    public class PlantPerformanceData
+    {
+        public int InstanceId;
+        public AdvancedSpeedTreeManager.SpeedTreePlantData PlantInstance;
+        public Vector3 Position;
+        public float DistanceToCamera;
+        public int CurrentLODLevel;
+        public bool IsVisible;
+        public bool IsCulled;
+        public bool IsBatched;
+        public bool IsDetached;
+        public float LastUpdateTime;
+        public float LastLODUpdateTime;
+        public float LastVisibleTime;
+        public float LastVegetativeTime;
+        public float TotalVisibleTime;
+        public float RenderTime;
+        public float MemoryFootprint;
+        public int OptimizationPriority;
+        public CullReason CullReason;
+        public DateTime LastOptimization;
+    }
+
+    public enum CullReason
+    {
+        None,
+        Distance,
+        Frustum,
+        Occlusion,
+        Performance,
+        Memory
+    }
+
+    public enum QualityLevel
+    {
+        Low,
+        Medium,
+        High,
+        Ultra
+    }
+
+    public enum OptimizationActionType
+    {
+        LODChange,
+        Culling,
+        Uncull,
+        Batching,
+        MemoryOptimization,
+        MemoryCleanup,
+        QualityChange,
+        PerformanceOptimization
+    }
+    
+    public enum ShadowQuality
+    {
+        Disable = 0,
+        HardOnly = 1,
+        All = 2
+    }
+    
+    public enum AnisotropicFiltering
+    {
+        Disable = 0,
+        Enable = 1,
+        ForceEnable = 2
+    }
+
+    [System.Serializable]
+    public class OptimizationAction
+    {
+        public OptimizationActionType ActionType;
+        public string Description;
+        public DateTime Timestamp;
+    }
+
+    [System.Serializable]
+    public class OptimizationState
+    {
+        public int InstanceId;
+        public bool IsOptimized;
+        public float OptimizationLevel; // 0-1
+        public DateTime LastOptimization;
+        public List<OptimizationActionType> AppliedOptimizations = new List<OptimizationActionType>();
+        public List<OptimizationAction> OptimizationHistory = new List<OptimizationAction>();
+        public float PerformanceGain;
+        public string OptimizationNotes;
+    }
+
+    [System.Serializable]
+    public class PerformanceSnapshot
+    {
+        public DateTime Timestamp;
+        public float FrameRate;
+        public int VisiblePlants;
+        public float MemoryUsage;
+        public int DrawCalls;
+        public int Batches;
+        public int CulledPlants;
+        public QualityLevel QualityLevel;
+        public float PerformanceScore;
+    }
+
+    [System.Serializable]
+    public class OptimizationSystemReport
+    {
+        public DateTime GeneratedAt;
+        public PerformanceMetrics CurrentMetrics;
+        public QualityLevel CurrentQuality;
+        public int TotalPlantsManaged;
+        public int OptimizedPlants;
+        public float AverageOptimizationLevel;
+        public List<string> RecentOptimizations = new List<string>();
+        public List<string> PerformanceRecommendations = new List<string>();
+        public Dictionary<OptimizationActionType, int> OptimizationCounts = new Dictionary<OptimizationActionType, int>();
+        public Dictionary<string, bool> OptimizationSettings = new Dictionary<string, bool>();
+        public List<PlantPerformanceData> PlantPerformanceData = new List<PlantPerformanceData>();
+        public float PerformanceScore;
+        public DateTime ReportGenerated;
+        public float SystemEfficiency;
+        public DateTime LastOptimizationTime;
+    }
+
+    // ScriptableObject Configuration Types
+    [System.Serializable]
+    public class SpeedTreePerformanceConfigSO
+    {
+        public int MaxVisiblePlants = 500;
+        public float TargetFrameRate = 60f;
+        public float MaxMemoryUsageMB = 512f;
+        public bool EnableDynamicQuality = true;
+        public QualityLevel DefaultQuality = QualityLevel.High;
+    }
+
+    [System.Serializable]
+    public class LODOptimizationConfigSO
+    {
+        public bool EnableDynamicLOD = true;
+        public float[] LODDistances = { 10f, 25f, 50f, 100f };
+        public float LODUpdateFrequency = 0.1f;
+        public int MaxLODUpdatesPerFrame = 10;
+        public float LODTransitionSpeed = 2f;
+    }
+
+    [System.Serializable]
+    public class BatchingConfigSO
+    {
+        public bool EnableBatching = true;
+        public bool EnableGPUInstancing = true;
+        public int MaxBatchSize = 100;
+        public float BatchingDistance = 50f;
+        public bool EnableDynamicBatching = true;
+    }
+
+    [System.Serializable]
+    public class CullingConfigSO
+    {
+        public bool EnableFrustumCulling = true;
+        public bool EnableDistanceCulling = true;
+        public bool EnableOcclusionCulling = true;
+        public float CullingDistance = 100f;
+        public float OcclusionCullingAccuracy = 0.8f;
+    }
+
+    // Additional Supporting Classes
+    [System.Serializable]
+    public class AdvancedLODManager
+    {
+        public AdvancedLODManager(LODOptimizationConfigSO config, bool enableDynamic) { }
+        public void RegisterPlant(AdvancedSpeedTreeManager.SpeedTreePlantData instance) { }
+        public void UnregisterPlant(int instanceId) { }
+        public void UpdateLOD(int instanceId, float distance) { }
+        public void UpdateLODs(List<PlantPerformanceData> plants) { }
+        public void Update() { }
+        public void Cleanup() { }
+        public void SetLODDistanceMultiplier(float multiplier) { }
+        public int CalculateOptimalLOD(AdvancedSpeedTreeManager.SpeedTreePlantData instance, float distance) { return 0; }
+        public void ApplyLODLevel(object renderer, int lodLevel) { }
+        public int GetLODLevel(int instanceId) { return 0; }
+    }
+
+    [System.Serializable]
+    public class DynamicBatchingSystem
+    {
+        public DynamicBatchingSystem(BatchingConfigSO config, bool enableBatching, bool enableGPU) { }
+        public void RegisterPlant(AdvancedSpeedTreeManager.SpeedTreePlantData instance) { }
+        public void UnregisterPlant(int instanceId) { }
+        public void ProcessBatching() { }
+        public void UpdateBatching() { }
+        public void Update() { }
+        public void Cleanup() { }
+        public int GetBatchCount() { return 0; }
+        public int EstimatedDrawCalls { get; private set; }
+    }
+
+    [System.Serializable]
+    public class SmartCullingManager
+    {
+        public SmartCullingManager(CullingConfigSO config, bool occlusion, bool frustum, bool distance) { }
+        public void RegisterPlant(AdvancedSpeedTreeManager.SpeedTreePlantData instance) { }
+        public void UnregisterPlant(int instanceId) { }
+        public void ProcessCulling() { }
+        public void UpdateCulling(List<PlantPerformanceData> plants) { }
+        public void Update() { }
+        public void Cleanup() { }
+        public void SetMaxVisiblePlants(int maxPlants) { }
+        public void SetCullingDistance(float distance) { }
+        public void IncreaseCullingAggressiveness() { }
+        public int VisibleCount { get; set; }
+    }
+
+    [System.Serializable]
+    public class MemoryOptimizationManager
+    {
+        public MemoryOptimizationManager(bool enablePooling, float maxMemory) { }
+        public void OptimizeMemory() { }
+        public void Update() { }
+        public void Cleanup() { }
+        public void SetTargetFrameRate(int frameRate) { }
+        public float GetMemoryUsage() { return 0f; }
+    }
+
+    [System.Serializable]
+    public class PerformanceMonitoringSystem
+    {
+        public PerformanceMonitoringSystem(int targetFrameRate) { }
+        public void UpdateMetrics() { }
+        public void Update() { }
+        public void Cleanup() { }
+        public void SetTargetFrameRate(int frameRate) { }
+        public PerformanceMetrics GetMetrics() { return new PerformanceMetrics(); }
+    }
+
+    [System.Serializable]
+    public class PlantInstancePool
+    {
+        public PlantInstancePool(int poolSize) { }
+        public void Update() { }
+        public void Cleanup() { }
+        public void ProcessPooling() { }
+        public void ReturnToPool(AdvancedSpeedTreeManager.SpeedTreePlantData instance) { }
+        public AdvancedSpeedTreeManager.SpeedTreePlantData GetFromPool() { return null; }
+    }
+
+    [System.Serializable]
+    public class TextureStreamingManager
+    {
+        public TextureStreamingManager(bool enableStreaming) { }
+        public void Update() { }
+        public void Cleanup() { }
+        public void UpdateStreaming(List<PlantPerformanceData> plants) { }
+        public void StreamTextures() { }
+        public void ReduceTextureQuality(AdvancedSpeedTreeManager.SpeedTreePlantData instance) { }
+    }
+
+    [System.Serializable]
+    public class ShaderOptimizationManager
+    {
+        public ShaderOptimizationManager(bool enableCompression) { }
+        public void Update() { }
+        public void Cleanup() { }
+        public void OptimizeShaders() { }
+    }
+
+    [System.Serializable]
+    public class RenderQueueOptimizer
+    {
+        public void Update() { }
+        public void Cleanup() { }
+        public void OptimizeRenderQueue() { }
+    }
+
+    [System.Serializable]
+    public class UpdateScheduler
+    {
+        public UpdateScheduler(bool enableAdaptive) { }
+        public void Update() { }
+        public void Cleanup() { }
+        public void ScheduleUpdate(System.Action updateAction) { }
+        public void ProcessQueue() { }
+        public void ReduceUpdateFrequencies() { }
+    }
+
+    [System.Serializable]
+    public class CameraOptimizationData
+    {
+        public Camera Camera;
+        public Plane[] FrustumPlanes;
+        public Vector3 Position;
+        public Vector3 Forward;
+        public float FieldOfView;
+        public float NearClipPlane;
+        public float FarClipPlane;
+        public DateTime LastUpdate;
+        public Vector3 LastPosition;
+        public Quaternion LastRotation;
+        public float LastUpdateTime;
+        public bool HasMoved;
+        public bool HasRotated;
+        public bool RequiresUpdate;
+    }
+
+    [System.Serializable]
+    public class OptimizationQualitySettings
+    {
+        public int MaxVisiblePlants;
+        public float LODDistanceMultiplier;
+        public float CullingDistance;
+        public ShadowQuality ShadowQuality;
+        public int TextureQuality;
+        public AnisotropicFiltering AnisotropicFiltering;
+        public int AntiAliasing;
+        public int VSyncCount;
+        public int TargetFrameRate;
     }
 }

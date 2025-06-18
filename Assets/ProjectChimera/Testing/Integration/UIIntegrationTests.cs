@@ -1,6 +1,16 @@
 using NUnit.Framework;
 using UnityEngine;
 using System.Collections;
+using ProjectChimera.Core;
+using ProjectChimera.Testing;
+using ProjectChimera.Systems.Cultivation;
+using ProjectChimera.Systems.Economy;
+using ProjectChimera.Systems.AI;
+using ProjectChimera.UI.Panels;
+using ProjectChimera.UI.Financial;
+using ProjectChimera.UI.AIAdvisor;
+using ProjectChimera.UI.Core;
+using ProjectChimera.UI.Dashboard;
 
 namespace ProjectChimera.Testing.Integration
 {

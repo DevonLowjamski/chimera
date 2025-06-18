@@ -107,7 +107,12 @@ namespace ProjectChimera.UI.Core
         {
             if (_currentFocusedElement is Button button)
             {
-                button.Click();
+                // Use proper event disposal pattern
+                using (var clickEvent = ClickEvent.GetPooled())
+                {
+                    clickEvent.target = button;
+                    button.SendEvent(clickEvent);
+                }
             }
             else if (_currentFocusedElement != null)
             {

@@ -8,7 +8,11 @@ using ProjectChimera.UI.Components;
 using ProjectChimera.Data.Genetics;
 using ProjectChimera.Data.UI;
 // using ProjectChimera.Systems.Genetics;
-// using ProjectChimera.Systems.Cultivation;
+using ProjectChimera.Systems.Cultivation;
+// Explicit alias to resolve ambiguous reference between Systems.Cultivation.PlantInstance and Data.UI.PlantInstance
+using PlantInstance = ProjectChimera.Systems.Cultivation.PlantInstance;
+// Explicit alias to resolve ambiguous reference between NotificationType and NotificationSeverity
+using NotificationType = ProjectChimera.UI.Core.NotificationType;
 
 namespace ProjectChimera.UI.Panels
 {
@@ -616,7 +620,7 @@ namespace ProjectChimera.UI.Panels
             
             // Header
             var headerContainer = new VisualElement();
-            headerContainer.style.flexDirection = FlexDirection.row;
+            headerContainer.style.flexDirection = FlexDirection.Row;
             headerContainer.style.justifyContent = Justify.SpaceBetween;
             headerContainer.style.alignItems = Align.Center;
             headerContainer.style.marginBottom = 16;
@@ -681,7 +685,7 @@ namespace ProjectChimera.UI.Panels
             
             _filteredStrains.AddRange(_availableStrains);
             
-            Debug.LogInfo($"Loaded {_availableStrains.Count} plant strains for breeding");
+            LogInfo($"Loaded {_availableStrains.Count} plant strains for breeding");
         }
         
         /// <summary>
@@ -896,17 +900,16 @@ namespace ProjectChimera.UI.Panels
         }
         
         /// <summary>
-        /// Create a temporary PlantInstance for breeding purposes
+        /// Create temporary plant instance for breeding purposes
         /// </summary>
         private PlantInstance CreateTemporaryPlantInstance(PlantStrainSO strain)
         {
-            var tempPlant = new PlantInstance
-            {
-                PlantID = System.Guid.NewGuid().ToString(),
-                PlantName = $"{strain.StrainName} (Breeding Stock)",
-                Strain = strain,
-                // Set other required properties for breeding
-            };
+            // Create a temporary GameObject for the PlantInstance
+            var tempGameObject = new GameObject($"TempPlant_{strain.StrainName}");
+            var tempPlant = tempGameObject.AddComponent<PlantInstance>();
+            
+            // Initialize the plant instance from the strain
+            tempPlant.InitializeFromStrain(strain);
             
             return tempPlant;
         }
@@ -932,7 +935,7 @@ namespace ProjectChimera.UI.Panels
         /// <summary>
         /// Save new strain to library (creates new PlantStrainSO asset)
         /// </summary>
-        private void SaveNewStrain(PlantGenotype offspring)
+        private void SaveNewStrain(CannabisGenotype offspring)
         {
             if (offspring?.StrainOrigin == null)
             {
@@ -956,11 +959,11 @@ namespace ProjectChimera.UI.Panels
                 UpdatePlayerProgression();
                 
                 // Show success notification
-                // if (_uiManager != null)
-                // {
-                    // var hud = _uiManager.GetPanel("gameplay-hud") as GameplayHUDPanel;
-                    hud?.ShowNotification($"New strain '{newStrain.StrainName}' added to library!", UIStatus.Success);
-                // }
+                var uiManager = GameManager.Instance?.GetManager<GameUIManager>();
+                if (uiManager != null)
+                {
+                    uiManager.ShowNotification("New Strain Created", $"New strain '{newStrain.StrainName}' added to library!", NotificationType.Success);
+                }
             }
             
             DiscardOffspring();
@@ -1043,19 +1046,115 @@ namespace ProjectChimera.UI.Panels
         {
             base.OnDestroy();
             StopAllCoroutines();
+            
+            // Cleanup events
+            _onBreedingCompleted = null;
+            _onNewStrainCreated = null;
+        }
+        
+        /// <summary>
+        /// Create an offspring result card
+        /// </summary>
+        private VisualElement CreateOffspringCard(CannabisGenotype offspring)
+        {
+            var card = new VisualElement();
+            card.name = $"offspring-card-{offspring.GenotypeID}";
+            
+            // Card styling
+            card.style.backgroundColor = new Color(0.1f, 0.15f, 0.1f, 1f);
+            card.style.borderTopLeftRadius = 8;
+            card.style.borderTopRightRadius = 8;
+            card.style.borderBottomLeftRadius = 8;
+            card.style.borderBottomRightRadius = 8;
+            card.style.paddingTop = 12;
+            card.style.paddingBottom = 12;
+            card.style.paddingLeft = 12;
+            card.style.paddingRight = 12;
+            card.style.marginBottom = 8;
+            card.style.flexDirection = FlexDirection.Column;
+            
+            // Header
+            var headerContainer = new VisualElement();
+            headerContainer.style.flexDirection = FlexDirection.Row;
+            headerContainer.style.justifyContent = Justify.SpaceBetween;
+            headerContainer.style.alignItems = Align.Center;
+            headerContainer.style.marginBottom = 8;
+            
+            var nameLabel = new Label($"Offspring {offspring.Generation}");
+            nameLabel.style.fontSize = 14;
+            nameLabel.style.color = Color.white;
+            nameLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
+            
+            headerContainer.Add(nameLabel);
+            card.Add(headerContainer);
+            
+            // Genetic information
+            var infoContainer = new VisualElement();
+            infoContainer.style.flexDirection = FlexDirection.Column;
+            
+            var generationLabel = new Label($"Generation: F{offspring.Generation}");
+            generationLabel.style.fontSize = 12;
+            generationLabel.style.color = new Color(0.8f, 0.8f, 0.8f, 1f);
+            
+            var parentageLabel = new Label($"Parents: {offspring.ParentIDs.Count} selected");
+            parentageLabel.style.fontSize = 12;
+            parentageLabel.style.color = new Color(0.8f, 0.8f, 0.8f, 1f);
+            
+            infoContainer.Add(generationLabel);
+            infoContainer.Add(parentageLabel);
+            card.Add(infoContainer);
+            
+            return card;
+        }
+        
+        /// <summary>
+        /// Create a PlantStrainSO from breeding result
+        /// </summary>
+        private PlantStrainSO CreatePlantStrainFromGenotype(CannabisGenotype offspring)
+        {
+            if (offspring?.StrainOrigin == null)
+            {
+                Debug.LogWarning("Cannot create strain from invalid genotype");
+                return null;
+            }
+            
+            // Create a new strain based on the parent strain with modifications
+            var newStrain = ScriptableObject.CreateInstance<PlantStrainSO>();
+            
+            // Copy basic properties from origin strain
+            newStrain.name = $"CustomStrain_F{offspring.Generation}_{System.Guid.NewGuid().ToString().Substring(0, 8)}";
+            // newStrain.StrainName = $"{offspring.StrainOrigin.StrainName} F{offspring.Generation}";
+            // newStrain.BreederName = "Player";
+            // newStrain.IsCustomStrain = true;
+            // newStrain.GenerationNumber = offspring.Generation;
+            
+            // Set parent lineage
+            if (_selectedParent1?.Strain != null)
+            {
+                // newStrain.ParentStrain1 = _selectedParent1.Strain;
+            }
+            if (_selectedParent2?.Strain != null)
+            {
+                // newStrain.ParentStrain2 = _selectedParent2.Strain;
+            }
+            
+            // Apply genetic modifications based on offspring genotype
+            // This would involve complex genetic calculations in a full implementation
+            
+            return newStrain;
         }
     }
     
     /// <summary>
-    /// Plant strain card component
+    /// UI card for displaying plant strain information
     /// </summary>
     public class PlantStrainCard : VisualElement
     {
-        public PlantStrainData StrainData { get; private set; }
+        public PlantStrainSO StrainData { get; private set; }
         public bool ShowAsOffspring { get; set; } = false;
-        public System.Action<PlantStrainData> OnStrainSelected;
+        public System.Action<PlantStrainSO> OnStrainSelected;
         
-        public PlantStrainCard(PlantStrainData strainData)
+        public PlantStrainCard(PlantStrainSO strainData)
         {
             StrainData = strainData;
             SetupCard();
@@ -1063,7 +1162,7 @@ namespace ProjectChimera.UI.Panels
         
         private void SetupCard()
         {
-            name = $"strain-card-{StrainData.Id}";
+            name = $"strain-card-{StrainData.GetInstanceID()}";
             
             // Card styling
             style.backgroundColor = new Color(0.15f, 0.15f, 0.15f, 1f);
@@ -1085,12 +1184,12 @@ namespace ProjectChimera.UI.Panels
             headerContainer.style.alignItems = Align.Center;
             headerContainer.style.marginBottom = 8;
             
-            var nameLabel = new Label(StrainData.Name);
+            var nameLabel = new Label(StrainData.StrainName);
             nameLabel.style.fontSize = 14;
             nameLabel.style.color = Color.white;
             nameLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             
-            var rarityColor = StrainData.Rarity switch
+            var rarityColor = StrainData.StrainRarity switch
             {
                 StrainRarity.Common => Color.gray,
                 StrainRarity.Uncommon => Color.green,
@@ -1156,90 +1255,6 @@ namespace ProjectChimera.UI.Panels
         private void OnCardClicked(ClickEvent evt)
         {
             OnStrainSelected?.Invoke(StrainData);
-        }
-        
-        private Color GetStrainRarityColor(PlantStrainSO strain)
-        {
-            // Determine rarity based on strain characteristics
-            if (strain.ParentStrain1 != null && strain.ParentStrain2 != null)
-            {
-                return new Color(1f, 0.8f, 0.2f, 1f); // Custom bred - Gold
-            }
-            // else if (strain.IsLandrace)
-            // {
-                return new Color(1f, 0.6f, 0f, 1f); // Landrace - Orange
-            // }
-            // else if (strain.GenerationNumber > 5)
-            // {
-                return new Color(0.6f, 0.2f, 0.8f, 1f); // Stabilized - Purple
-            // }
-            // else if (strain.CannabinoidProfile.ThcPercentage > 25f)
-            // {
-                return Color.blue; // High potency - Blue
-            // }
-            // else if (strain.CannabinoidProfile.CbdPercentage > 15f)
-            // {
-                return Color.green; // High CBD - Green
-            // }
-            // else
-            // {
-                return Color.gray; // Common - Gray
-            // }
-        }
-        
-        /// <summary>
-        /// Create an offspring display card from genetics data
-        /// </summary>
-        private VisualElement CreateOffspringCard(PlantGenotype offspring)
-        {
-            var card = new VisualElement();
-            card.name = $"offspring-card-{offspring.GenotypeID}";
-            
-            // Card styling
-            card.style.backgroundColor = new Color(0.1f, 0.2f, 0.1f, 1f); // Greenish for offspring
-            card.style.borderTopLeftRadius = 8;
-            card.style.borderTopRightRadius = 8;
-            card.style.borderBottomLeftRadius = 8;
-            card.style.borderBottomRightRadius = 8;
-            card.style.paddingTop = 12;
-            card.style.paddingBottom = 12;
-            card.style.paddingLeft = 12;
-            card.style.paddingRight = 12;
-            card.style.marginBottom = 8;
-            card.style.flexDirection = FlexDirection.Column;
-            
-            // Header
-            var headerLabel = new Label("New Offspring");
-            headerLabel.style.fontSize = 14;
-            headerLabel.style.color = Color.white;
-            headerLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-            headerLabel.style.marginBottom = 8;
-            
-            // Genetic info
-            var geneticLabel = new Label($"Genotype: {offspring.GenotypeID}");
-            geneticLabel.style.fontSize = 12;
-            geneticLabel.style.color = new Color(0.8f, 0.8f, 0.8f, 1f);
-            
-            var generationLabel = new Label($"Generation: F{offspring.Generation}");
-            generationLabel.style.fontSize = 12;
-            generationLabel.style.color = new Color(0.8f, 0.8f, 0.8f, 1f);
-            
-            card.Add(headerLabel);
-            card.Add(geneticLabel);
-            card.Add(generationLabel);
-            
-            return card;
-        }
-        
-        /// <summary>
-        /// Create new PlantStrainSO asset from breeding genotype
-        /// </summary>
-        private PlantStrainSO CreatePlantStrainFromGenotype(PlantGenotype offspring)
-        {
-            // This would create a new ScriptableObject asset
-            // For now, return null - in full implementation this would use Unity's AssetDatabase
-            Debug.LogWarning("Creating new PlantStrainSO assets requires editor scripting - not implemented in UI panel");
-            return null;
         }
     }
 }

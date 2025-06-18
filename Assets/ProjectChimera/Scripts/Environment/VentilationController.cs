@@ -1,7 +1,7 @@
 using UnityEngine;
 using ProjectChimera.Core;
 
-namespace ProjectChimera.Systems.Environment
+namespace ProjectChimera.Scripts.Environment
 {
     /// <summary>
     /// Controls ventilation and air circulation systems.
@@ -54,6 +54,9 @@ namespace ProjectChimera.Systems.Environment
         public float CurrentCO2 => _currentCO2;
         public float CurrentAirflow => _currentAirflow;
         public float PowerConsumption => _currentPowerConsumption;
+        
+        // Compatibility property for AdvancedGrowRoomController
+        public float AirFlowRate => _currentAirflow;
         
         private void Awake()
         {
@@ -159,6 +162,14 @@ namespace ProjectChimera.Systems.Environment
         }
         
         /// <summary>
+        /// Set target airflow rate (alias for SetAirflow for compatibility)
+        /// </summary>
+        public void SetTargetAirFlow(float airflowCFM)
+        {
+            SetAirflow(airflowCFM);
+        }
+        
+        /// <summary>
         /// Enable or disable automation
         /// </summary>
         public void SetAutomationMode(bool enabled)
@@ -169,7 +180,7 @@ namespace ProjectChimera.Systems.Environment
                 UpdateAutomationLogic();
             
             OnSystemStateChanged?.Invoke(this);
-            Debug.Log($"Ventilation {SystemId} automation {(enabled ? \"enabled\" : \"disabled\")}");
+            Debug.Log($"Ventilation {SystemId} automation {(enabled ? "enabled" : "disabled")}");
         }
         
         /// <summary>
@@ -202,7 +213,7 @@ namespace ProjectChimera.Systems.Environment
         
         #region System Updates
         
-        private void UpdateSystem()
+        public void UpdateSystem()
         {
             // Update CO2 levels based on ventilation
             UpdateCO2Levels();

@@ -3,6 +3,7 @@ using UnityEngine.UIElements;
 using System.Collections.Generic;
 using System.Collections;
 using System;
+using ProjectChimera.Systems.Effects;
 
 namespace ProjectChimera.UI.Core
 {
@@ -17,7 +18,7 @@ namespace ProjectChimera.UI.Core
         
         private const float DEFAULT_ANIMATION_DURATION = 0.3f;
         
-        public void AnimateIn(VisualElement element, UIAnimationType animationType = UIAnimationType.Fade, 
+        public void AnimateIn(VisualElement element, UIAnimationType animationType = UIAnimationType.Opacity, 
                             float duration = DEFAULT_ANIMATION_DURATION, System.Action onComplete = null)
         {
             StopAnimation(element);
@@ -27,7 +28,7 @@ namespace ProjectChimera.UI.Core
         }
         
         public void AnimateOut(VisualElement element, System.Action onComplete = null, 
-                             UIAnimationType animationType = UIAnimationType.Fade, 
+                             UIAnimationType animationType = UIAnimationType.Opacity, 
                              float duration = DEFAULT_ANIMATION_DURATION)
         {
             StopAnimation(element);

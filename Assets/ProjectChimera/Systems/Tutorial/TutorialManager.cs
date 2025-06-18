@@ -304,12 +304,12 @@ namespace ProjectChimera.Systems.Tutorial
         /// <summary>
         /// Complete current tutorial step
         /// </summary>
-        public void CompleteCurrentStep()
+        public bool CompleteCurrentStep()
         {
             if (_currentStep == null)
             {
                 LogWarning("No current tutorial step to complete");
-                return;
+                return false;
             }
             
             var completedStep = _currentStep;
@@ -355,6 +355,8 @@ namespace ProjectChimera.Systems.Tutorial
                 // Sequence completed
                 CompleteCurrentSequence();
             }
+            
+            return true;
         }
         
         /// <summary>

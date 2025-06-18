@@ -93,5 +93,29 @@ namespace ProjectChimera.Core
         {
             return $"{GetType().Name}: {DisplayName} (ID: {UniqueID})";
         }
+
+        /// <summary>
+        /// Logs an info message with this object as context.
+        /// </summary>
+        protected void LogInfo(string message)
+        {
+            Debug.Log($"[{GetType().Name}] {message}", this);
+        }
+
+        /// <summary>
+        /// Logs a warning message with this object as context.
+        /// </summary>
+        protected void LogWarning(string message)
+        {
+            Debug.LogWarning($"[{GetType().Name}] {message}", this);
+        }
+
+        /// <summary>
+        /// Logs an error message with this object as context.
+        /// </summary>
+        protected void LogError(string message)
+        {
+            Debug.LogError($"[{GetType().Name}] {message}", this);
+        }
     }
 }

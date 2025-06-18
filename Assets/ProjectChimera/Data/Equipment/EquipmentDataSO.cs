@@ -313,6 +313,7 @@ namespace ProjectChimera.Data.Equipment
         HPS_Light,
         CMH_Light,
         Fluorescent_Light,
+        GrowLight, // Generic grow light category
         
         // HVAC
         Exhaust_Fan,
@@ -322,6 +323,7 @@ namespace ProjectChimera.Data.Equipment
         Heater,
         Dehumidifier,
         Humidifier,
+        HVAC, // Generic HVAC category
         
         // Irrigation
         Water_Pump,
@@ -329,6 +331,7 @@ namespace ProjectChimera.Data.Equipment
         Sprinkler_System,
         Nutrient_Doser,
         pH_Controller,
+        Irrigation, // Generic irrigation category
         
         // Monitoring
         Temperature_Sensor,
@@ -337,6 +340,7 @@ namespace ProjectChimera.Data.Equipment
         EC_Sensor,
         CO2_Sensor,
         Light_Sensor,
+        Sensor, // Generic sensor category
         
         // Processing
         Trimming_Machine,
@@ -348,6 +352,7 @@ namespace ProjectChimera.Data.Equipment
         Security_Camera,
         Access_Control,
         Alarm_System,
+        Security, // Generic security category
         
         // Automation
         Timer_Controller,

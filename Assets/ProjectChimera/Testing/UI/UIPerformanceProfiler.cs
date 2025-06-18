@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using ProjectChimera.Core;
+using ProjectChimera.UI.Core;
 
 namespace ProjectChimera.Testing.UI
 {
@@ -562,10 +563,8 @@ namespace ProjectChimera.Testing.UI
             }
         }
         
-        protected override void Update()
+        private void Update()
         {
-            base.Update();
-            
             if (!_isProfilingActive || !_enableRealtimeMonitoring)
                 return;
             
@@ -583,10 +582,8 @@ namespace ProjectChimera.Testing.UI
             }
         }
         
-        protected override void OnValidate()
+        private void OnValidate()
         {
-            base.OnValidate();
-            
             _samplingInterval = Mathf.Max(0.01f, _samplingInterval);
             _maxSamples = Mathf.Max(10, _maxSamples);
             _targetFrameTimeMs = Mathf.Max(1f, _targetFrameTimeMs);

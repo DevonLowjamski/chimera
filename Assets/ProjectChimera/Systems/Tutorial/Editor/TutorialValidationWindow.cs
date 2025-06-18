@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEditor;
 using ProjectChimera.Data.Tutorial;
 using ProjectChimera.Systems.Tutorial.Testing;
+// Explicit alias for Systems layer TutorialValidationResult to resolve ambiguity
+using SystemsTutorialValidationResult = ProjectChimera.Systems.Tutorial.Testing.TutorialValidationResult;
 using System.Collections.Generic;
 
 namespace ProjectChimera.Editor.Tutorial
@@ -14,7 +16,7 @@ namespace ProjectChimera.Editor.Tutorial
     {
         private Vector2 _scrollPosition;
         private TutorialDataAssetManager _selectedDataManager;
-        private TutorialValidationResult _lastValidationResult;
+        private SystemsTutorialValidationResult _lastValidationResult;
         private string _validationReport = "";
         private bool _showDetailedResults = true;
         private bool _autoRefresh = false;
@@ -399,7 +401,7 @@ namespace ProjectChimera.Editor.Tutorial
             if (_selectedDataManager == null) return;
             
             bool isValid = _selectedDataManager.ValidateData();
-            _lastValidationResult = new TutorialValidationResult();
+            _lastValidationResult = new SystemsTutorialValidationResult();
             
             if (!isValid)
             {

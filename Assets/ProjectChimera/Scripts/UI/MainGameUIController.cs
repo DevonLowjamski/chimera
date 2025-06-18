@@ -1,13 +1,23 @@
 using UnityEngine;
 using UnityEngine.UI;
 using ProjectChimera.Core;
-using ProjectChimera.Systems.Cultivation;
-using ProjectChimera.Systems.Economy;
-using ProjectChimera.Systems.Community;
-using ProjectChimera.Systems.Construction;
-using ProjectChimera.Systems.Tutorial;
-using ProjectChimera.Systems.Facilities;
+using CultivationSystems = ProjectChimera.Systems.Cultivation;
+using EconomySystems = ProjectChimera.Systems.Economy;
+using CommunitySystems = ProjectChimera.Systems.Community;
+using ConstructionSystems = ProjectChimera.Systems.Construction;
+using TutorialSystems = ProjectChimera.Systems.Tutorial;
+using ProjectChimera.Scripts.Facilities;
+using ProjectChimera.Data.Facilities;
+using ProjectChimera.Data.Community;
+using ProjectChimera.Data.Construction;
+using ProjectChimera.Data.Economy;
 using TMPro;
+// Explicit aliases to resolve ambiguity
+using PlantInstance = ProjectChimera.Systems.Cultivation.PlantInstance;
+using HarvestResult = ProjectChimera.Data.Facilities.HarvestResult;
+using InteractivePlantComponent = ProjectChimera.Systems.Cultivation.InteractivePlantComponent;
+using PlayerProfile = ProjectChimera.Data.Community.PlayerProfile;
+using GrowRoomController = ProjectChimera.Scripts.Facilities.GrowRoomController;
 
 namespace ProjectChimera.UI
 {
@@ -49,15 +59,15 @@ namespace ProjectChimera.UI
         [SerializeField] private float _notificationDuration = 3f;
         
         // Manager References
-        private PlantManager _plantManager;
-        private CurrencyManager _currencyManager;
-        private CommunityManager _communityManager;
-        private ConstructionManager _constructionManager;
-        private EnhancedTutorialManager _tutorialManager;
+        private CultivationSystems.PlantManager _plantManager;
+        private EconomySystems.CurrencyManager _currencyManager;
+        private CommunitySystems.CommunityManager _communityManager;
+        private ConstructionSystems.ConstructionManager _constructionManager;
+        private TutorialSystems.EnhancedTutorialManager _tutorialManager;
         private TimeManager _timeManager;
         
         // UI State
-        private PlantInstanceComponent _selectedPlant;
+        private InteractivePlantComponent _selectedPlant;
         private GrowRoomController _selectedRoom;
         private bool _isPanelOpen = false;
         
@@ -93,20 +103,20 @@ namespace ProjectChimera.UI
                 return;
             }
             
-            // _plantManager = gameManager.GetManager<PlantManager>();
-            // _currencyManager = gameManager.GetManager<CurrencyManager>();
-            // _communityManager = gameManager.GetManager<CommunityManager>();
-            // _constructionManager = gameManager.GetManager<ConstructionManager>();
-            // _tutorialManager = gameManager.GetManager<EnhancedTutorialManager>();
-            // _timeManager = gameManager.GetManager<TimeManager>();
+            _plantManager = gameManager.GetManager<CultivationSystems.PlantManager>();
+            _currencyManager = gameManager.GetManager<EconomySystems.CurrencyManager>();
+            _communityManager = gameManager.GetManager<CommunitySystems.CommunityManager>();
+            _constructionManager = gameManager.GetManager<ConstructionSystems.ConstructionManager>();
+            _tutorialManager = gameManager.GetManager<TutorialSystems.EnhancedTutorialManager>();
+            _timeManager = gameManager.GetManager<TimeManager>();
             
             // Log warnings for missing managers
-            // if (_plantManager == null) Debug.LogWarning("PlantManager not found");
-            // if (_currencyManager == null) Debug.LogWarning("CurrencyManager not found");
-            // if (_communityManager == null) Debug.LogWarning("CommunityManager not found");
-            // if (_constructionManager == null) Debug.LogWarning("ConstructionManager not found");
-            // if (_tutorialManager == null) Debug.LogWarning("TutorialManager not found");
-            // if (_timeManager == null) Debug.LogWarning("TimeManager not found");
+            if (_plantManager == null) Debug.LogWarning("PlantManager not found");
+            if (_currencyManager == null) Debug.LogWarning("CurrencyManager not found");
+            if (_communityManager == null) Debug.LogWarning("CommunityManager not found");
+            if (_constructionManager == null) Debug.LogWarning("ConstructionManager not found");
+            if (_tutorialManager == null) Debug.LogWarning("TutorialManager not found");
+            if (_timeManager == null) Debug.LogWarning("TimeManager not found");
         }
         
         private void InitializeUIElements()
@@ -149,25 +159,24 @@ namespace ProjectChimera.UI
                 _tutorialButton.onClick.AddListener(OnTutorialButtonClicked);
             
             // Manager Events
-            // if (_currencyManager != null)
+            if (_currencyManager != null)
             {
-                // _currencyManager.OnCurrencyChanged += OnCurrencyChanged;
+                _currencyManager.OnCurrencyChanged += OnCurrencyChanged;
             }
             
-            // if (_communityManager != null)
+            if (_communityManager != null)
             {
-                // _communityManager.OnReputationChanged += OnReputationChanged;
-                // _communityManager.OnPlayerProfileUpdated += OnPlayerProfileUpdated;
+                _communityManager.OnReputationChanged += OnReputationChanged;
+                _communityManager.OnPlayerProfileUpdated += OnPlayerProfileUpdated;
             }
             
-            // if (_plantManager != null)
+            if (_plantManager != null)
             {
-                // _plantManager.OnPlantHarvested += OnPlantHarvested;
-                // _plantManager.OnPlantDied += OnPlantDied;
+                _plantManager.OnPlantHarvested += OnPlantHarvested;
             }
             
             // Plant Selection Events
-            var plantComponents = FindObjectsOfType<PlantInstanceComponent>();
+            var plantComponents = UnityEngine.Object.FindObjectsByType<InteractivePlantComponent>(FindObjectsSortMode.None);
             foreach (var plant in plantComponents)
             {
                 plant.OnPlantClicked += OnPlantSelected;
@@ -175,7 +184,7 @@ namespace ProjectChimera.UI
             }
             
             // Room Selection Events
-            var roomControllers = FindObjectsOfType<GrowRoomController>();
+            var roomControllers = UnityEngine.Object.FindObjectsByType<GrowRoomController>(FindObjectsSortMode.None);
             foreach (var room in roomControllers)
             {
                 room.OnRoomStatusChanged += OnRoomStatusChanged;
@@ -200,7 +209,7 @@ namespace ProjectChimera.UI
         {
             if (_currencyText != null && _currencyManager != null)
             {
-                float cash = // _currencyManager.GetBalance("Cash");
+                float cash = _currencyManager.GetBalance(CurrencyType.Cash);
                 _currencyText.text = $"Cash: ${cash:F0}";
             }
         }
@@ -209,7 +218,7 @@ namespace ProjectChimera.UI
         {
             if (_communityManager?.CurrentPlayer != null)
             {
-                var player = // _communityManager.CurrentPlayer;
+                var player = _communityManager.CurrentPlayer;
                 
                 if (_reputationText != null)
                     _reputationText.text = $"Reputation: {player.ReputationPoints}";
@@ -231,7 +240,7 @@ namespace ProjectChimera.UI
         {
             if (_timeText != null && _timeManager != null)
             {
-                var gameTime = // _timeManager.CurrentGameTime;
+                var gameTime = _timeManager.TotalGameTime;
                 _timeText.text = gameTime.ToString("MMM dd, yyyy HH:mm");
             }
         }
@@ -247,7 +256,7 @@ namespace ProjectChimera.UI
             
             if (_constructionButton != null)
             {
-                bool canAffordConstruction = _currencyManager?.GetBalance("Cash") >= 1000f;
+                bool canAffordConstruction = _currencyManager?.GetBalance(CurrencyType.Cash) >= 1000f;
                 _constructionButton.interactable = canAffordConstruction;
             }
         }
@@ -308,7 +317,7 @@ namespace ProjectChimera.UI
             Debug.Log("Plant button clicked");
             
             // Find available grow room
-            var growRooms = FindObjectsOfType<GrowRoomController>();
+            var growRooms = UnityEngine.Object.FindObjectsByType<GrowRoomController>(FindObjectsSortMode.None);
             var availableRoom = System.Array.Find(growRooms, room => room.HasAvailableSpace);
             
             if (availableRoom != null)
@@ -323,7 +332,7 @@ namespace ProjectChimera.UI
                         ShowNotification("Plant added to grow room!", Color.green);
                         
                         // Deduct cost
-                        _currencyManager?.SpendCurrency("Cash", 50f, "Plant seed cost");
+                        _currencyManager?.SpendCurrency(CurrencyType.Cash, 50f, "Plant seed cost");
                         
                         // Award experience
                         _communityManager?.AddExperience(10, "Planted a seed");
@@ -357,7 +366,7 @@ namespace ProjectChimera.UI
                     
                     // Award currency
                     float value = result.TotalYield * 10f; // $10 per gram
-                    _currencyManager?.AddCurrency("Cash", value, "Plant harvest");
+                    _currencyManager?.AddCurrency(CurrencyType.Cash, value, "Plant harvest");
                     
                     // Award experience
                     _communityManager?.AddExperience(50, "Harvested a plant");
@@ -388,7 +397,7 @@ namespace ProjectChimera.UI
         {
             Debug.Log("Construction button clicked");
             
-            // if (_constructionManager != null)
+            if (_constructionManager != null)
             {
                 // Start a simple grow room construction
                 string projectId = _constructionManager.StartConstructionProject(
@@ -402,7 +411,7 @@ namespace ProjectChimera.UI
                     ShowNotification("Construction project started!", Color.green);
                     
                     // Deduct cost
-                    _currencyManager?.SpendCurrency("Cash", 10000f, "Construction project");
+                    _currencyManager?.SpendCurrency(CurrencyType.Cash, 10000f, "Construction project");
                 }
                 else
                 {
@@ -415,9 +424,9 @@ namespace ProjectChimera.UI
         {
             Debug.Log("Tutorial button clicked");
             
-            // if (_tutorialManager != null)
+            if (_tutorialManager != null)
             {
-                bool started = // _tutorialManager.StartTutorial("basic_tutorial");
+                bool started = _tutorialManager.StartTutorial("basic_tutorial");
                 if (started)
                 {
                     ShowNotification("Tutorial started!", Color.green);
@@ -433,9 +442,9 @@ namespace ProjectChimera.UI
         
         #region Event Handlers
         
-        private void OnCurrencyChanged(string currencyType, float newBalance)
+        private void OnCurrencyChanged(CurrencyType currencyType, float oldBalance, float newBalance)
         {
-            if (currencyType == "Cash")
+            if (currencyType == CurrencyType.Cash)
             {
                 UpdateCurrencyDisplay();
             }
@@ -452,22 +461,18 @@ namespace ProjectChimera.UI
             UpdatePlayerStats();
         }
         
-        private void OnPlantHarvested(PlantInstance plant, HarvestResult result)
+        private void OnPlantHarvested(PlantInstance plant)
         {
-            ShowNotification($"Plant harvested: {result.TotalYield:F1}g", Color.green);
+            ShowNotification($"Plant harvested: {plant.PlantID}", Color.green);
         }
         
-        private void OnPlantDied(PlantInstance plant)
-        {
-            ShowNotification("A plant has died!", Color.red);
-        }
         
-        private void OnPlantSelected(PlantInstanceComponent plant)
+        private void OnPlantSelected(InteractivePlantComponent plant)
         {
             SetSelectedPlant(plant);
         }
         
-        private void OnPlantHovered(PlantInstanceComponent plant)
+        private void OnPlantHovered(InteractivePlantComponent plant)
         {
             // Could show tooltip here
         }
@@ -484,7 +489,7 @@ namespace ProjectChimera.UI
         
         #region Selection Management
         
-        private void SetSelectedPlant(PlantInstanceComponent plant)
+        private void SetSelectedPlant(InteractivePlantComponent plant)
         {
             _selectedPlant = plant;
             
@@ -585,19 +590,18 @@ namespace ProjectChimera.UI
         private void OnDestroy()
         {
             // Clean up event listeners
-            // if (_currencyManager != null)
-                // _currencyManager.OnCurrencyChanged -= OnCurrencyChanged;
+            if (_currencyManager != null)
+                _currencyManager.OnCurrencyChanged -= OnCurrencyChanged;
             
-            // if (_communityManager != null)
+            if (_communityManager != null)
             {
-                // _communityManager.OnReputationChanged -= OnReputationChanged;
-                // _communityManager.OnPlayerProfileUpdated -= OnPlayerProfileUpdated;
+                _communityManager.OnReputationChanged -= OnReputationChanged;
+                _communityManager.OnPlayerProfileUpdated -= OnPlayerProfileUpdated;
             }
             
-            // if (_plantManager != null)
+            if (_plantManager != null)
             {
-                // _plantManager.OnPlantHarvested -= OnPlantHarvested;
-                // _plantManager.OnPlantDied -= OnPlantDied;
+                _plantManager.OnPlantHarvested -= OnPlantHarvested;
             }
         }
     }

@@ -496,7 +496,7 @@ namespace ProjectChimera.Systems.Economy
         
         private void GenerateRandomMarketEvent()
         {
-            var eventTypes = new[] { MarketEventType.Regulatory_Change, MarketEventType.Supply_Disruption, 
+            var eventTypes = new MarketEventType[] { MarketEventType.Regulatory_Change, MarketEventType.Supply_Disruption, 
                                    MarketEventType.Demand_Spike, MarketEventType.Technology_Advancement };
             
             var randomEvent = new MarketEvent
@@ -596,6 +596,89 @@ namespace ProjectChimera.Systems.Economy
                 Diversification = 0.78f,
                 LiquidityRatio = 0.45f
             };
+        }
+        
+        /// <summary>
+        /// Gets current player funds/cash balance.
+        /// </summary>
+        public float PlayerFunds
+        {
+            get
+            {
+                // Get from TradingManager if available, otherwise return default
+                var tradingManager = GameManager.Instance?.GetManager<TradingManager>();
+                return tradingManager?.GetCashBalance() ?? 25000f;
+            }
+        }
+        
+        /// <summary>
+        /// Calculates estimated daily revenue based on recent transactions.
+        /// </summary>
+        public float CalculateDailyRevenue()
+        {
+            // Get from TradingManager if available, otherwise return estimated value
+            var tradingManager = GameManager.Instance?.GetManager<TradingManager>();
+            if (tradingManager != null)
+            {
+                var recentSales = tradingManager.TransactionHistory
+                    .Where(t => t.TransactionType == TradingTransactionType.Sale && 
+                               t.Success && 
+                               (System.DateTime.Now - t.CompletionTime).TotalDays <= 7)
+                    .ToList();
+                
+                if (recentSales.Any())
+                {
+                    return recentSales.Sum(t => t.TotalValue) / 7f; // Average daily revenue over last week
+                }
+            }
+            
+            return 2500f; // Default daily revenue estimate
+        }
+        
+        /// <summary>
+        /// Calculates estimated daily expenses based on recent transactions.
+        /// </summary>
+        public float CalculateDailyExpenses()
+        {
+            // Get from TradingManager if available, otherwise return estimated value
+            var tradingManager = GameManager.Instance?.GetManager<TradingManager>();
+            if (tradingManager != null)
+            {
+                var recentPurchases = tradingManager.TransactionHistory
+                    .Where(t => t.TransactionType == TradingTransactionType.Purchase && 
+                               t.Success && 
+                               (System.DateTime.Now - t.CompletionTime).TotalDays <= 7)
+                    .ToList();
+                
+                if (recentPurchases.Any())
+                {
+                    return recentPurchases.Sum(t => t.TotalValue) / 7f; // Average daily expenses over last week
+                }
+            }
+            
+            return 1500f; // Default daily expenses estimate
+        }
+        
+        /// <summary>
+        /// Gets current market trends for display in UI.
+        /// </summary>
+        public List<MarketTrend> GetMarketTrends()
+        {
+            var trends = new List<MarketTrend>();
+            
+            foreach (var categoryData in _categoryMarketData)
+            {
+                trends.Add(new MarketTrend
+                {
+                    Category = categoryData.Key.ToString(),
+                    TrendDirection = CalculateDemandTrend(categoryData.Key),
+                    ChangePercentage = categoryData.Value.GrowthRate * 100f,
+                    MarketShare = categoryData.Value.MarketShare,
+                    Demand = categoryData.Value.OverallDemand
+                });
+            }
+            
+            return trends;
         }
         
         /// <summary>
@@ -776,5 +859,18 @@ namespace ProjectChimera.Systems.Economy
         public float RiskScore;
         public float Diversification;
         public float LiquidityRatio;
+    }
+    
+    /// <summary>
+    /// Market trend data structure for UI display.
+    /// </summary>
+    [System.Serializable]
+    public class MarketTrend
+    {
+        public string Category;
+        public TrendDirection TrendDirection;
+        public float ChangePercentage;
+        public float MarketShare;
+        public float Demand;
     }
 }

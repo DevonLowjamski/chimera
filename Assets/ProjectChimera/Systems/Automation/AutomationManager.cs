@@ -4,8 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Automation;
+// using ProjectChimera.Systems.AI;
+using ProjectChimera.Systems.Economy;
+using ProjectChimera.Systems.Cultivation;
+using ProjectChimera.Systems.Facilities;
+using EnvironmentSystems = ProjectChimera.Systems.Environment;
 using ProjectChimera.Data.Environment;
-using ProjectChimera.Systems.Environment;
 
 namespace ProjectChimera.Systems.Automation
 {
@@ -181,7 +185,7 @@ namespace ProjectChimera.Systems.Automation
         /// <summary>
         /// Integrates with HVAC system for automated climate control.
         /// </summary>
-        public void IntegrateWithHVAC(string zoneId, HVACManager hvacManager)
+        public void IntegrateWithHVAC(string zoneId, EnvironmentSystems.HVACManager hvacManager)
         {
             // Temperature control automation
             var tempSensorId = $"temp_sensor_{zoneId}";
@@ -241,7 +245,7 @@ namespace ProjectChimera.Systems.Automation
         /// <summary>
         /// Integrates with lighting system for automated light control.
         /// </summary>
-        public void IntegrateWithLighting(string zoneId, LightingManager lightingManager)
+        public void IntegrateWithLighting(string zoneId, EnvironmentSystems.LightingManager lightingManager)
         {
             // Light intensity sensor
             var lightSensorId = $"light_sensor_{zoneId}";
@@ -733,7 +737,7 @@ namespace ProjectChimera.Systems.Automation
         
         private void ExecuteHVACAction(AutomationAction action)
         {
-            var hvacManager = GameManager.Instance.GetManager<HVACManager>();
+            var hvacManager = GameManager.Instance.GetManager<EnvironmentSystems.HVACManager>();
             if (hvacManager == null) return;
             
             switch (action.ActionType)
@@ -759,7 +763,7 @@ namespace ProjectChimera.Systems.Automation
         
         private void ExecuteLightingAction(AutomationAction action)
         {
-            var lightingManager = GameManager.Instance.GetManager<LightingManager>();
+            var lightingManager = GameManager.Instance.GetManager<EnvironmentSystems.LightingManager>();
             if (lightingManager == null) return;
             
             switch (action.ActionType)
@@ -813,7 +817,7 @@ namespace ProjectChimera.Systems.Automation
                 action.Parameters["reason"].ToString() : "Emergency shutdown triggered";
             
             // Shutdown HVAC systems
-            var hvacManager = GameManager.Instance.GetManager<HVACManager>();
+            var hvacManager = GameManager.Instance.GetManager<EnvironmentSystems.HVACManager>();
             if (hvacManager != null)
             {
                 LogWarning($"Emergency shutdown initiated: {reason}");
@@ -821,7 +825,7 @@ namespace ProjectChimera.Systems.Automation
             }
             
             // Shutdown lighting systems
-            var lightingManager = GameManager.Instance.GetManager<LightingManager>();
+            var lightingManager = GameManager.Instance.GetManager<EnvironmentSystems.LightingManager>();
             if (lightingManager != null)
             {
                 // lightingManager.EmergencyShutdown(reason);

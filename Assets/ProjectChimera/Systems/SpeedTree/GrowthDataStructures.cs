@@ -1,6 +1,15 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using System.Linq;
+using ProjectChimera.Data.Genetics;
+using ProjectChimera.Data.Environment;
+// Use canonical SeasonType from EnvironmentalManager
+using SeasonType = ProjectChimera.Systems.Environment.SeasonType;
+// Explicit alias for Data layer EnvironmentalConditions to resolve namespace conflicts
+using EnvironmentalConditions = ProjectChimera.Data.Environment.EnvironmentalConditions;
+using ProjectChimera.Systems.SpeedTree;
+using ProjectChimera.Systems.Prefabs;
 
 namespace ProjectChimera.Systems.SpeedTree
 {
@@ -31,14 +40,6 @@ namespace ProjectChimera.Systems.SpeedTree
         UserIntervention
     }
     
-    public enum SeasonType
-    {
-        Spring,
-        Summer,
-        Fall,
-        Winter
-    }
-    
     public enum BudDevelopmentStage
     {
         PreFlower,
@@ -61,7 +62,7 @@ namespace ProjectChimera.Systems.SpeedTree
     public class PlantGrowthState
     {
         public int InstanceId;
-        public SpeedTreePlantInstance PlantInstance;
+        public AdvancedSpeedTreeManager.SpeedTreePlantData PlantInstance;
         public PlantGrowthStage CurrentStage;
         public float GrowthProgress; // 0-1 overall lifecycle progress
         public float StageProgress; // 0-1 current stage progress
@@ -75,6 +76,8 @@ namespace ProjectChimera.Systems.SpeedTree
         public float HealthMultiplier = 1f;
         public float EnvironmentalMultiplier = 1f;
         public float GeneticMultiplier = 1f;
+        public EnvironmentalConditions LastEnvironmentalConditions;
+        public float EnvironmentalStressLevel;
     }
     
     // Growth Animation Data
@@ -93,6 +96,8 @@ namespace ProjectChimera.Systems.SpeedTree
         public bool IsAnimating = true;
         public float AnimationBlendWeight = 1f;
         public List<AnimationKeyframe> Keyframes = new List<AnimationKeyframe>();
+        public float AnimationProgress; // 0-1
+        public float LastAnimationUpdate;
     }
     
     [System.Serializable]
@@ -119,6 +124,8 @@ namespace ProjectChimera.Systems.SpeedTree
         public float LifecycleCompletion; // 0-1
         public LifecycleHealthData HealthData = new LifecycleHealthData();
         public LifecycleYieldPrediction YieldPrediction = new LifecycleYieldPrediction();
+        public float TotalLifecycleProgress; // 0-1
+        public bool IsCompleted;
     }
     
     [System.Serializable]
@@ -132,6 +139,8 @@ namespace ProjectChimera.Systems.SpeedTree
         public float TransitionQuality; // 0-1 how optimal the transition was
         public List<string> TriggeringFactors = new List<string>();
         public string Notes;
+        public float TransitionDuration;
+        public string TransitionTrigger;
     }
     
     [System.Serializable]
@@ -185,6 +194,10 @@ namespace ProjectChimera.Systems.SpeedTree
         public MilestoneReward Reward = new MilestoneReward();
         public bool IsRepeatable = false;
         public int TimesAchieved = 0;
+        public float RequiredProgress;
+        public Dictionary<string, float> RequiredConditions = new Dictionary<string, float>();
+        public float ExperienceReward;
+        public bool IsAchieved;
     }
     
     [System.Serializable]
@@ -209,6 +222,7 @@ namespace ProjectChimera.Systems.SpeedTree
         public float Impact; // -1 to 1, negative is harmful
         public bool RequiresPlayerAction;
         public string RecommendedAction;
+        public bool IsProcessed;
     }
     
     // Specialized Growth Systems Data
@@ -224,10 +238,12 @@ namespace ProjectChimera.Systems.SpeedTree
         public float CalyxDevelopment;
         public float PistilLength;
         public Color BudColor;
-        public float Resin Production;
+        public float ResinProduction;
         public Dictionary<string, float> BudMetrics = new Dictionary<string, float>();
         public bool HasSignificantChange = false;
-        public DateTime LastUpdate;
+        public System.DateTime LastUpdate;
+        public float TrichromeAmount;
+        public float Potency;
     }
     
     [System.Serializable]
@@ -269,6 +285,8 @@ namespace ProjectChimera.Systems.SpeedTree
         public bool HasSignificantChange = false;
         public DateTime LastUpdate;
         public TrichromeMaturityData MaturityData = new TrichromeMaturityData();
+        public float MaturityLevel;
+        public float ProductionRate;
     }
     
     [System.Serializable]
@@ -353,6 +371,7 @@ namespace ProjectChimera.Systems.SpeedTree
         public float SystemEfficiency; // 0-1
         public Dictionary<string, float> SubSystemPerformance = new Dictionary<string, float>();
         public DateTime LastUpdate;
+        public float AverageAnimationFrameTime;
     }
     
     [System.Serializable]
@@ -360,13 +379,23 @@ namespace ProjectChimera.Systems.SpeedTree
     {
         public GrowthPerformanceMetrics PerformanceMetrics;
         public int ActiveGrowingPlants;
+        public int PlantsInVegetativeStage;
+        public int PlantsInFloweringStage;
+        public int PlantsReadyForHarvest;
+        public float AverageGrowthRate;
+        public float SystemEfficiency;
         public int TotalMilestonesAchieved;
+        public int TotalGrowthEvents;
         public float AverageGrowthProgress;
-        public Dictionary<string, bool> SystemStatus;
-        public Dictionary<PlantGrowthStage, int> PlantsByStage = new Dictionary<PlantGrowthStage, int>();
-        public List<string> RecentMilestones = new List<string>();
-        public List<GrowthEvent> RecentEvents = new List<GrowthEvent>();
+        public Dictionary<string, bool> SystemStatus = new Dictionary<string, bool>();
+        public List<string> RecentEvents = new List<string>();
         public DateTime ReportGenerated;
+        public DateTime LastUpdate;
+        
+        // Additional properties for Error Wave 138 compatibility
+        public List<string> ActiveGrowthProcesses = new List<string>();
+        public Dictionary<string, float> GrowthMetrics = new Dictionary<string, float>();
+        public bool IsSystemHealthy => SystemEfficiency > 0.8f;
     }
     
     // Configuration ScriptableObjects
@@ -382,7 +411,7 @@ namespace ProjectChimera.Systems.SpeedTree
         [Header("Growth Rates")]
         public AnimationCurve SeedlingGrowthCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
         public AnimationCurve VegetativeGrowthCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f);
-        public AnimationCurve FloweringGrowthCurve = AnimationCurve.EaseOut(0f, 1f, 1f, 0.2f);
+        public AnimationCurve FloweringGrowthCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0.2f);
         
         [Header("Environmental Triggers")]
         public bool EnablePhotoperiodTriggers = true;
@@ -399,6 +428,8 @@ namespace ProjectChimera.Systems.SpeedTree
         public AnimationCurve HealthImpactCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
         public AnimationCurve StressImpactCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
         public float MinQualityThreshold = 0.3f;
+        public bool EnableAutomaticProgression = true;
+        public float GrowthRateMultiplier = 1f;
     }
     
     [CreateAssetMenu(fileName = "Growth Animation Config", menuName = "Project Chimera/SpeedTree/Animation Config")]
@@ -406,7 +437,7 @@ namespace ProjectChimera.Systems.SpeedTree
     {
         [Header("Animation Curves")]
         public AnimationCurve GrowthAnimationCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-        public AnimationCurve SizeProgressionCurve = AnimationCurve.EaseOut(0f, 0f, 1f, 1f);
+        public AnimationCurve SizeProgressionCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
         public AnimationCurve MorphologyProgressionCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f);
         public AnimationCurve ColorProgressionCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
         
@@ -428,6 +459,10 @@ namespace ProjectChimera.Systems.SpeedTree
         public bool EnableTouchResponse = true;
         public float TouchResponseIntensity = 0.5f;
         public float TouchRecoveryTime = 2f;
+        public bool EnableGrowthAnimation = true;
+        public bool EnableSizeAnimation = true;
+        public bool EnableColorAnimation = true;
+        public bool EnableMorphologyAnimation = true;
     }
     
     [System.Serializable]
@@ -628,7 +663,7 @@ namespace ProjectChimera.Systems.SpeedTree
             _enabled = enabled;
         }
         
-        public void UpdatePlantSize(SpeedTreePlantInstance instance, float growthProgress)
+        public void UpdatePlantSize(AdvancedSpeedTreeManager.SpeedTreePlantData instance, float growthProgress)
         {
             if (!_enabled || instance?.Renderer == null) return;
             
@@ -636,7 +671,7 @@ namespace ProjectChimera.Systems.SpeedTree
             instance.Renderer.transform.localScale = Vector3.Lerp(instance.Renderer.transform.localScale, targetSize, Time.deltaTime);
         }
         
-        public void UpdatePlantMorphology(SpeedTreePlantInstance instance, PlantGrowthStage stage, float stageProgress)
+        public void UpdatePlantMorphology(AdvancedSpeedTreeManager.SpeedTreePlantData instance, PlantGrowthStage stage, float stageProgress)
         {
             if (!_enabled) return;
             
@@ -644,7 +679,7 @@ namespace ProjectChimera.Systems.SpeedTree
             // This would modify SpeedTree material properties
         }
         
-        private Vector3 CalculateTargetSize(SpeedTreePlantInstance instance, float progress)
+        private Vector3 CalculateTargetSize(AdvancedSpeedTreeManager.SpeedTreePlantData instance, float progress)
         {
             var baseSize = Vector3.one;
             if (instance.GeneticData != null)
@@ -668,7 +703,7 @@ namespace ProjectChimera.Systems.SpeedTree
             _enabled = enabled;
         }
         
-        public void UpdatePlantColors(SpeedTreePlantInstance instance, PlantGrowthStage stage, float stageProgress)
+        public void UpdatePlantColors(AdvancedSpeedTreeManager.SpeedTreePlantData instance, PlantGrowthStage stage, float stageProgress)
         {
             if (!_enabled) return;
             
@@ -680,7 +715,7 @@ namespace ProjectChimera.Systems.SpeedTree
 #endif
         }
         
-        public void ApplySeasonalColoring(SpeedTreePlantInstance instance, SeasonType season)
+        public void ApplySeasonalColoring(AdvancedSpeedTreeManager.SpeedTreePlantData instance, SeasonType season)
         {
             if (!_enabled) return;
             
@@ -720,7 +755,7 @@ namespace ProjectChimera.Systems.SpeedTree
     {
         private Dictionary<int, BudDevelopmentData> _budData = new Dictionary<int, BudDevelopmentData>();
         
-        public void InitializeBudGrowth(SpeedTreePlantInstance instance)
+        public void InitializeBudGrowth(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             var budData = new BudDevelopmentData
             {
@@ -737,7 +772,7 @@ namespace ProjectChimera.Systems.SpeedTree
             _budData[instance.InstanceId] = budData;
         }
         
-        public BudDevelopmentData UpdateBudGrowth(SpeedTreePlantInstance instance, float deltaTime)
+        public BudDevelopmentData UpdateBudGrowth(AdvancedSpeedTreeManager.SpeedTreePlantData instance, float deltaTime)
         {
             if (!_budData.TryGetValue(instance.InstanceId, out var budData))
                 return new BudDevelopmentData { InstanceId = instance.InstanceId };
@@ -757,7 +792,7 @@ namespace ProjectChimera.Systems.SpeedTree
             return budData;
         }
         
-        public void ActivateBudGrowth(SpeedTreePlantInstance instance)
+        public void ActivateBudGrowth(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             if (_budData.TryGetValue(instance.InstanceId, out var budData))
             {
@@ -765,7 +800,7 @@ namespace ProjectChimera.Systems.SpeedTree
             }
         }
         
-        public void FinalizebudDevelopment(SpeedTreePlantInstance instance)
+        public void FinalizebudDevelopment(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             if (_budData.TryGetValue(instance.InstanceId, out var budData))
             {
@@ -779,7 +814,7 @@ namespace ProjectChimera.Systems.SpeedTree
             return _budData.TryGetValue(instanceId, out var budData) ? budData.BudSize : 0f;
         }
         
-        private float CalculateBudGrowthRate(SpeedTreePlantInstance instance)
+        private float CalculateBudGrowthRate(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             var baseRate = 0.1f;
             
@@ -803,6 +838,26 @@ namespace ProjectChimera.Systems.SpeedTree
         }
         
         public void RemovePlant(int instanceId) { _budData.Remove(instanceId); }
+        
+        public void UpdateVisualBudDevelopment(AdvancedSpeedTreeManager.SpeedTreePlantData instance, float growthProgress)
+        {
+            if (_budData.TryGetValue(instance.InstanceId, out var budData))
+            {
+                // Update visual representation of bud development
+                if (instance.Renderer?.Renderer != null)
+                {
+                    var materialPropertyBlock = new MaterialPropertyBlock();
+                    materialPropertyBlock.SetFloat("_BudSize", budData.BudSize * growthProgress);
+                    materialPropertyBlock.SetFloat("_BudDensity", budData.BudDensity);
+                    materialPropertyBlock.SetColor("_BudColor", budData.BudColor);
+                    materialPropertyBlock.SetFloat("_CalyxDevelopment", budData.CalyxDevelopment * growthProgress);
+                    materialPropertyBlock.SetFloat("_PistilLength", budData.PistilLength * growthProgress);
+                    
+                    instance.Renderer.Renderer.SetPropertyBlock(materialPropertyBlock);
+                }
+            }
+        }
+        
         public void Update() { }
         public void Cleanup() { _budData.Clear(); }
     }
@@ -811,7 +866,7 @@ namespace ProjectChimera.Systems.SpeedTree
     {
         private Dictionary<int, TrichromeData> _trichromeData = new Dictionary<int, TrichromeData>();
         
-        public void InitializeTrichromeGrowth(SpeedTreePlantInstance instance)
+        public void InitializeTrichromeGrowth(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             var trichromeData = new TrichromeData
             {
@@ -832,7 +887,7 @@ namespace ProjectChimera.Systems.SpeedTree
             _trichromeData[instance.InstanceId] = trichromeData;
         }
         
-        public TrichromeData UpdateTrichromeGrowth(SpeedTreePlantInstance instance, float deltaTime)
+        public TrichromeData UpdateTrichromeGrowth(AdvancedSpeedTreeManager.SpeedTreePlantData instance, float deltaTime)
         {
             if (!_trichromeData.TryGetValue(instance.InstanceId, out var trichromeData))
                 return new TrichromeData { InstanceId = instance.InstanceId };
@@ -854,7 +909,7 @@ namespace ProjectChimera.Systems.SpeedTree
             return trichromeData;
         }
         
-        public void ActivateTrichromeGrowth(SpeedTreePlantInstance instance)
+        public void ActivateTrichromeGrowth(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             if (_trichromeData.TryGetValue(instance.InstanceId, out var trichromeData))
             {
@@ -862,7 +917,7 @@ namespace ProjectChimera.Systems.SpeedTree
             }
         }
         
-        public void MaximizeTrichromeProduction(SpeedTreePlantInstance instance)
+        public void MaximizeTrichromeProduction(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             if (_trichromeData.TryGetValue(instance.InstanceId, out var trichromeData))
             {
@@ -876,7 +931,7 @@ namespace ProjectChimera.Systems.SpeedTree
             return _trichromeData.TryGetValue(instanceId, out var trichromeData) ? trichromeData.TrichromeAmount : 0f;
         }
         
-        private float CalculateTrichromeGrowthRate(SpeedTreePlantInstance instance)
+        private float CalculateTrichromeGrowthRate(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             var baseRate = 0.05f;
             
@@ -912,6 +967,26 @@ namespace ProjectChimera.Systems.SpeedTree
         }
         
         public void RemovePlant(int instanceId) { _trichromeData.Remove(instanceId); }
+        
+        public void UpdateTrichromeVisualization(AdvancedSpeedTreeManager.SpeedTreePlantData instance, float growthProgress)
+        {
+            if (_trichromeData.TryGetValue(instance.InstanceId, out var trichromeData))
+            {
+                // Update visual representation of trichrome development
+                if (instance.Renderer?.Renderer != null)
+                {
+                    var materialPropertyBlock = new MaterialPropertyBlock();
+                    materialPropertyBlock.SetFloat("_TrichromeAmount", trichromeData.TrichromeAmount * growthProgress);
+                    materialPropertyBlock.SetFloat("_TrichromeDensity", trichromeData.Density * growthProgress);
+                    materialPropertyBlock.SetColor("_TrichromeColor", trichromeData.TrichromeColor);
+                    materialPropertyBlock.SetFloat("_TrichromeClarity", trichromeData.Clarity);
+                    materialPropertyBlock.SetFloat("_TrichromeMaturity", trichromeData.MaturityData.CloudyPercentage);
+                    
+                    instance.Renderer.Renderer.SetPropertyBlock(materialPropertyBlock);
+                }
+            }
+        }
+        
         public void Update() { }
         public void Cleanup() { _trichromeData.Clear(); }
     }
@@ -920,7 +995,7 @@ namespace ProjectChimera.Systems.SpeedTree
     {
         private Dictionary<int, RootSystemData> _rootData = new Dictionary<int, RootSystemData>();
         
-        public void InitializeRootSystem(SpeedTreePlantInstance instance)
+        public void InitializeRootSystem(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             var rootData = new RootSystemData
             {
@@ -937,7 +1012,7 @@ namespace ProjectChimera.Systems.SpeedTree
             _rootData[instance.InstanceId] = rootData;
         }
         
-        public void UpdateRootGrowth(SpeedTreePlantInstance instance, float deltaTime)
+        public void UpdateRootGrowth(AdvancedSpeedTreeManager.SpeedTreePlantData instance, float deltaTime)
         {
             if (!_rootData.TryGetValue(instance.InstanceId, out var rootData)) return;
             
@@ -948,7 +1023,7 @@ namespace ProjectChimera.Systems.SpeedTree
             rootData.RootDepth += growthRate * 0.3f * deltaTime;
         }
         
-        private float CalculateRootGrowthRate(SpeedTreePlantInstance instance)
+        private float CalculateRootGrowthRate(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             var baseRate = 0.1f;
             
@@ -962,6 +1037,25 @@ namespace ProjectChimera.Systems.SpeedTree
         }
         
         public void RemovePlant(int instanceId) { _rootData.Remove(instanceId); }
+        
+        public void UpdateRootVisualization(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
+        {
+            if (_rootData.TryGetValue(instance.InstanceId, out var rootData))
+            {
+                // Update visual representation of root system
+                if (instance.Renderer?.Renderer != null)
+                {
+                    var materialPropertyBlock = new MaterialPropertyBlock();
+                    materialPropertyBlock.SetFloat("_RootMass", rootData.RootMass);
+                    materialPropertyBlock.SetFloat("_RootSpread", rootData.RootSpread);
+                    materialPropertyBlock.SetFloat("_RootHealth", rootData.RootHealth);
+                    materialPropertyBlock.SetFloat("_WaterUptake", rootData.WaterUptakeRate);
+                    
+                    instance.Renderer.Renderer.SetPropertyBlock(materialPropertyBlock);
+                }
+            }
+        }
+        
         public void Update() { }
         public void Cleanup() { _rootData.Clear(); }
     }
@@ -970,7 +1064,7 @@ namespace ProjectChimera.Systems.SpeedTree
     {
         private Dictionary<int, CanopyData> _canopyData = new Dictionary<int, CanopyData>();
         
-        public void UpdateCanopyGrowth(SpeedTreePlantInstance instance, float deltaTime)
+        public void UpdateCanopyGrowth(AdvancedSpeedTreeManager.SpeedTreePlantData instance, float deltaTime)
         {
             if (!_canopyData.TryGetValue(instance.InstanceId, out var canopyData))
             {
@@ -997,7 +1091,7 @@ namespace ProjectChimera.Systems.SpeedTree
             canopyData.LightPenetration = Mathf.Lerp(1f, 0.3f, canopyData.CanopyDensity);
         }
         
-        private float CalculateCanopyGrowthRate(SpeedTreePlantInstance instance)
+        private float CalculateCanopyGrowthRate(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             var baseRate = 0.05f;
             
@@ -1010,6 +1104,26 @@ namespace ProjectChimera.Systems.SpeedTree
         }
         
         public void Update() { }
+        
+        public void UpdateCanopyVisualization(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
+        {
+            if (_canopyData.TryGetValue(instance.InstanceId, out var canopyData))
+            {
+                // Update visual representation of canopy development
+                if (instance.Renderer?.Renderer != null)
+                {
+                    var materialPropertyBlock = new MaterialPropertyBlock();
+                    materialPropertyBlock.SetFloat("_CanopyCoverage", canopyData.CanopyCoverage);
+                    materialPropertyBlock.SetFloat("_CanopyHeight", canopyData.CanopyHeight);
+                    materialPropertyBlock.SetFloat("_CanopyDensity", canopyData.CanopyDensity);
+                    materialPropertyBlock.SetFloat("_LightPenetration", canopyData.LightPenetration);
+                    materialPropertyBlock.SetFloat("_LeafAreaIndex", canopyData.LeafAreaIndex);
+                    
+                    instance.Renderer.Renderer.SetPropertyBlock(materialPropertyBlock);
+                }
+            }
+        }
+        
         public void Cleanup() { _canopyData.Clear(); }
     }
     

@@ -6,7 +6,22 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 using ProjectChimera.Core;
+using ProjectChimera.Testing;
+using ProjectChimera.UI.Core;
+using ProjectChimera.UI.Panels;
+using ProjectChimera.Systems.AI;
+using ProjectChimera.Systems.Analytics;
+using ProjectChimera.Systems.Automation;
+using ProjectChimera.Systems.Settings;
+using SettingsManager = ProjectChimera.Systems.Settings.SettingsManager;
+using ProjectChimera.Data.Automation;
+using ProjectChimera.Data.Cultivation;
+using ProjectChimera.Data.Genetics;
+using ProjectChimera.Data.UI;
+using ProjectChimera.Data.AI;
+using ProjectChimera.Systems.Economy;
 
 namespace ProjectChimera.Testing
 {
@@ -341,31 +356,16 @@ namespace ProjectChimera.Testing
                 StartTime = System.DateTime.Now
             };
 
-            try
-            {
-                // Act - Execute cross-system integration tests
-                yield return StartCoroutine(ExecuteCrossSystemIntegrationTests(categoryResult));
-                
-                categoryStopwatch.Stop();
-                categoryResult.EndTime = System.DateTime.Now;
-                categoryResult.ExecutionTimeMs = categoryStopwatch.ElapsedMilliseconds;
-                categoryResult.Status = TestStatus.Passed;
-                
-                UnityEngine.Debug.Log($"✓ Cross-System Integration: {categoryResult.ExecutionTimeMs}ms");
-            }
-            catch (System.Exception ex)
-            {
-                categoryStopwatch.Stop();
-                categoryResult.Status = TestStatus.Failed;
-                categoryResult.ErrorMessage = ex.Message;
-                
-                UnityEngine.Debug.LogError($"✗ Cross-System Integration Failed: {ex.Message}");
-                throw;
-            }
-            finally
-            {
-                _categoryResults.Add(categoryResult);
-            }
+            // Act - Execute cross-system integration tests without try-catch around yield
+            yield return ExecuteCrossSystemIntegrationTests(categoryResult);
+            
+            categoryStopwatch.Stop();
+            categoryResult.EndTime = System.DateTime.Now;
+            categoryResult.ExecutionTimeMs = categoryStopwatch.ElapsedMilliseconds;
+            categoryResult.Status = TestStatus.Passed;
+            
+            UnityEngine.Debug.Log($"✓ Cross-System Integration: {categoryResult.ExecutionTimeMs}ms");
+            _categoryResults.Add(categoryResult);
         }
 
         #endregion
@@ -471,7 +471,7 @@ namespace ProjectChimera.Testing
 
             foreach (var test in integrationTests)
             {
-                yield return StartCoroutine(test());
+                yield return test();
                 yield return new WaitForSeconds(0.1f); // Allow cleanup between tests
             }
 
@@ -567,19 +567,19 @@ namespace ProjectChimera.Testing
         // Plant Panel Tests
         private void TestPlantBreedingPanelCreation()
         {
-            var breedingPanel = FindOrCreateTestComponent<PlantBreedingPanel>("BreedingPanel");
+            var breedingPanel = FindOrCreateTestUIComponent<PlantBreedingPanel>("BreedingPanel");
             Assert.IsNotNull(breedingPanel, "Plant breeding panel should be created successfully");
         }
 
         private void TestPlantManagementPanelCreation()
         {
-            var managementPanel = FindOrCreateTestComponent<PlantManagementPanel>("ManagementPanel");
+            var managementPanel = FindOrCreateTestUIComponent<PlantManagementPanel>("ManagementPanel");
             Assert.IsNotNull(managementPanel, "Plant management panel should be created successfully");
         }
 
         private void TestBreedingPanelUIPerformance()
         {
-            var breedingPanel = FindOrCreateTestComponent<PlantBreedingPanel>("BreedingPanel");
+            var breedingPanel = FindOrCreateTestUIComponent<PlantBreedingPanel>("BreedingPanel");
             var stopwatch = Stopwatch.StartNew();
             
             for (int i = 0; i < 5; i++)
@@ -593,14 +593,14 @@ namespace ProjectChimera.Testing
 
         private void TestManagementPanelDataHandling()
         {
-            var managementPanel = FindOrCreateTestComponent<PlantManagementPanel>("ManagementPanel");
+            var managementPanel = FindOrCreateTestUIComponent<PlantManagementPanel>("ManagementPanel");
             Assert.IsNotNull(managementPanel.PanelId, "Management panel should handle data correctly");
         }
 
         private void TestPanelIntegrationCommunication()
         {
-            var breedingPanel = FindOrCreateTestComponent<PlantBreedingPanel>("BreedingPanel");
-            var managementPanel = FindOrCreateTestComponent<PlantManagementPanel>("ManagementPanel");
+            var breedingPanel = FindOrCreateTestUIComponent<PlantBreedingPanel>("BreedingPanel");
+            var managementPanel = FindOrCreateTestUIComponent<PlantManagementPanel>("ManagementPanel");
             
             Assert.AreNotEqual(breedingPanel.PanelId, managementPanel.PanelId, "Panels should have unique identifiers");
         }
@@ -663,8 +663,8 @@ namespace ProjectChimera.Testing
         private void TestPlantStrainDataConversion()
         {
             var strainSO = ScriptableObject.CreateInstance<PlantStrainSO>();
-            strainSO.strainId = "TestStrain";
-            strainSO.strainName = "Test";
+            strainSO.StrainId = "TestStrain";
+            strainSO.StrainName = "Test";
             
             var strainData = PlantStrainData.FromSO(strainSO);
             Assert.AreEqual("TestStrain", strainData.StrainId, "Data conversion should work correctly");
@@ -944,6 +944,19 @@ namespace ProjectChimera.Testing
             return go.AddComponent<T>();
         }
 
+        private T FindOrCreateTestUIComponent<T>(string name) where T : UIPanel
+        {
+            var existingObject = GameObject.Find(name);
+            if (existingObject != null)
+            {
+                var existingComponent = existingObject.GetComponent<T>();
+                if (existingComponent != null) return existingComponent;
+            }
+
+            var testObject = new GameObject(name);
+            return testObject.AddComponent<T>();
+        }
+
         private List<System.Type> GetTypesInNamespace(string namespaceName)
         {
             var allAssemblies = System.AppDomain.CurrentDomain.GetAssemblies();
@@ -958,7 +971,7 @@ namespace ProjectChimera.Testing
                         .ToList();
                     types.AddRange(assemblyTypes);
                 }
-                catch (System.ReflectionTypeLoadException)
+                catch (System.Exception)
                 {
                     // Skip assemblies with loading issues
                     continue;

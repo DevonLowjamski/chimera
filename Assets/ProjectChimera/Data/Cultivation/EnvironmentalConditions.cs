@@ -1,5 +1,7 @@
 using UnityEngine;
 using ProjectChimera.Core;
+// Explicit alias to resolve LightSpectrum ambiguity - use enum from same namespace
+using LightSpectrum = ProjectChimera.Data.Cultivation.LightSpectrum;
 
 namespace ProjectChimera.Data.Cultivation
 {

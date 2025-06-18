@@ -1,0 +1,23 @@
+{
+    "name": "ProjectChimera.Effects",
+    "rootNamespace": "ProjectChimera.Systems.Effects",
+    "references": [
+        "ProjectChimera.Core",
+        "ProjectChimera.Data",
+        "ProjectChimera.Environment",
+        "ProjectChimera.Systems.Cultivation",
+        "ProjectChimera.Systems.Economy",
+        "ProjectChimera.Construction",
+        "ProjectChimera.Genetics",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

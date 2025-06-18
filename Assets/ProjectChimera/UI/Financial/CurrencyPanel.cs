@@ -15,20 +15,20 @@ namespace ProjectChimera.UI.Financial
     /// Provides real-time currency display, transaction history, financial analytics,
     /// budget management, and economic insights for engaging financial gameplay.
     /// </summary>
-    public class CurrencyPanel : UIPanel
+    public class CurrencyPanel : VisualElement
     {
-        [Header("Currency Panel Configuration")]
-        [SerializeField] private bool _enableRealTimeUpdates = true;
-        [SerializeField] private bool _showTransactionHistory = true;
-        [SerializeField] private bool _enableFinancialAnalytics = true;
-        [SerializeField] private float _updateInterval = 1f;
+        // Currency Panel Configuration
+        private bool _enableRealTimeUpdates = true;
+        private bool _showTransactionHistory = true;
+        private bool _enableFinancialAnalytics = true;
+        private float _updateInterval = 1f;
         
-        [Header("Visual Settings")]
-        [SerializeField] private bool _enableAnimations = true;
-        [SerializeField] private bool _showCurrencyIcons = true;
-        [SerializeField] private bool _enableColorCoding = true;
-        [SerializeField] private Color _positiveColor = new Color(0.2f, 0.8f, 0.2f, 1f);
-        [SerializeField] private Color _negativeColor = new Color(0.8f, 0.2f, 0.2f, 1f);
+        // Visual Settings
+        private bool _enableAnimations = true;
+        private bool _showCurrencyIcons = true;
+        private bool _enableColorCoding = true;
+        private Color _positiveColor = new Color(0.2f, 0.8f, 0.2f, 1f);
+        private Color _negativeColor = new Color(0.8f, 0.2f, 0.2f, 1f);
         
         // System References
         // private CurrencyManager _currencyManager;
@@ -80,9 +80,9 @@ namespace ProjectChimera.UI.Financial
         private List<Transaction> _displayedTransactions = new List<Transaction>();
         private Dictionary<CurrencyType, float> _lastKnownAmounts = new Dictionary<CurrencyType, float>();
         
-        protected override void OnPanelInitialized()
+        public void OnPanelInitialized()
         {
-            base.OnPanelInitialized();
+            // Panel initialization logic
             
             // Find system references
             // _currencyManager = GameManager.Instance?.GetManager<CurrencyManager>();
@@ -168,9 +168,15 @@ namespace ProjectChimera.UI.Financial
             _currencyDisplayContainer.style.flexDirection = FlexDirection.Row;
             _currencyDisplayContainer.style.justifyContent = Justify.SpaceAround;
             _currencyDisplayContainer.style.marginBottom = 20f;
-            _currencyDisplayContainer.style.padding = new StyleLength(15f);
+            _currencyDisplayContainer.style.paddingTop = 15f;
+            _currencyDisplayContainer.style.paddingBottom = 15f;
+            _currencyDisplayContainer.style.paddingLeft = 15f;
+            _currencyDisplayContainer.style.paddingRight = 15f;
             _currencyDisplayContainer.style.backgroundColor = new Color(0.1f, 0.1f, 0.1f, 0.8f);
-            _currencyDisplayContainer.style.borderRadius = 8f;
+            _currencyDisplayContainer.style.borderTopLeftRadius = 8f;
+            _currencyDisplayContainer.style.borderTopRightRadius = 8f;
+            _currencyDisplayContainer.style.borderBottomLeftRadius = 8f;
+            _currencyDisplayContainer.style.borderBottomRightRadius = 8f;
             
             var currencyTypes = new[] { CurrencyType.Cash, CurrencyType.Credits, CurrencyType.ResearchPoints, CurrencyType.ReputationPoints };
             
@@ -190,7 +196,10 @@ namespace ProjectChimera.UI.Financial
             container.name = $"currency-{currencyType}";
             container.style.alignItems = Align.Center;
             container.style.flexGrow = 1f;
-            container.style.padding = new StyleLength(10f);
+            container.style.paddingTop = 10f;
+            container.style.paddingBottom = 10f;
+            container.style.paddingLeft = 10f;
+            container.style.paddingRight = 10f;
             
             var iconLabel = new Label(GetCurrencyIcon(currencyType));
             iconLabel.style.fontSize = 20f;
@@ -250,7 +259,10 @@ namespace ProjectChimera.UI.Financial
             button.text = text;
             button.name = $"tab-{tabId}";
             button.AddToClassList("tab-button");
-            button.style.padding = new StyleLength(10f);
+            button.style.paddingTop = 10f;
+            button.style.paddingBottom = 10f;
+            button.style.paddingLeft = 10f;
+            button.style.paddingRight = 10f;
             button.style.marginRight = 5f;
             button.style.backgroundColor = new Color(0.3f, 0.3f, 0.3f, 1f);
             button.style.color = new Color(0.8f, 0.8f, 0.8f, 1f);
@@ -269,8 +281,14 @@ namespace ProjectChimera.UI.Financial
             _contentContainer.name = "content-container";
             _contentContainer.style.flexGrow = 1f;
             _contentContainer.style.backgroundColor = new Color(0.1f, 0.1f, 0.1f, 0.8f);
-            _contentContainer.style.borderRadius = 8f;
-            _contentContainer.style.padding = new StyleLength(15f);
+            _contentContainer.style.borderTopLeftRadius = 8f;
+            _contentContainer.style.borderTopRightRadius = 8f;
+            _contentContainer.style.borderBottomLeftRadius = 8f;
+            _contentContainer.style.borderBottomRightRadius = 8f;
+            _contentContainer.style.paddingTop = 15f;
+            _contentContainer.style.paddingBottom = 15f;
+            _contentContainer.style.paddingLeft = 15f;
+            _contentContainer.style.paddingRight = 15f;
             
             CreateOverviewContent();
             CreateTransactionsContent();
@@ -314,8 +332,14 @@ namespace ProjectChimera.UI.Financial
             var recentTransactionsContainer = new VisualElement();
             recentTransactionsContainer.style.maxHeight = 200f;
             recentTransactionsContainer.style.backgroundColor = new Color(0.05f, 0.05f, 0.05f, 0.8f);
-            recentTransactionsContainer.style.borderRadius = 6f;
-            recentTransactionsContainer.style.padding = new StyleLength(10f);
+            recentTransactionsContainer.style.borderTopLeftRadius = 6f;
+            recentTransactionsContainer.style.borderTopRightRadius = 6f;
+            recentTransactionsContainer.style.borderBottomLeftRadius = 6f;
+            recentTransactionsContainer.style.borderBottomRightRadius = 6f;
+            recentTransactionsContainer.style.paddingTop = 10f;
+            recentTransactionsContainer.style.paddingBottom = 10f;
+            recentTransactionsContainer.style.paddingLeft = 10f;
+            recentTransactionsContainer.style.paddingRight = 10f;
             
             _overviewContent.Add(summaryContainer);
             _overviewContent.Add(recentLabel);
@@ -337,7 +361,7 @@ namespace ProjectChimera.UI.Financial
             
             _transactionSearchField = new TextField();
             _transactionSearchField.name = "transaction-search";
-            _transactionSearchField.placeholder = "Search transactions...";
+            _transactionSearchField.textEdition.placeholder = "Search transactions...";
             _transactionSearchField.style.flexGrow = 1f;
             _transactionSearchField.style.marginRight = 10f;
             
@@ -384,8 +408,14 @@ namespace ProjectChimera.UI.Financial
             _createBudgetButton.text = "➕ Create Budget";
             _createBudgetButton.style.backgroundColor = new Color(0.2f, 0.6f, 0.2f, 1f);
             _createBudgetButton.style.color = Color.white;
-            _createBudgetButton.style.borderRadius = 4f;
-            _createBudgetButton.style.padding = new StyleLength(8f);
+            _createBudgetButton.style.borderTopLeftRadius = 4f;
+            _createBudgetButton.style.borderTopRightRadius = 4f;
+            _createBudgetButton.style.borderBottomLeftRadius = 4f;
+            _createBudgetButton.style.borderBottomRightRadius = 4f;
+            _createBudgetButton.style.paddingTop = 8f;
+            _createBudgetButton.style.paddingBottom = 8f;
+            _createBudgetButton.style.paddingLeft = 8f;
+            _createBudgetButton.style.paddingRight = 8f;
             _createBudgetButton.clicked += OnCreateBudgetClicked;
             
             budgetHeader.Add(budgetTitle);
@@ -432,7 +462,10 @@ namespace ProjectChimera.UI.Financial
             _analyticsChartContainer = new VisualElement();
             _analyticsChartContainer.style.height = 200f;
             _analyticsChartContainer.style.backgroundColor = new Color(0.05f, 0.05f, 0.05f, 0.8f);
-            _analyticsChartContainer.style.borderRadius = 6f;
+            _analyticsChartContainer.style.borderTopLeftRadius = 6f;
+            _analyticsChartContainer.style.borderTopRightRadius = 6f;
+            _analyticsChartContainer.style.borderBottomLeftRadius = 6f;
+            _analyticsChartContainer.style.borderBottomRightRadius = 6f;
             _analyticsChartContainer.style.alignItems = Align.Center;
             _analyticsChartContainer.style.justifyContent = Justify.Center;
             
@@ -451,9 +484,15 @@ namespace ProjectChimera.UI.Financial
             var card = new VisualElement();
             card.style.flexGrow = 1f;
             card.style.marginRight = 10f;
-            card.style.padding = new StyleLength(15f);
+            card.style.paddingTop = 15f;
+            card.style.paddingBottom = 15f;
+            card.style.paddingLeft = 15f;
+            card.style.paddingRight = 15f;
             card.style.backgroundColor = new Color(0.15f, 0.15f, 0.15f, 0.9f);
-            card.style.borderRadius = 8f;
+            card.style.borderTopLeftRadius = 8f;
+            card.style.borderTopRightRadius = 8f;
+            card.style.borderBottomLeftRadius = 8f;
+            card.style.borderBottomRightRadius = 8f;
             card.style.alignItems = Align.Center;
             
             var titleLabel = new Label(title);
@@ -540,6 +579,9 @@ namespace ProjectChimera.UI.Financial
             
             // var displayData = _currencyManager.GetCurrencyDisplayData();
             
+            // Placeholder data for compilation
+            var displayData = new List<CurrencyDisplayData>();
+            
             foreach (var data in displayData)
             {
                 if (_currencyAmountLabels.TryGetValue(data.CurrencyType, out var amountLabel))
@@ -595,6 +637,10 @@ namespace ProjectChimera.UI.Financial
             // if (_currencyManager == null || _netWorthLabel == null) return;
             
             // var report = _currencyManager.GetCurrentFinancialReport();
+            
+            // Placeholder data for compilation
+            var report = new FinancialReport { NetWorth = 0f };
+            
             _netWorthLabel.text = $"${report.NetWorth:F2}";
         }
         
@@ -604,6 +650,9 @@ namespace ProjectChimera.UI.Financial
             
             _transactionContainer.Clear();
             // var transactions = _currencyManager.RecentTransactions;
+            
+            // Placeholder data for compilation
+            var transactions = new List<Transaction>();
             
             foreach (var transaction in transactions.Take(20))
             {
@@ -633,6 +682,9 @@ namespace ProjectChimera.UI.Financial
             
             // var report = _currencyManager.GetCurrentFinancialReport();
             
+            // Placeholder data for compilation
+            var report = new FinancialReport { NetWorth = 0f, BurnRate = 0f, RunwayDays = 0f };
+            
             if (_burnRateLabel != null)
                 _burnRateLabel.text = $"${report.BurnRate:F2}/day";
             
@@ -651,10 +703,16 @@ namespace ProjectChimera.UI.Financial
             container.style.flexDirection = FlexDirection.Row;
             container.style.justifyContent = Justify.SpaceBetween;
             container.style.alignItems = Align.Center;
-            container.style.padding = new StyleLength(8f);
+            container.style.paddingTop = 8f;
+            container.style.paddingBottom = 8f;
+            container.style.paddingLeft = 8f;
+            container.style.paddingRight = 8f;
             container.style.marginBottom = 5f;
             container.style.backgroundColor = new Color(0.2f, 0.2f, 0.2f, 0.5f);
-            container.style.borderRadius = 4f;
+            container.style.borderTopLeftRadius = 4f;
+            container.style.borderTopRightRadius = 4f;
+            container.style.borderBottomLeftRadius = 4f;
+            container.style.borderBottomRightRadius = 4f;
             
             var leftContainer = new VisualElement();
             leftContainer.style.flexGrow = 1f;
@@ -750,7 +808,7 @@ namespace ProjectChimera.UI.Financial
             LogInfo($"Financial milestone reached: ${milestoneAmount:F2}");
         }
         
-        protected override void OnBeforeHide()
+        public void OnBeforeHide()
         {
             // Unsubscribe from events
             // if (_currencyManager != null)
@@ -760,7 +818,49 @@ namespace ProjectChimera.UI.Financial
                 // _currencyManager.OnFinancialMilestone -= OnFinancialMilestone;
             // }
             
-            base.OnBeforeHide();
+            // Panel cleanup logic
         }
+        
+        private void LogInfo(string message)
+        {
+            Debug.Log($"[CurrencyPanel] {message}");
+        }
+    }
+    
+    // Temporary data structures for compilation
+    [System.Serializable]
+    public class CurrencyDisplayData
+    {
+        public CurrencyType CurrencyType;
+        public float Amount;
+        public float Change;
+        public string DisplayName;
+        public string FormattedAmount => $"${Amount:F2}";
+    }
+    
+    [System.Serializable]
+    public class Transaction
+    {
+        public string Description;
+        public TransactionCategory Category;
+        public TransactionType Type;
+        public float Amount;
+        public System.DateTime Timestamp;
+    }
+    
+    public enum TransactionCategory
+    {
+        Equipment,
+        Supplies,
+        Labor,
+        Utilities,
+        Sales,
+        Other
+    }
+    
+    public enum TransactionType
+    {
+        Income,
+        Expense
     }
 }

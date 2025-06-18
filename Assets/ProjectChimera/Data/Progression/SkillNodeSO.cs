@@ -25,6 +25,7 @@ namespace ProjectChimera.Data.Progression
         [SerializeField] private List<SkillNodeSO> _prerequisiteSkills = new List<SkillNodeSO>();
         [SerializeField] private List<SkillNodeSO> _unlockedSkills = new List<SkillNodeSO>();
         [SerializeField] private bool _isCapstoneSkill = false;
+        [SerializeField] private bool _isUnlocked = false;
         
         [Header("Learning Requirements")]
         [SerializeField] private SkillRequirements _learningRequirements;
@@ -67,6 +68,7 @@ namespace ProjectChimera.Data.Progression
         public List<SkillNodeSO> PrerequisiteSkills => _prerequisiteSkills;
         public List<SkillNodeSO> UnlockedSkills => _unlockedSkills;
         public bool IsCapstoneSkill => _isCapstoneSkill;
+        public bool IsUnlocked => _isUnlocked;
         public SkillRequirements LearningRequirements => _learningRequirements;
         public List<SkillCost> LevelUpCosts => _levelUpCosts;
         public AnimationCurve ExperienceRequirementCurve => _experienceRequirementCurve;

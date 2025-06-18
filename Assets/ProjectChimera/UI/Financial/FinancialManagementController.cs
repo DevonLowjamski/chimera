@@ -123,7 +123,7 @@ namespace ProjectChimera.UI.Financial
         public System.Action<Investment> OnInvestmentMade;
         public System.Action<string> OnTabChanged;
         public System.Action<PriceAlert> OnPriceAlert;
-        public System.Action<FinancialReport> OnReportGenerated;
+        public System.Action<TradingFinancialReport> OnReportGenerated;
         
         private void Start()
         {
@@ -412,14 +412,13 @@ namespace ProjectChimera.UI.Financial
             
             // Execute trade
             // if (_tradingManager != null)
-            // {
-                // bool success = _tradingManager.ExecuteTrade(trade);
-                if (!success)
-                {
-                    Debug.LogWarning("Trade execution failed");
-                    return;
-                }
-            // }
+            // Execute trade (placeholder implementation)
+            bool success = true; // TODO: Implement actual trading logic
+            if (!success)
+            {
+                Debug.LogWarning("Trade execution failed");
+                return;
+            }
             
             // Update portfolio
             UpdatePortfolioAfterTrade(trade);
@@ -489,7 +488,8 @@ namespace ProjectChimera.UI.Financial
         {
             // if (_investmentManager == null) return;
             
-            // var rebalanceResult = _investmentManager.RebalancePortfolio(_portfolio, _riskToleranceSlider.value);
+            // TODO: Implement portfolio rebalancing
+            var rebalanceResult = new { Success = true }; // Placeholder
             
             if (rebalanceResult != null && rebalanceResult.Success)
             {
@@ -592,7 +592,8 @@ namespace ProjectChimera.UI.Financial
         {
             // if (_marketManager != null)
             // {
-                // var metrics = _marketManager.GetPortfolioMetrics();
+                // TODO: Implement portfolio metrics
+                var metrics = new { TotalValue = 100000f, ProfitLoss = 5000f, DailyChange = 2.5f }; // Placeholder
                 if (metrics != null)
                 {
                     _portfolio.TotalValue = metrics.TotalValue;
@@ -928,7 +929,7 @@ namespace ProjectChimera.UI.Financial
         
         private void GenerateFinancialReport()
         {
-            var report = new FinancialReport
+            var report = new TradingFinancialReport
             {
                 ReportId = Guid.NewGuid().ToString(),
                 GeneratedAt = DateTime.Now,
@@ -1023,7 +1024,7 @@ namespace ProjectChimera.UI.Financial
     }
     
     [System.Serializable]
-    public class FinancialReport
+    public class TradingFinancialReport
     {
         public string ReportId;
         public DateTime GeneratedAt;

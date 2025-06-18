@@ -23,7 +23,9 @@ namespace ProjectChimera.Data.Economy
         Transfer,
         Credit,
         Investment,
-        Loan
+        Loan,
+        Sale,
+        Purchase
     }
 
     [System.Serializable]

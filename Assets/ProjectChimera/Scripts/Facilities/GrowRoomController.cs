@@ -1,12 +1,23 @@
 using UnityEngine;
-using ProjectChimera.Core;
-using ProjectChimera.Systems.Environment;
-using ProjectChimera.Systems.Cultivation;
+using EnvironmentSystems = ProjectChimera.Systems.Environment;
+using CultivationSystems = ProjectChimera.Systems.Cultivation;
+using ProjectChimera.Scripts.Cultivation;
 using ProjectChimera.Data.Environment;
+using ProjectChimera.Data.Genetics;
+using ProjectChimera.Core;
 using System.Collections.Generic;
 using System.Linq;
+// Explicit alias to resolve EnvironmentalConditions ambiguity
+using EnvironmentalConditions = ProjectChimera.Data.Environment.EnvironmentalConditions;
+// Explicit alias to resolve LightSpectrum ambiguity - use enum from Cultivation namespace  
+using LightSpectrum = ProjectChimera.Data.Cultivation.LightSpectrum;
+// Explicit aliases to resolve controller ambiguity - use MonoBehaviour classes from Scripts namespace
+using HVACController = ProjectChimera.Scripts.Environment.HVACController;
+using LightingController = ProjectChimera.Scripts.Environment.LightingController;
+using VentilationController = ProjectChimera.Scripts.Environment.VentilationController;
+using IrrigationController = ProjectChimera.Scripts.Environment.IrrigationController;
 
-namespace ProjectChimera.Systems.Facilities
+namespace ProjectChimera.Scripts.Facilities
 {
     /// <summary>
     /// Controls a grow room facility with environmental systems and plant management.
@@ -39,8 +50,8 @@ namespace ProjectChimera.Systems.Facilities
         
         // Environmental Data
         private EnvironmentalConditions _currentConditions;
-        private EnvironmentalManager _environmentalManager;
-        private PlantManager _plantManager;
+        private EnvironmentSystems.EnvironmentalManager _environmentalManager;
+        private CultivationSystems.PlantManager _plantManager;
         
         // Plant Management
         private List<PlantInstanceComponent> _plantsInRoom = new List<PlantInstanceComponent>();
@@ -135,8 +146,8 @@ namespace ProjectChimera.Systems.Facilities
         
         private void InitializeManagers()
         {
-            _environmentalManager = GameManager.Instance?.GetManager<EnvironmentalManager>();
-            _plantManager = GameManager.Instance?.GetManager<PlantManager>();
+            _environmentalManager = GameManager.Instance?.GetManager<EnvironmentSystems.EnvironmentalManager>();
+            _plantManager = GameManager.Instance?.GetManager<CultivationSystems.PlantManager>();
             
             if (_environmentalManager == null)
                 Debug.LogError("EnvironmentalManager not found");
@@ -256,7 +267,7 @@ namespace ProjectChimera.Systems.Facilities
             OnPlantAdded?.Invoke(this, plantComponent);
             UpdateRoomStatus();
             
-            Debug.Log($"Added plant to {_roomName} at position {plantPosition.localPosition}\");
+            Debug.Log($"Added plant to {_roomName} at position {plantPosition.localPosition}");
             return true;
         }
         
@@ -355,18 +366,67 @@ namespace ProjectChimera.Systems.Facilities
         }
         
         /// <summary>
-        /// Control lighting system
+        /// Set lighting parameters for the room
         /// </summary>
-        public void SetLighting(bool enabled, float intensity = 1f, LightSpectrum spectrum = null)
+        public void SetLighting(bool enabled, float intensity = 1f, LightSpectrum? spectrum = null)
         {
             if (_lightingController != null)
             {
                 _lightingController.SetLightingEnabled(enabled);
                 _lightingController.SetIntensity(intensity);
                 
-                if (spectrum != null)
-                    _lightingController.SetSpectrum(spectrum);
+                if (spectrum.HasValue)
+                {
+                    // Convert Cultivation.LightSpectrum enum to Environment.LightSpectrum class
+                    var environmentSpectrum = ConvertToEnvironmentSpectrum(spectrum.Value);
+                    _lightingController.SetSpectrum(environmentSpectrum);
+                }
             }
+        }
+        
+        /// <summary>
+        /// Convert Cultivation LightSpectrum enum to Environment LightSpectrum class
+        /// </summary>
+        private ProjectChimera.Data.Environment.LightSpectrum ConvertToEnvironmentSpectrum(ProjectChimera.Data.Cultivation.LightSpectrum cultivationSpectrum)
+        {
+            var environmentSpectrum = new ProjectChimera.Data.Environment.LightSpectrum();
+            
+            // Set spectrum values based on enum type
+            switch (cultivationSpectrum)
+            {
+                case ProjectChimera.Data.Cultivation.LightSpectrum.Red:
+                    environmentSpectrum.Red = 1f;
+                    break;
+                case ProjectChimera.Data.Cultivation.LightSpectrum.Blue:
+                    environmentSpectrum.Blue = 1f;
+                    break;
+                case ProjectChimera.Data.Cultivation.LightSpectrum.Green:
+                    environmentSpectrum.Green = 1f;
+                    break;
+                case ProjectChimera.Data.Cultivation.LightSpectrum.FarRed:
+                    environmentSpectrum.FarRed = 1f;
+                    break;
+                case ProjectChimera.Data.Cultivation.LightSpectrum.UVA:
+                    environmentSpectrum.UVA = 1f;
+                    break;
+                case ProjectChimera.Data.Cultivation.LightSpectrum.UVB:
+                    environmentSpectrum.UVB = 1f;
+                    break;
+                case ProjectChimera.Data.Cultivation.LightSpectrum.WhiteBalance:
+                    environmentSpectrum.WhiteBalance = 1f;
+                    break;
+                default:
+                    // Full spectrum as default
+                    environmentSpectrum.Red = 0.3f;
+                    environmentSpectrum.Blue = 0.3f;
+                    environmentSpectrum.Green = 0.2f;
+                    environmentSpectrum.FarRed = 0.1f;
+                    environmentSpectrum.UVA = 0.05f;
+                    environmentSpectrum.WhiteBalance = 0.05f;
+                    break;
+            }
+            
+            return environmentSpectrum;
         }
         
         /// <summary>

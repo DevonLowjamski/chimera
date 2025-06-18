@@ -18,6 +18,8 @@ namespace ProjectChimera.Systems.Cultivation
         [SerializeField] private PlantStrainSO _strain;
         [SerializeField] private string _plantName;
         [SerializeField] private DateTime _plantedDate;
+        [SerializeField] private DateTime _lastWatered;
+        [SerializeField] private DateTime _lastFed;
         [SerializeField] private int _generationNumber = 1;
         
         [Header("Growth State")]
@@ -32,6 +34,8 @@ namespace ProjectChimera.Systems.Cultivation
         [SerializeField] private float _maxHealth = 1f;
         [SerializeField] private float _stressLevel = 0f;
         [SerializeField] private float _diseaseResistance = 1f;
+        [SerializeField] private float _waterLevel = 1f;
+        [SerializeField] private float _nutrientLevel = 1f;
         [SerializeField] private bool _isActive = true;
         
         [Header("Environmental Response")]
@@ -63,7 +67,9 @@ namespace ProjectChimera.Systems.Cultivation
         public string PlantID => _plantID;
         public PlantStrainSO Strain => _strain;
         public string PlantName => _plantName;
-        public DateTime PlantedDate => _plantedDate;
+        public DateTime PlantedDate { get => _plantedDate; set => _plantedDate = value; }
+        public DateTime LastWatered { get => _lastWatered; set => _lastWatered = value; }
+        public DateTime LastFed { get => _lastFed; set => _lastFed = value; }
         public int GenerationNumber => _generationNumber;
         public PlantGrowthStage CurrentGrowthStage => _currentGrowthStage;
         public float GrowthProgress => _growthProgress;
@@ -71,6 +77,7 @@ namespace ProjectChimera.Systems.Cultivation
         public int DaysSincePlanted => _daysSincePlanted;
         public Vector3 PlantSize => _plantSize;
         public float CurrentHealth => _currentHealth;
+        public float Health => _currentHealth; // Alias for compatibility with other systems
         public float MaxHealth => _maxHealth;
         public float StressLevel => _stressLevel;
         public bool IsActive => _isActive;
@@ -79,6 +86,29 @@ namespace ProjectChimera.Systems.Cultivation
         public PhenotypicTraits ExpressedTraits => _expressedTraits;
         public float YieldPotential => _yieldPotential;
         public float QualityPotential => _qualityPotential;
+        
+        // Additional properties for compatibility
+        public string PlantId => _plantID;
+        public PlantStrainSO PlantStrain { get => _strain; set => _strain = value; }
+        public PlantGrowthStage CurrentStage { get => _currentGrowthStage; set => _currentGrowthStage = value; }
+        public bool IsHarvestable => _currentGrowthStage == PlantGrowthStage.Harvest || _currentGrowthStage == PlantGrowthStage.Harvested;
+        public float WaterLevel { get => _waterLevel; set => _waterLevel = value; }
+        public float NutrientLevel { get => _nutrientLevel; set => _nutrientLevel = value; }
+        public PlantStrainSO GeneticProfile { get => _strain; set => _strain = value; }
+        public string StrainName => _strain != null ? _strain.StrainName : "Unknown";
+
+        /// <summary>
+        /// Make the plant sprout (transition from seed to germination)
+        /// </summary>
+        public void Sprout()
+        {
+            if (_currentGrowthStage == PlantGrowthStage.Seed)
+            {
+                _currentGrowthStage = PlantGrowthStage.Germination;
+                _growthProgress = 0f;
+                LogInfo($"Plant {PlantID} has sprouted!");
+            }
+        }
         
         protected override void Awake()
         {
@@ -117,6 +147,31 @@ namespace ProjectChimera.Systems.Cultivation
             
             return plantInstance;
         }
+
+        /// <summary>
+        /// Creates a wrapper PlantInstance from a SpeedTree plant instance.
+        /// NOTE: SpeedTree integration commented out until proper assembly references are configured
+        /// </summary>
+        /*
+        public static PlantInstance CreateFromSpeedTree(ProjectChimera.Systems.SpeedTree.SpeedTreePlantInstance speedTreeInstance)
+        {
+            if (speedTreeInstance == null)
+            {
+                Debug.LogError("Cannot create PlantInstance from null SpeedTree instance");
+                return null;
+            }
+
+            var plantObject = new GameObject($"PlantWrapper_{speedTreeInstance.PlantId}");
+            plantObject.transform.position = speedTreeInstance.transform.position;
+            plantObject.transform.rotation = speedTreeInstance.transform.rotation;
+            plantObject.transform.SetParent(speedTreeInstance.transform.parent);
+            
+            var plantInstance = plantObject.AddComponent<PlantInstance>();
+            plantInstance.InitializeFromSpeedTree(speedTreeInstance);
+            
+            return plantInstance;
+        }
+        */
         
         /// <summary>
         /// Initializes the plant from a strain definition.
@@ -154,6 +209,47 @@ namespace ProjectChimera.Systems.Cultivation
             
             LogInfo($"Initialized plant {_plantID} from strain {_strain.StrainName}");
         }
+
+        /// <summary>
+        /// Initializes the plant from a SpeedTree plant instance.
+        /// NOTE: SpeedTree integration commented out until proper assembly references are configured
+        /// </summary>
+        /*
+        public void InitializeFromSpeedTree(ProjectChimera.Systems.SpeedTree.SpeedTreePlantInstance speedTreeInstance)
+        {
+            if (speedTreeInstance == null)
+            {
+                Debug.LogError($"Cannot initialize plant {_plantID}: null SpeedTree instance");
+                return;
+            }
+
+            _plantID = speedTreeInstance.PlantId;
+            _strain = speedTreeInstance.PlantStrain;
+            _plantName = speedTreeInstance.PlantId;
+            _plantedDate = speedTreeInstance.PlantedDate;
+            _currentGrowthStage = (PlantGrowthStage)speedTreeInstance.CurrentGrowthStage;
+            _growthProgress = speedTreeInstance.MaturityLevel;
+            _overallGrowthProgress = speedTreeInstance.MaturityLevel;
+            _daysSincePlanted = (int)(DateTime.Now - speedTreeInstance.PlantedDate).TotalDays;
+
+            // Map SpeedTree health values
+            _maxHealth = 1.0f;
+            _currentHealth = speedTreeInstance.Health / 100f; // Convert from 0-100 to 0-1
+            _stressLevel = speedTreeInstance.StressLevel / 100f; // Convert from 0-100 to 0-1
+            _diseaseResistance = speedTreeInstance.DiseaseResistance / 100f; // Convert from 0-100 to 0-1
+
+            // Initialize systems if strain is available
+            if (_strain != null)
+            {
+                InitializePhenotypicTraits();
+                _growthCalculator?.Initialize(_strain, _expressedTraits);
+                _healthSystem?.Initialize(_strain, _diseaseResistance);
+                _environmentalSystem?.Initialize(_strain);
+            }
+
+            LogInfo($"Initialized wrapper plant {_plantID} from SpeedTree instance");
+        }
+        */
         
         /// <summary>
         /// Updates the plant's growth, health, and environmental responses.
@@ -202,6 +298,30 @@ namespace ProjectChimera.Systems.Cultivation
             _environmentalSystem?.ProcessEnvironmentalChange(previousConditions, newConditions);
             
             OnEnvironmentChanged?.Invoke(this);
+        }
+        
+        /// <summary>
+        /// Updates environmental adaptation for this plant based on current conditions.
+        /// </summary>
+        public void UpdateEnvironmentalAdaptation(EnvironmentalConditions conditions)
+        {
+            // Update environmental conditions first
+            UpdateEnvironmentalConditions(conditions);
+            
+            // Calculate adaptation progress based on environmental fitness
+            var adaptationRate = 0.01f; // Base adaptation rate
+            var environmentalStress = 1f - _environmentalFitness;
+            
+            // Increase adaptation rate under stress
+            if (environmentalStress > 0.3f)
+            {
+                adaptationRate *= (1f + environmentalStress);
+            }
+            
+            // Apply adaptation to environmental system
+            _environmentalSystem?.ProcessAdaptation(conditions, adaptationRate);
+            
+            LogInfo($"Updated environmental adaptation for plant {_plantID} (fitness: {_environmentalFitness:F2})");
         }
         
         /// <summary>
@@ -517,6 +637,4 @@ namespace ProjectChimera.Systems.Cultivation
         public float FinalHealth;
         public DateTime HarvestDate;
     }
-    
-            // Note: PlantGrowthStage enum is now defined in ProjectChimera.Data.Genetics namespace
 }

@@ -694,7 +694,7 @@ namespace ProjectChimera.UI.Core
         
         protected override void OnManagerInitialize()
         {
-            InitializeOptimizer();
+            InitializeRenderOptimizer();
             
             if (_enableRenderOptimization)
             {

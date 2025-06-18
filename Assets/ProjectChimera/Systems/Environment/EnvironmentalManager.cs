@@ -45,6 +45,14 @@ namespace ProjectChimera.Systems.Environment
         
         // Events for other systems to subscribe to
         public System.Action OnConditionsOptimized;
+        public System.Action<EnvironmentalConditions> OnConditionsChanged;
+        public System.Action<EnvironmentalAlert> OnAlertTriggered;
+        public System.Action<float> OnWindChanged;
+        public System.Action<LightingConditions> OnLightingChanged;
+        public System.Action<SeasonType> OnSeasonChanged;
+        public System.Action<float> OnTemperatureChanged;
+        public System.Action<float> OnHumidityChanged;
+        public System.Action<float> OnAirflowChanged;
         
         public override ManagerPriority Priority => ManagerPriority.High;
         
@@ -255,6 +263,96 @@ namespace ProjectChimera.Systems.Environment
                 QualityScore = environment.CurrentConditions.GetEnvironmentalQuality(environment.Parameters),
                 MicroclimateMappingData = environment.MicroclimateMappingData
             };
+        }
+        
+        /// <summary>
+        /// Gets current environmental conditions for a specific environment.
+        /// </summary>
+        public EnvironmentalConditions GetCurrentConditions(string environmentId = null)
+        {
+            // If no environment ID specified, return default conditions
+            if (string.IsNullOrEmpty(environmentId))
+            {
+                if (_cultivationEnvironments.Count > 0)
+                {
+                    // Return conditions from first active environment
+                    var firstActive = _cultivationEnvironments.Values.FirstOrDefault(e => e.IsActive);
+                    return firstActive?.CurrentConditions ?? CreateDefaultConditions();
+                }
+                return CreateDefaultConditions();
+            }
+            
+            // Return conditions for specific environment
+            if (_cultivationEnvironments.TryGetValue(environmentId, out var environment))
+            {
+                return environment.CurrentConditions;
+            }
+            
+            LogWarning($"Environment {environmentId} not found, returning default conditions");
+            return CreateDefaultConditions();
+        }
+        
+        /// <summary>
+        /// Gets environmental conditions at a specific position (for microclimate simulation).
+        /// </summary>
+        public EnvironmentalConditions GetConditionsAtPosition(Vector3 position)
+        {
+            // Find the closest environment or use default
+            var closestEnvironment = _cultivationEnvironments.Values
+                .Where(e => e.IsActive)
+                .FirstOrDefault();
+            
+            if (closestEnvironment != null)
+            {
+                var conditions = closestEnvironment.CurrentConditions;
+                
+                // Apply microclimate variations based on position
+                if (_enableMicroclimateModeiling)
+                {
+                    conditions = ApplyMicroclimateVariations(conditions, position);
+                }
+                
+                return conditions;
+            }
+            
+            return CreateDefaultConditions();
+        }
+        
+        /// <summary>
+        /// Creates default environmental conditions for fallback scenarios.
+        /// </summary>
+        private EnvironmentalConditions CreateDefaultConditions()
+        {
+            return new EnvironmentalConditions
+            {
+                Temperature = 24f,
+                Humidity = 60f,
+                LightIntensity = 800f,
+                CO2Level = 400f,
+                AirVelocity = 0.3f,
+                VaporPressureDeficit = 1.0f,
+                BarometricPressure = 1013.25f,
+                AirQualityIndex = 1.0f,
+                LastMeasurement = System.DateTime.Now
+            };
+        }
+        
+        /// <summary>
+        /// Applies microclimate variations based on position.
+        /// </summary>
+        private EnvironmentalConditions ApplyMicroclimateVariations(EnvironmentalConditions baseConditions, Vector3 position)
+        {
+            var modifiedConditions = baseConditions;
+            
+            // Simple microclimate simulation based on position
+            // In a real implementation, this would use more sophisticated algorithms
+            float positionVariance = Mathf.PerlinNoise(position.x * 0.1f, position.z * 0.1f);
+            
+            modifiedConditions.Temperature += (positionVariance - 0.5f) * 2f; // ±1°C variation
+            modifiedConditions.Humidity += (positionVariance - 0.5f) * 10f; // ±5% RH variation
+            modifiedConditions.LightIntensity *= (0.9f + positionVariance * 0.2f); // ±10% light variation
+            
+            return modifiedConditions;
         }
         
         private void InitializeOptimalConditions(CultivationEnvironment environment)
@@ -491,6 +589,27 @@ namespace ProjectChimera.Systems.Environment
             
             LogInfo("EnvironmentalManager shutdown complete");
         }
+        
+        /// <summary>
+        /// Get environmental conditions for a specific room
+        /// </summary>
+        public EnvironmentalConditions GetRoomConditions(string roomId)
+        {
+            // Try to find a cultivation environment for this room
+            var environment = _cultivationEnvironments.Values.FirstOrDefault(env => env.EnvironmentName == roomId || env.EnvironmentId == roomId);
+            
+            if (environment != null)
+            {
+                return environment.CurrentConditions;
+            }
+            
+            // Fallback to default conditions
+            return GetCurrentConditions();
+        }
+        
+        /// <summary>
+        /// Get current environmental conditions (general)
+        /// </summary>
     }
     
     // Supporting data structures for the environmental system
@@ -634,6 +753,45 @@ namespace ProjectChimera.Systems.Environment
         public MicroclimateMappingData MicroclimateMappingData;
     }
     
+    [System.Serializable]
+    public class EnvironmentalAlert
+    {
+        public string AlertId;
+        public string EnvironmentId;
+        public EnvironmentalAlertType AlertType;
+        public EnvironmentalAlertSeverity Severity;
+        public string Message;
+        public System.DateTime Timestamp;
+        public float Value;
+        public float Threshold;
+        public bool IsResolved;
+    }
+
+    public enum EnvironmentalAlertType
+    {
+        TemperatureHigh,
+        TemperatureLow,
+        HumidityHigh,
+        HumidityLow,
+        LightIntensityHigh,
+        LightIntensityLow,
+        CO2High,
+        CO2Low,
+        VPDHigh,
+        VPDLow,
+        AirFlowLow,
+        EquipmentFailure,
+        SensorMalfunction
+    }
+
+    public enum EnvironmentalAlertSeverity
+    {
+        Info,
+        Warning,
+        Critical,
+        Emergency
+    }
+
     public enum CannabinoidOptimizationTarget
     {
         MaximizeTHC,
@@ -655,5 +813,31 @@ namespace ProjectChimera.Systems.Environment
         Sensor,
         ExhaustFan,
         IntakeFan
+    }
+
+    /// <summary>
+    /// Simple lighting conditions data structure for environmental events.
+    /// </summary>
+    [System.Serializable]
+    public class LightingConditions
+    {
+        public float Intensity;
+        public float Duration;
+        public Color SpectrumColor;
+        public float Temperature;
+        
+        // Missing property for Error Wave 141 compatibility
+        public Color Color => SpectrumColor;
+    }
+    
+    /// <summary>
+    /// Season types for environmental simulation.
+    /// </summary>
+    public enum SeasonType
+    {
+        Spring,
+        Summer,
+        Fall,
+        Winter
     }
 }

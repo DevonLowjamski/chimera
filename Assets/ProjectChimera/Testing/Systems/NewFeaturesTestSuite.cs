@@ -7,6 +7,17 @@ using System.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using ProjectChimera.Core;
+using ProjectChimera.Testing.Core;
+using ProjectChimera.UI.Core;
+using ProjectChimera.UI.Panels;
+using ProjectChimera.Systems.AI;
+using ProjectChimera.Systems.Analytics;
+using ProjectChimera.Systems.Automation;
+using ProjectChimera.Systems.Settings;
+using ProjectChimera.Systems.Genetics;
+using SettingsManager = ProjectChimera.Systems.Settings.SettingsManager;
+using ProjectChimera.Data.Cultivation;
+using ProjectChimera.Data.Genetics;
 
 namespace ProjectChimera.Testing.Systems
 {
@@ -408,11 +419,12 @@ namespace ProjectChimera.Testing.Systems
             const string testQuery = "What is the optimal temperature for flowering?";
 
             // Act
-            var result = _aiManager.ProcessUserQuery(testQuery, null);
+            string result = null;
+            _aiManager.ProcessUserQuery(testQuery, (response) => result = response);
             stopwatch.Stop();
 
             // Assert
-            Assert.IsNotNull(result, "AI query should return a result");
+            // Note: ProcessUserQuery is async, so result might be null immediately
             Assert.That(stopwatch.ElapsedMilliseconds, Is.LessThan(100), 
                 "AI query processing should complete within 100ms");
             

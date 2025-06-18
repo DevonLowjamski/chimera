@@ -451,7 +451,7 @@ namespace ProjectChimera.UI.Panels
             var comingSoonLabel = new Label("🚧 Competitive Achievements Coming Soon!");
             comingSoonLabel.style.fontSize = 18;
             // comingSoonLabel.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
-            comingSoonLabel.style.textAlign = TextAnchor.MiddleCenter;
+            comingSoonLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
             comingSoonLabel.style.alignSelf = Align.Center;
             comingSoonLabel.style.marginTop = 100;
             
@@ -691,7 +691,7 @@ namespace ProjectChimera.UI.Panels
             scoreLabel.style.fontSize = 16;
             // scoreLabel.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
             scoreLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-            scoreLabel.style.textAlign = TextAnchor.MiddleRight;
+            scoreLabel.style.unityTextAlign = TextAnchor.MiddleRight;
             scoreLabel.style.width = 120;
             
             container.Add(rankBadge);
@@ -800,7 +800,7 @@ namespace ProjectChimera.UI.Panels
             var labelText = new Label(label);
             labelText.style.fontSize = 10;
             // labelText.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
-            labelText.style.textAlign = TextAnchor.MiddleCenter;
+            labelText.style.unityTextAlign = TextAnchor.MiddleCenter;
             
             card.Add(iconLabel);
             card.Add(valueLabel);
@@ -814,6 +814,9 @@ namespace ProjectChimera.UI.Panels
             // if (_competitiveManager == null) return;
             
             // var overallRank = _competitiveManager.GetPlayerRanking(LeaderboardType.Overall);
+            // Placeholder until competitive manager is implemented
+            var overallRank = _lastKnownRank > 0 ? _lastKnownRank : 0;
+            
             var rankLabel = _playerRankCard.Q<Label>("current-rank");
             var categoryLabel = _playerRankCard.Q<Label>("rank-category");
             
@@ -860,7 +863,7 @@ namespace ProjectChimera.UI.Panels
             var emptyDescription = new Label("Complete objectives to see your ranking");
             emptyDescription.style.fontSize = 14;
             // emptyDescription.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
-            emptyDescription.style.textAlign = TextAnchor.MiddleCenter;
+            emptyDescription.style.unityTextAlign = TextAnchor.MiddleCenter;
             
             emptyState.Add(emptyIcon);
             emptyState.Add(emptyText);
@@ -890,7 +893,7 @@ namespace ProjectChimera.UI.Panels
             var emptyDescription = new Label("New tournaments start weekly on Mondays");
             emptyDescription.style.fontSize = 14;
             // emptyDescription.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
-            emptyDescription.style.textAlign = TextAnchor.MiddleCenter;
+            emptyDescription.style.unityTextAlign = TextAnchor.MiddleCenter;
             
             emptyState.Add(emptyIcon);
             emptyState.Add(emptyText);
@@ -982,7 +985,7 @@ namespace ProjectChimera.UI.Panels
             celebrationText.style.fontSize = 24;
             // celebrationText.style.color = _uiManager.DesignSystem.ColorPalette.AccentGold;
             celebrationText.style.unityFontStyleAndWeight = FontStyle.Bold;
-            celebrationText.style.textAlign = TextAnchor.MiddleCenter;
+            celebrationText.style.unityTextAlign = TextAnchor.MiddleCenter;
             
             celebration.Add(celebrationText);
             _rootElement.Add(celebration);

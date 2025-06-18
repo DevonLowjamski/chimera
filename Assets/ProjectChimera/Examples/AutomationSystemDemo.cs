@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ProjectChimera.Core;
 using ProjectChimera.Systems.Automation;
-using ProjectChimera.Systems.Environment;
+using EnvironmentSystems = ProjectChimera.Systems.Environment;
 using ProjectChimera.Systems.Economy;
 using ProjectChimera.Data.Automation;
 using ProjectChimera.Data.Environment;
@@ -34,8 +34,8 @@ namespace ProjectChimera.Examples
         
         // System references
         private AutomationManager _automationManager;
-        private HVACManager _hvacManager;
-        private LightingManager _lightingManager;
+        private EnvironmentSystems.HVACManager _hvacManager;
+        private EnvironmentSystems.LightingManager _lightingManager;
         private InvestmentManager _investmentManager;
         
         // Demo data
@@ -78,8 +78,8 @@ namespace ProjectChimera.Examples
             if (gameManager != null)
             {
                 _automationManager = gameManager.GetManager<AutomationManager>();
-                _hvacManager = gameManager.GetManager<HVACManager>();
-                _lightingManager = gameManager.GetManager<LightingManager>();
+                _hvacManager = gameManager.GetManager<EnvironmentSystems.HVACManager>();
+                _lightingManager = gameManager.GetManager<EnvironmentSystems.LightingManager>();
                 _investmentManager = gameManager.GetManager<InvestmentManager>();
                 
                 LogDemo("✅ System references initialized");

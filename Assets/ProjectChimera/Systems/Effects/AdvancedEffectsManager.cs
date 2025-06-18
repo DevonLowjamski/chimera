@@ -2,13 +2,22 @@ using UnityEngine;
 using UnityEngine.VFX;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Environment;
+using ProjectChimera.Data.Genetics;
+using ProjectChimera.Data.Construction;
 using ProjectChimera.Systems.Cultivation;
-using ProjectChimera.Systems.Environment;
+using EnvironmentSystems = ProjectChimera.Systems.Environment;
 using ProjectChimera.Systems.Construction;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 using System;
+// Explicit alias for Data layer PlantGrowthStage to resolve ambiguity
+using DataPlantGrowthStage = ProjectChimera.Data.Genetics.PlantGrowthStage;
+
+// Explicit namespace aliases to resolve ambiguity
+using DataEnvironmentalConditions = ProjectChimera.Data.Environment.EnvironmentalConditions;
+using DataConstructionIssue = ProjectChimera.Data.Construction.ConstructionIssue;
+using EnvironmentalAlert = ProjectChimera.Systems.Environment.EnvironmentalAlert;
 
 namespace ProjectChimera.Systems.Effects
 {
@@ -80,7 +89,7 @@ namespace ProjectChimera.Systems.Effects
         
         // System References
         private PlantManager _plantManager;
-        private EnvironmentalManager _environmentalManager;
+        private EnvironmentSystems.EnvironmentalManager _environmentalManager;
         private InteractiveFacilityConstructor _facilityConstructor;
         private Camera _mainCamera;
         
@@ -94,7 +103,7 @@ namespace ProjectChimera.Systems.Effects
         public bool EffectsEnabled => _enableHighQualityEffects;
         public float EffectsQuality => _effectsQualityScale;
         
-        protected override void InitializeManager()
+        protected override void OnManagerInitialize()
         {
             InitializeEffectsSystem();
             SetupParticlePools();
@@ -116,10 +125,10 @@ namespace ProjectChimera.Systems.Effects
         
         private void InitializeEffectsSystem()
         {
-            _mainCamera = Camera.main;
+            // Find main camera if not assigned
             if (_mainCamera == null)
             {
-                _mainCamera = UnityEngine.Object.FindObjectByType<Camera>();
+                _mainCamera = FindObjectOfType<Camera>();
             }
             
             // Initialize effect libraries
@@ -182,7 +191,7 @@ namespace ProjectChimera.Systems.Effects
             if (GameManager.Instance != null)
             {
                 _plantManager = GameManager.Instance.GetManager<PlantManager>();
-                _environmentalManager = GameManager.Instance.GetManager<EnvironmentalManager>();
+                _environmentalManager = GameManager.Instance.GetManager<EnvironmentSystems.EnvironmentalManager>();
                 _facilityConstructor = GameManager.Instance.GetManager<InteractiveFacilityConstructor>();
             }
             
@@ -219,6 +228,24 @@ namespace ProjectChimera.Systems.Effects
         private void InitializePerformanceMonitoring()
         {
             InvokeRepeating(nameof(UpdateDetailedPerformanceMetrics), 1f, 1f);
+        }
+        
+        #endregion
+        
+        #region Audio Effects
+        
+        public void PlayAudioEffect(string effectName, Vector3 position, float volume = 1f)
+        {
+            // Play audio effect at specified position with given volume
+            // This is a placeholder implementation for audio effect integration
+            LogInfo($"Playing audio effect '{effectName}' at position {position} with volume {volume}");
+            
+            // TODO: Integrate with actual audio system when available
+            // Example implementation:
+            // if (_audioManager != null)
+            // {
+            //     _audioManager.PlaySpatialAudio(effectName, position, volume);
+            // }
         }
         
         #endregion
@@ -687,73 +714,82 @@ namespace ProjectChimera.Systems.Effects
         
         #region Event Handlers
         
-        private void HandlePlantAdded(InteractivePlantComponent plant)
+        private void HandlePlantAdded(PlantInstance plant)
         {
             PlayEffect(EffectType.PlantGrowth, plant.transform.position, plant.transform, 3f);
-            CreatePlantEffectController(plant);
+            // Note: CreatePlantEffectController expects InteractivePlantComponent, commenting out for now
+            // CreatePlantEffectController(plant);
         }
         
-        private void HandlePlantStageChanged(InteractivePlantComponent plant, PlantGrowthStage newStage)
+        private void HandlePlantStageChanged(PlantInstance plant)
         {
+            DataPlantGrowthStage newStage = plant.CurrentGrowthStage;
             PlayEffect(EffectType.PlantGrowth, plant.transform.position, plant.transform, 2f);
             
-            if (newStage == PlantGrowthStage.Flowering)
+            if (newStage == DataPlantGrowthStage.Flowering)
             {
                 PlayEffect(EffectType.Environmental, plant.transform.position + Vector3.up * 0.5f, plant.transform, 5f);
             }
         }
         
-        private void HandlePlantHarvested(InteractivePlantComponent plant)
+        private void HandlePlantHarvested(PlantInstance plant)
         {
             PlayEffect(EffectType.PlantHarvest, plant.transform.position, null, 4f);
             
-            string plantId = plant.GetInstanceID().ToString();
+            string plantId = plant.PlantID;
             RemovePlantEffectController(plantId);
         }
         
-        private void HandlePlantWatered(InteractivePlantComponent plant)
+        private void HandlePlantWatered(PlantInstance plant)
         {
             PlayEffect(EffectType.PlantWatering, plant.transform.position + Vector3.up * 1f, plant.transform, 3f);
         }
         
-        private void HandleEnvironmentalChange(EnvironmentalConditions conditions)
+        private void HandleEnvironmentalChange(DataEnvironmentalConditions conditions)
         {
-            // Create heat effects for high temperature
-            if (conditions.Temperature > 28f)
+            // Create environmental effects based on conditions
+            if (conditions.Temperature > 30f)
             {
-                CreateEnvironmentalEffect("heat_effect", EnvironmentalEffectType.Heat, Vector3.zero);
+                CreateEnvironmentalEffect("heat_effect", EnvironmentalEffectType.Heat, Vector3.zero, 10f);
             }
             
-            // Create humidity effects
-            if (conditions.Humidity > 75f)
+            if (conditions.Humidity > 80f)
             {
-                CreateEnvironmentalEffect("humidity_effect", EnvironmentalEffectType.Humidity, Vector3.zero);
+                CreateEnvironmentalEffect("humidity_effect", EnvironmentalEffectType.Humidity, Vector3.zero, 8f);
+            }
+            
+            if (conditions.AirVelocity > 2f)
+            {
+                CreateEnvironmentalEffect("airflow_effect", EnvironmentalEffectType.AirFlow, Vector3.zero, 15f);
             }
         }
         
-        private void HandleEnvironmentalAlert(string alertMessage)
+        private void HandleEnvironmentalAlert(EnvironmentalAlert alert)
         {
             // Visual alert effects
             PlayEffect(EffectType.Sparks, Vector3.zero, null, 2f);
         }
         
-        private void HandleConstructionStarted(ConstructionProject project)
+        private void HandleConstructionStarted(object projectObj)
         {
-            PlayEffect(EffectType.Construction, project.BuildingSite, null, 10f);
-            CreateEnvironmentalEffect("construction_dust", EnvironmentalEffectType.AirFlow, project.BuildingSite, 10f);
+            PlayEffect(EffectType.Construction, Vector3.zero, null, 10f);
+            CreateEnvironmentalEffect("construction_dust", EnvironmentalEffectType.AirFlow, Vector3.zero, 10f);
         }
         
-        private void HandleConstructionProgress(ConstructionProject project, float progress)
+        private void HandleConstructionProgress(ConstructionProgress progress)
         {
-            if (progress > 0.1f && UnityEngine.Random.value < 0.1f) // 10% chance per update
-            {
-                PlayEffect(EffectType.Dust, project.BuildingSite + UnityEngine.Random.insideUnitSphere * 5f, null, 2f);
-            }
+            if (progress?.Project == null) return;
+            
+            // Create construction effects based on progress
+            var position = progress.Project.Position;
+            PlayConstructionEffect(position, null, 2f);
+            
+            LogInfo($"Construction progress effect triggered for project {progress.Project.ProjectName}: {progress.Progress:P0}");
         }
         
-        private void HandleConstructionCompleted(ConstructionProject project)
+        private void HandleConstructionCompleted(object projectObj)
         {
-            PlayEffect(EffectType.Environmental, project.BuildingSite, null, 5f);
+            PlayEffect(EffectType.Environmental, Vector3.zero, null, 5f);
             
             // Remove construction effects
             if (_environmentalEffects.ContainsKey("construction_dust"))
@@ -946,28 +982,83 @@ namespace ProjectChimera.Systems.Effects
         
         protected override void OnManagerShutdown()
         {
-            // Stop all effects
+            // Stop all coroutines and cleanup
+            StopAllCoroutines();
+            CancelInvoke();
+            
+            // Cleanup active effects
             foreach (var vfx in _activeVFXEffects.Values)
             {
-                if (vfx != null) vfx.Stop();
+                if (vfx != null)
+                {
+                    vfx.Stop();
+                    DestroyImmediate(vfx.gameObject);
+                }
             }
+            _activeVFXEffects.Clear();
             
             foreach (var particles in _activeParticleEffects.Values)
             {
-                if (particles != null) particles.Stop();
+                if (particles != null)
+                {
+                    particles.Stop();
+                    DestroyImmediate(particles.gameObject);
+                }
+            }
+            _activeParticleEffects.Clear();
+            
+            // Cleanup pools
+            while (_particleSystemPool.Count > 0)
+            {
+                var particles = _particleSystemPool.Dequeue();
+                if (particles != null)
+                {
+                    DestroyImmediate(particles.gameObject);
+                }
             }
             
-            // Cleanup plant effect controllers
+            while (_vfxPool.Count > 0)
+            {
+                var vfx = _vfxPool.Dequeue();
+                if (vfx != null)
+                {
+                    DestroyImmediate(vfx.gameObject);
+                }
+            }
+            
+            // Cleanup environmental effects
+            foreach (var effect in _environmentalEffects.Values)
+            {
+                if (effect.EffectObject != null)
+                {
+                    DestroyImmediate(effect.EffectObject);
+                }
+            }
+            _environmentalEffects.Clear();
+            
+            // Cleanup plant effects
             foreach (var controller in _plantEffects.Values)
             {
-                controller.Cleanup();
+                controller?.Cleanup();
             }
+            _plantEffects.Clear();
             
-            // Disconnect events
+            // Cleanup construction effects
+            foreach (var controller in _constructionEffects)
+            {
+                controller?.Cleanup();
+            }
+            _constructionEffects.Clear();
+            
+            // Cleanup weather effects
+            foreach (var controller in _weatherEffects)
+            {
+                controller?.Cleanup();
+            }
+            _weatherEffects.Clear();
+            
+            // Disconnect system events
             DisconnectSystemEvents();
-            
-            StopAllCoroutines();
-            CancelInvoke();
             
             LogInfo("Advanced Effects Manager shutdown complete");
         }

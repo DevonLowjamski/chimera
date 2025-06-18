@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ProjectChimera.Core;
+using ProjectChimera.UI.Core;
+using ProjectChimera.Data.UI;
 
 namespace ProjectChimera.Testing.UI
 {
@@ -679,10 +681,8 @@ namespace ProjectChimera.Testing.UI
             };
         }
         
-        protected override void OnValidate()
+        private void OnValidate()
         {
-            base.OnValidate();
-            
             _maxComponentInitTime = Mathf.Max(0.001f, _maxComponentInitTime);
             _maxPoolOperationTime = Mathf.Max(0.001f, _maxPoolOperationTime);
             _maxStateOperationTime = Mathf.Max(0.001f, _maxStateOperationTime);

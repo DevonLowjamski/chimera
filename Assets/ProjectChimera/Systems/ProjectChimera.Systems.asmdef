@@ -4,19 +4,8 @@
     "references": [
         "ProjectChimera.Core",
         "ProjectChimera.Data",
-        "ProjectChimera.Systems.Cultivation",
-        "ProjectChimera.Systems.Economy",
-        "ProjectChimera.Environment",
-        "ProjectChimera.Systems.Progression",
-        "ProjectChimera.Systems.Facilities",
-        "ProjectChimera.Genetics",
-        "ProjectChimera.Systems.Automation",
-        "ProjectChimera.AI",
-        "ProjectChimera.Analytics",
-        "ProjectChimera.Visuals",
-        "ProjectChimera.Construction",
-        "ProjectChimera.Settings",
-        "ProjectChimera.Community"
+        "Unity.TextMeshPro",
+        "Cinemachine"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

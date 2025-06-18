@@ -396,6 +396,7 @@ namespace ProjectChimera.Systems.Tutorial.Testing
         private IEnumerator TestTutorialStepProgression()
         {
             var testCase = _testCases[_currentTestIndex];
+            bool shouldExit = false;
             
             try
             {
@@ -406,46 +407,52 @@ namespace ProjectChimera.Systems.Tutorial.Testing
                     testCase.TestResult = false;
                     testCase.ErrorMessage = "No sequences available for testing";
                     testCase.IsCompleted = true;
-                    yield break;
+                    shouldExit = true;
                 }
-                
-                // Start tutorial sequence
-                bool started = _tutorialManager.StartTutorialSequence(sequence);
-                if (!started)
+                else
                 {
-                    testCase.TestResult = false;
-                    testCase.ErrorMessage = "Failed to start tutorial sequence";
-                    testCase.IsCompleted = true;
-                    yield break;
+                    // Start tutorial sequence
+                    bool started = _tutorialManager.StartTutorialSequence((TutorialSequenceSO)sequence);
+                    if (!started)
+                    {
+                        testCase.TestResult = false;
+                        testCase.ErrorMessage = "Failed to start tutorial sequence";
+                        testCase.IsCompleted = true;
+                        shouldExit = true;
+                    }
+                    else
+                    {
+                        // Check if first step is active
+                        var currentStep = _tutorialManager.GetCurrentStep();
+                        if (currentStep == null)
+                        {
+                            testCase.TestResult = false;
+                            testCase.ErrorMessage = "No current step after starting sequence";
+                            testCase.IsCompleted = true;
+                            shouldExit = true;
+                        }
+                        else
+                        {
+                            // Try to progress to next step
+                            bool progressed = _tutorialManager.CompleteCurrentStep();
+                            if (!progressed && sequence.Steps.Count > 1)
+                            {
+                                testCase.TestResult = false;
+                                testCase.ErrorMessage = "Failed to progress to next step";
+                                testCase.IsCompleted = true;
+                                shouldExit = true;
+                            }
+                            else
+                            {
+                                // Stop tutorial
+                                _tutorialManager.StopCurrentTutorial();
+                                
+                                testCase.TestResult = true;
+                                testCase.IsCompleted = true;
+                            }
+                        }
+                    }
                 }
-                
-                yield return new WaitForSeconds(0.5f);
-                
-                // Check if first step is active
-                var currentStep = _tutorialManager.GetCurrentStep();
-                if (currentStep == null)
-                {
-                    testCase.TestResult = false;
-                    testCase.ErrorMessage = "No current step after starting sequence";
-                    testCase.IsCompleted = true;
-                    yield break;
-                }
-                
-                // Try to progress to next step
-                bool progressed = _tutorialManager.CompleteCurrentStep();
-                if (!progressed && sequence.Steps.Count > 1)
-                {
-                    testCase.TestResult = false;
-                    testCase.ErrorMessage = "Failed to progress to next step";
-                    testCase.IsCompleted = true;
-                    yield break;
-                }
-                
-                // Stop tutorial
-                _tutorialManager.StopCurrentTutorial();
-                
-                testCase.TestResult = true;
-                testCase.IsCompleted = true;
             }
             catch (System.Exception ex)
             {
@@ -453,6 +460,8 @@ namespace ProjectChimera.Systems.Tutorial.Testing
                 testCase.ErrorMessage = ex.Message;
                 testCase.IsCompleted = true;
             }
+            
+            yield return null;
         }
         
         /// <summary>
@@ -480,21 +489,23 @@ namespace ProjectChimera.Systems.Tutorial.Testing
                     testCase.TestResult = false;
                     testCase.ErrorMessage = "No validation steps found for testing";
                     testCase.IsCompleted = true;
-                    yield break;
                 }
-                
-                // Test validation logic (basic validation check)
-                bool isValidTarget = !string.IsNullOrEmpty(validationStep.ValidationTarget);
-                if (!isValidTarget && validationStep.ValidationType != TutorialValidationType.Timer)
+                else
                 {
-                    testCase.TestResult = false;
-                    testCase.ErrorMessage = $"Validation step missing target: {validationStep.StepId}";
-                    testCase.IsCompleted = true;
-                    yield break;
+                    // Test validation logic (basic validation check)
+                    bool isValidTarget = !string.IsNullOrEmpty(validationStep.ValidationTarget);
+                    if (!isValidTarget && validationStep.ValidationType != TutorialValidationType.Timer)
+                    {
+                        testCase.TestResult = false;
+                        testCase.ErrorMessage = $"Validation step missing target: {validationStep.StepId}";
+                        testCase.IsCompleted = true;
+                    }
+                    else
+                    {
+                        testCase.TestResult = true;
+                        testCase.IsCompleted = true;
+                    }
                 }
-                
-                testCase.TestResult = true;
-                testCase.IsCompleted = true;
             }
             catch (System.Exception ex)
             {
@@ -522,18 +533,16 @@ namespace ProjectChimera.Systems.Tutorial.Testing
                     testCase.TestResult = false;
                     testCase.ErrorMessage = "Progress data is null";
                     testCase.IsCompleted = true;
-                    yield break;
                 }
-                
-                // Test save/load functionality
-                _tutorialManager.SaveProgress();
-                yield return new WaitForSeconds(0.1f);
-                
-                _tutorialManager.LoadProgress();
-                yield return new WaitForSeconds(0.1f);
-                
-                testCase.TestResult = true;
-                testCase.IsCompleted = true;
+                else
+                {
+                    // Test save/load functionality
+                    _tutorialManager.SaveProgress();
+                    _tutorialManager.LoadProgress();
+                    
+                    testCase.TestResult = true;
+                    testCase.IsCompleted = true;
+                }
             }
             catch (System.Exception ex)
             {
@@ -541,6 +550,8 @@ namespace ProjectChimera.Systems.Tutorial.Testing
                 testCase.ErrorMessage = ex.Message;
                 testCase.IsCompleted = true;
             }
+            
+            yield return null;
         }
         
         /// <summary>
@@ -557,20 +568,18 @@ namespace ProjectChimera.Systems.Tutorial.Testing
                     testCase.TestResult = false;
                     testCase.ErrorMessage = "Tutorial UI controller not found";
                     testCase.IsCompleted = true;
-                    yield break;
                 }
-                
-                // Test UI initialization
-                if (!_tutorialUIController.gameObject.activeInHierarchy)
+                else if (!_tutorialUIController.gameObject.activeInHierarchy)
                 {
                     testCase.TestResult = false;
                     testCase.ErrorMessage = "Tutorial UI controller is not active";
                     testCase.IsCompleted = true;
-                    yield break;
                 }
-                
-                testCase.TestResult = true;
-                testCase.IsCompleted = true;
+                else
+                {
+                    testCase.TestResult = true;
+                    testCase.IsCompleted = true;
+                }
             }
             catch (System.Exception ex)
             {
@@ -600,32 +609,36 @@ namespace ProjectChimera.Systems.Tutorial.Testing
                     testCase.TestResult = false;
                     testCase.ErrorMessage = "No skippable sequences found";
                     testCase.IsCompleted = true;
-                    // yield break; // Commented out to avoid CS1626
-                    return;
                 }
-                
-                // Test skip functionality
-                _tutorialManager.StartTutorialSequence(skippableSequence);
-                // yield return new WaitForSeconds(0.2f); // Commented out to avoid CS1626
-                
-                bool canSkip = _tutorialManager.CanSkipCurrentStep();
-                if (canSkip)
+                else
                 {
-                    bool skipped = _tutorialManager.SkipCurrentStep();
-                    if (!skipped)
+                    // Test skip functionality
+                    _tutorialManager.StartTutorialSequence((TutorialSequenceSO)skippableSequence);
+                    
+                    bool canSkip = _tutorialManager.CanSkipCurrentStep();
+                    if (canSkip)
                     {
-                        testCase.TestResult = false;
-                        testCase.ErrorMessage = "Failed to skip step when skip was allowed";
-                        testCase.IsCompleted = true;
-                        // yield break; // Commented out to avoid CS1626
-                        return;
+                        bool skipped = _tutorialManager.SkipCurrentStep();
+                        if (!skipped)
+                        {
+                            testCase.TestResult = false;
+                            testCase.ErrorMessage = "Failed to skip step when skip was allowed";
+                            testCase.IsCompleted = true;
+                        }
+                        else
+                        {
+                            testCase.TestResult = true;
+                            testCase.IsCompleted = true;
+                        }
                     }
+                    else
+                    {
+                        testCase.TestResult = true;
+                        testCase.IsCompleted = true;
+                    }
+                    
+                    _tutorialManager.StopCurrentTutorial();
                 }
-                
-                _tutorialManager.StopCurrentTutorial();
-                
-                testCase.TestResult = true;
-                testCase.IsCompleted = true;
             }
             catch (System.Exception ex)
             {
@@ -634,7 +647,7 @@ namespace ProjectChimera.Systems.Tutorial.Testing
                 testCase.IsCompleted = true;
             }
             
-            yield return null; // Moved outside try-catch
+            yield return null;
         }
         
         /// <summary>
@@ -647,29 +660,29 @@ namespace ProjectChimera.Systems.Tutorial.Testing
             try
             {
                 // Test null sequence handling
-                bool startedNull = _tutorialManager.StartTutorialSequence(null);
+                bool startedNull = _tutorialManager.StartTutorialSequence((TutorialSequenceSO)null);
                 if (startedNull)
                 {
                     testCase.TestResult = false;
                     testCase.ErrorMessage = "Tutorial manager accepted null sequence";
                     testCase.IsCompleted = true;
-                    // yield break; // Commented out to avoid CS1626
-                    return;
                 }
-                
-                // Test invalid step completion
-                bool completedInvalid = _tutorialManager.CompleteCurrentStep();
-                if (completedInvalid && _tutorialManager.GetCurrentStep() == null)
+                else
                 {
-                    testCase.TestResult = false;
-                    testCase.ErrorMessage = "Completed step when no tutorial was active";
-                    testCase.IsCompleted = true;
-                    // yield break; // Commented out to avoid CS1626
-                    return;
+                    // Test invalid step completion
+                    bool completedInvalid = _tutorialManager.CompleteCurrentStep();
+                    if (completedInvalid && _tutorialManager.GetCurrentStep() == null)
+                    {
+                        testCase.TestResult = false;
+                        testCase.ErrorMessage = "Completed step when no tutorial was active";
+                        testCase.IsCompleted = true;
+                    }
+                    else
+                    {
+                        testCase.TestResult = true;
+                        testCase.IsCompleted = true;
+                    }
                 }
-                
-                testCase.TestResult = true;
-                testCase.IsCompleted = true;
             }
             catch (System.Exception ex)
             {
@@ -698,10 +711,8 @@ namespace ProjectChimera.Systems.Tutorial.Testing
                 {
                     for (int i = 0; i < 10; i++)
                     {
-                        _tutorialManager.StartTutorialSequence(sequence);
-                        // yield return null; // Commented out to avoid CS1626
+                        _tutorialManager.StartTutorialSequence((TutorialSequenceSO)sequence);
                         _tutorialManager.StopCurrentTutorial();
-                        // yield return null; // Commented out to avoid CS1626
                     }
                 }
                 
@@ -713,12 +724,12 @@ namespace ProjectChimera.Systems.Tutorial.Testing
                     testCase.TestResult = false;
                     testCase.ErrorMessage = $"Performance test failed - took {duration:F2}s for basic operations";
                     testCase.IsCompleted = true;
-                    // yield break; // Commented out to avoid CS1626
-                    return;
                 }
-                
-                testCase.TestResult = true;
-                testCase.IsCompleted = true;
+                else
+                {
+                    testCase.TestResult = true;
+                    testCase.IsCompleted = true;
+                }
             }
             catch (System.Exception ex)
             {
@@ -727,7 +738,7 @@ namespace ProjectChimera.Systems.Tutorial.Testing
                 testCase.IsCompleted = true;
             }
             
-            yield return null; // Moved outside try-catch
+            yield return null;
         }
         
         /// <summary>
@@ -749,43 +760,41 @@ namespace ProjectChimera.Systems.Tutorial.Testing
                     testCase.TestResult = false;
                     testCase.ErrorMessage = "No short sequences found for completion testing";
                     testCase.IsCompleted = true;
-                    // yield break; // Commented out to avoid CS1626
-                    return;
                 }
-                
-                // Start sequence and complete all steps
-                _tutorialManager.StartTutorialSequence(shortSequence);
-                // yield return new WaitForSeconds(0.2f); // Commented out to avoid CS1626
-                
-                int completedSteps = 0;
-                int maxSteps = shortSequence.Steps.Count;
-                
-                while (_tutorialManager.GetCurrentStep() != null && completedSteps < maxSteps)
+                else
                 {
-                    _tutorialManager.CompleteCurrentStep();
-                    completedSteps++;
-                    // yield return new WaitForSeconds(0.1f); // Commented out to avoid CS1626
+                    // Start sequence and complete all steps
+                    _tutorialManager.StartTutorialSequence((TutorialSequenceSO)shortSequence);
                     
-                    // Safety check to prevent infinite loop
-                    if (completedSteps > maxSteps)
+                    int completedSteps = 0;
+                    int maxSteps = shortSequence.Steps.Count;
+                    
+                    while (_tutorialManager.GetCurrentStep() != null && completedSteps < maxSteps)
                     {
-                        break;
+                        _tutorialManager.CompleteCurrentStep();
+                        completedSteps++;
+                        
+                        // Safety check to prevent infinite loop
+                        if (completedSteps > maxSteps)
+                        {
+                            break;
+                        }
+                    }
+                    
+                    // Check if sequence was properly completed
+                    bool isActive = _tutorialManager.IsSequenceActive();
+                    if (isActive)
+                    {
+                        testCase.TestResult = false;
+                        testCase.ErrorMessage = "Sequence still active after completing all steps";
+                        testCase.IsCompleted = true;
+                    }
+                    else
+                    {
+                        testCase.TestResult = true;
+                        testCase.IsCompleted = true;
                     }
                 }
-                
-                // Check if sequence was properly completed
-                bool isActive = _tutorialManager.IsSequenceActive();
-                if (isActive)
-                {
-                    testCase.TestResult = false;
-                    testCase.ErrorMessage = "Sequence still active after completing all steps";
-                    testCase.IsCompleted = true;
-                    // yield break; // Commented out to avoid CS1626
-                    return;
-                }
-                
-                testCase.TestResult = true;
-                testCase.IsCompleted = true;
             }
             catch (System.Exception ex)
             {
@@ -794,7 +803,7 @@ namespace ProjectChimera.Systems.Tutorial.Testing
                 testCase.IsCompleted = true;
             }
             
-            yield return null; // Moved outside try-catch
+            yield return null;
         }
         
         /// <summary>

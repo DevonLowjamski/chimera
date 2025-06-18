@@ -11,6 +11,13 @@ using System.Collections;
 using System.Linq;
 using System;
 
+// Explicit alias for Data layer PlantGrowthStage to resolve ambiguity
+using DataPlantGrowthStage = ProjectChimera.Data.Genetics.PlantGrowthStage;
+// Explicit alias for Data layer EnvironmentalConditions to resolve delegate signature mismatch
+using DataEnvironmentalConditions = ProjectChimera.Data.Environment.EnvironmentalConditions;
+// Explicit alias for EnvironmentalManager to resolve ambiguity
+using EnvironmentalManager = ProjectChimera.Systems.Environment.EnvironmentalManager;
+
 #if UNITY_SPEEDTREE
 using SpeedTree;
 #endif
@@ -57,7 +64,7 @@ namespace ProjectChimera.Systems.SpeedTree
         // Core SpeedTree Systems
         private SpeedTreeRenderer[] _activeRenderers;
         private Dictionary<string, SpeedTreeAsset> _loadedAssets = new Dictionary<string, SpeedTreeAsset>();
-        private Dictionary<int, SpeedTreePlantInstance> _plantInstances = new Dictionary<int, SpeedTreePlantInstance>();
+        private Dictionary<int, SpeedTreePlantData> _plantInstances = new Dictionary<int, SpeedTreePlantData>();
         
         // Cannabis-Specific Systems
         private CannabisGeneticsProcessor _geneticsProcessor;
@@ -86,9 +93,9 @@ namespace ProjectChimera.Systems.SpeedTree
         private float _lastPerformanceUpdate = 0f;
         
         // Events
-        public System.Action<SpeedTreePlantInstance> OnPlantInstanceCreated;
-        public System.Action<SpeedTreePlantInstance> OnPlantInstanceDestroyed;
-        public System.Action<SpeedTreePlantInstance, PlantGrowthStage> OnPlantStageChanged;
+        public System.Action<SpeedTreePlantData> OnPlantInstanceCreated;
+        public System.Action<SpeedTreePlantData> OnPlantInstanceDestroyed;
+        public System.Action<SpeedTreePlantData, PlantGrowthStage> OnPlantStageChanged;
         public System.Action<SpeedTreePerformanceMetrics> OnPerformanceMetricsUpdated;
         
         // Properties
@@ -96,7 +103,97 @@ namespace ProjectChimera.Systems.SpeedTree
         public int ActivePlantCount => _plantInstances.Count;
         public bool SpeedTreeEnabled => IsSpeedTreeAvailable();
         
-        protected override void InitializeManager()
+        // Missing data structures for SpeedTree system
+        [System.Serializable]
+        public class SpeedTreeRenderer
+        {
+            public GameObject gameObject;
+            public GameObject GameObject;
+            public Renderer Renderer;
+            public LODGroup LODGroup;
+            public WindZone WindZone;
+            public SpeedTreeAsset speedTreeAsset;
+            public MaterialPropertyBlock materialProperties;
+            public Material[] materials; // Materials array for compatibility
+            public Transform transform => gameObject?.transform;
+            public Dictionary<string, object> Properties = new Dictionary<string, object>();
+            public bool IsActive;
+            public float LastUpdateTime;
+        }
+
+        // CannabisGeneticData class removed - using the one from SpeedTreeDataStructures.cs to resolve namespace conflict
+
+        [System.Serializable]
+        public class SpeedTreeAsset
+        {
+            public string AssetId;
+            public string AssetPath;
+            public GameObject Prefab;
+            public Material[] Materials;
+            public Texture2D[] Textures;
+            public Dictionary<string, object> Properties = new Dictionary<string, object>();
+        }
+        
+        [System.Serializable]
+        public class SpeedTreePlantData
+        {
+            public int InstanceId;
+            public InteractivePlantComponent PlantComponent;
+            public CannabisStrainAsset StrainAsset;
+            public Vector3 Position;
+            public Quaternion Rotation;
+            public Vector3 Scale;
+            public PlantGrowthStage GrowthStage;
+            public float Health;
+            public float Age;
+            public float CreationTime;
+            public float LastUpdateTime;
+            public float DistanceToCamera;
+            public CannabisGeneticData GeneticData;
+            public EnvironmentalStressData StressData;
+            public SpeedTreeRenderer Renderer;
+            public bool IsActive;
+            public Dictionary<string, float> EnvironmentalModifiers = new Dictionary<string, float>();
+            public ProjectChimera.Data.Environment.EnvironmentalConditions EnvironmentalConditions;
+            
+            // Additional properties for compatibility
+            public float GrowthRate = 1f;
+            public float StressResistance = 1f;
+            public float MutationRate = 0.1f; // Added missing MutationRate property
+            
+            public string SpeedTreeAssetPath => StrainAsset?.SpeedTreeAssetPath ?? "";
+            public Color CurrentLeafColor = Color.green;
+            public float GrowthAnimationTime = 1f;
+            
+            // Additional properties for Error Wave 143 compatibility
+            public bool HasValue => IsActive;
+            public SpeedTreePlantData Value => this;
+        }
+        
+        // Helper components for SpeedTree cannabis simulation
+        public class SpeedTreeCannabisComponent : MonoBehaviour
+        {
+            private SpeedTreePlantData _instance;
+            private AdvancedSpeedTreeManager _manager;
+            
+            public void Initialize(SpeedTreePlantData instance, AdvancedSpeedTreeManager manager)
+            {
+                _instance = instance;
+                _manager = manager;
+            }
+        }
+        
+        public class SpeedTreePlantInteraction : MonoBehaviour
+        {
+            private SpeedTreePlantData _instance;
+            
+            public void Initialize(SpeedTreePlantData instance)
+            {
+                _instance = instance;
+            }
+        }
+        
+        protected override void OnManagerInitialize()
         {
             if (!IsSpeedTreeAvailable())
             {
@@ -168,7 +265,7 @@ namespace ProjectChimera.Systems.SpeedTree
             _geneticsProcessor = new CannabisGeneticsProcessor(_geneticsConfig);
             _growthAnimator = new CannabisGrowthAnimator(_growthConfig);
             _environmentalProcessor = new CannabisEnvironmentalProcessor();
-            _stressVisualizer = new CannabisStressVisualizer(_stressVisualization: _enableStressVisualization);
+            _stressVisualizer = new CannabisStressVisualizer(_enableStressVisualization);
             
             // Initialize strain database
             InitializeStrainDatabase();
@@ -244,17 +341,17 @@ namespace ProjectChimera.Systems.SpeedTree
                 _progressionManager = GameManager.Instance.GetManager<ComprehensiveProgressionManager>();
             }
             
-            ConnectGameSystemEvents();
+            ConnectSystemEvents();
         }
         
-        private void ConnectGameSystemEvents()
+        private void ConnectSystemEvents()
         {
             if (_plantManager != null)
             {
                 _plantManager.OnPlantAdded += HandlePlantAdded;
-                _plantManager.OnPlantRemoved += HandlePlantRemoved;
+                _plantManager.OnPlantHarvested += HandlePlantRemoved;
                 _plantManager.OnPlantStageChanged += HandlePlantStageChanged;
-                _plantManager.OnPlantHealthChanged += HandlePlantHealthChanged;
+                _plantManager.OnPlantHealthUpdated += HandlePlantHealthChanged;
             }
             
             if (_environmentalManager != null)
@@ -309,7 +406,7 @@ namespace ProjectChimera.Systems.SpeedTree
         
         #region Plant Instance Management
         
-        public SpeedTreePlantInstance CreatePlantInstance(InteractivePlantComponent plantComponent, string strainId = "")
+        public SpeedTreePlantData CreatePlantInstance(InteractivePlantComponent plantComponent, string strainId = "")
         {
             if (!SpeedTreeEnabled) return null;
             
@@ -320,7 +417,7 @@ namespace ProjectChimera.Systems.SpeedTree
                 return null;
             }
             
-            var instance = new SpeedTreePlantInstance
+            var instance = new SpeedTreePlantData
             {
                 InstanceId = plantComponent.GetInstanceID(),
                 PlantComponent = plantComponent,
@@ -328,14 +425,14 @@ namespace ProjectChimera.Systems.SpeedTree
                 Position = plantComponent.transform.position,
                 Rotation = plantComponent.transform.rotation,
                 Scale = Vector3.one,
-                GrowthStage = plantComponent.CurrentStage,
+                GrowthStage = ConvertToPlantGrowthStage(plantComponent.CurrentGrowthStage),
                 Health = plantComponent.Health,
                 Age = 0f,
                 CreationTime = Time.time
             };
             
             // Generate genetic variation
-            var genetics = _geneticsProcessor.GenerateGeneticVariation(strain, plantComponent.GeneticData);
+            var genetics = _geneticsProcessor.GenerateGeneticVariation(strain, plantComponent.Genotype);
             instance.GeneticData = genetics;
             
             // Create SpeedTree renderer
@@ -363,7 +460,7 @@ namespace ProjectChimera.Systems.SpeedTree
             return null;
         }
         
-        private SpeedTreeRenderer CreateSpeedTreeRenderer(SpeedTreePlantInstance instance)
+        private SpeedTreeRenderer CreateSpeedTreeRenderer(SpeedTreePlantData instance)
         {
 #if UNITY_SPEEDTREE
             var speedTreeAsset = GetSpeedTreeAssetForStrain(instance.StrainAsset);
@@ -439,7 +536,7 @@ namespace ProjectChimera.Systems.SpeedTree
 #endif
         }
         
-        private void ConfigureRendererForCannabis(SpeedTreeRenderer renderer, SpeedTreePlantInstance instance)
+        private void ConfigureRendererForCannabis(SpeedTreeRenderer renderer, SpeedTreePlantData instance)
         {
 #if UNITY_SPEEDTREE
             // Configure LOD settings
@@ -463,7 +560,7 @@ namespace ProjectChimera.Systems.SpeedTree
 #endif
         }
         
-        private void AddPhysicsInteraction(SpeedTreeRenderer renderer, SpeedTreePlantInstance instance)
+        private void AddPhysicsInteraction(SpeedTreeRenderer renderer, SpeedTreePlantData instance)
         {
             // Add colliders for plant interaction
             var collider = renderer.gameObject.AddComponent<CapsuleCollider>();
@@ -512,7 +609,7 @@ namespace ProjectChimera.Systems.SpeedTree
             }
         }
         
-        public void TriggerGrowthStageTransition(SpeedTreePlantInstance instance, PlantGrowthStage newStage)
+        public void TriggerGrowthStageTransition(SpeedTreePlantData instance, PlantGrowthStage newStage)
         {
             if (instance == null) return;
             
@@ -536,7 +633,7 @@ namespace ProjectChimera.Systems.SpeedTree
             LogInfo($"Plant {instance.InstanceId} transitioned to {newStage}");
         }
         
-        private void UpdatePlantAppearanceForStage(SpeedTreePlantInstance instance, PlantGrowthStage stage)
+        private void UpdatePlantAppearanceForStage(SpeedTreePlantData instance, PlantGrowthStage stage)
         {
 #if UNITY_SPEEDTREE
             if (instance.Renderer?.materialProperties == null) return;
@@ -609,7 +706,7 @@ namespace ProjectChimera.Systems.SpeedTree
             return Mathf.Sin((dayOfYear / 365f) * 2f * Mathf.PI);
         }
         
-        private void ApplySeasonalChanges(SpeedTreePlantInstance instance, float seasonalFactor)
+        private void ApplySeasonalChanges(SpeedTreePlantData instance, float seasonalFactor)
         {
 #if UNITY_SPEEDTREE
             if (instance.Renderer?.materialProperties == null) return;
@@ -636,9 +733,14 @@ namespace ProjectChimera.Systems.SpeedTree
             }
         }
         
-        private EnvironmentalConditions GetCurrentEnvironmentalConditions()
+        private DataEnvironmentalConditions GetCurrentEnvironmentalConditions()
         {
-            return _environmentalManager?.GetCurrentConditions() ?? new EnvironmentalConditions
+            if (_environmentalManager != null)
+            {
+                return _environmentalManager.GetCurrentConditions(null);
+            }
+            
+            return new DataEnvironmentalConditions
             {
                 Temperature = 24f,
                 Humidity = 60f,
@@ -689,8 +791,33 @@ namespace ProjectChimera.Systems.SpeedTree
         private void UpdateSpeedTreeSystems()
         {
             _lodManager?.Update();
-            _cullingManager?.Update(_plantInstances.Values.ToList());
+            _batchingManager?.Update();
+            var plantInstances = _plantInstances.Values.ToList();
+            _cullingManager?.UpdateLODs(plantInstances);
             _memoryManager?.Update();
+        }
+        
+        private void UpdateCannabisSimulation()
+        {
+            if (_geneticsProcessor != null)
+            {
+                _geneticsProcessor.Update();
+            }
+            
+            if (_growthAnimator != null)
+            {
+                _growthAnimator.Update();
+            }
+            
+            if (_environmentalProcessor != null)
+            {
+                _environmentalProcessor.Update();
+            }
+            
+            if (_stressVisualizer != null)
+            {
+                _stressVisualizer.Update();
+            }
         }
         
         private void UpdatePerformanceOptimization()
@@ -706,12 +833,15 @@ namespace ProjectChimera.Systems.SpeedTree
             }
             
             // Cull distant plants
-            _cullingManager.CullDistantPlants(_plantInstances.Values.ToList());
+            var plantInstances = _plantInstances.Values.ToList();
+            _cullingManager.CullDistantPlants(plantInstances);
         }
         
         private void UpdateLODSystem()
         {
-            _lodManager.UpdateLODs(_plantInstances.Values.ToList());
+            var plantInstances = _plantInstances.Values.ToList();
+            _lodManager.UpdateLODs(plantInstances);
+            _cullingManager.UpdateLODs(plantInstances);
         }
         
         private void ProcessBatching()
@@ -757,55 +887,92 @@ namespace ProjectChimera.Systems.SpeedTree
         
         #region Event Handlers
         
-        private void HandlePlantAdded(InteractivePlantComponent plant)
+        private void HandlePlantAdded(PlantInstance plant)
         {
-            CreatePlantInstance(plant, plant.StrainId);
+            CreatePlantInstance(plant.GetComponent<InteractivePlantComponent>());
         }
         
-        private void HandlePlantRemoved(InteractivePlantComponent plant)
+        private void HandlePlantRemoved(PlantInstance plant)
         {
-            DestroyPlantInstance(plant.GetInstanceID());
+            var instanceId = plant.GetInstanceID();
+            DestroyPlantInstance(instanceId);
         }
         
-        private void HandlePlantStageChanged(InteractivePlantComponent plant, PlantGrowthStage newStage)
+        private void HandlePlantStageChanged(PlantInstance plant)
         {
-            if (_plantInstances.TryGetValue(plant.GetInstanceID(), out var instance))
+            var instance = GetPlantInstance(plant.GetInstanceID());
+            if (instance != null)
             {
+                var newStage = plant.CurrentGrowthStage;
                 TriggerGrowthStageTransition(instance, newStage);
+                LogInfo($"Plant {plant.PlantID} transitioned to {newStage}");
             }
         }
         
-        private void HandlePlantHealthChanged(InteractivePlantComponent plant, float oldHealth, float newHealth)
+        private void HandlePlantHealthChanged(PlantInstance plant)
         {
-            if (_plantInstances.TryGetValue(plant.GetInstanceID(), out var instance))
+            var instanceId = plant.GetInstanceID();
+            if (_plantInstances.TryGetValue(instanceId, out var instance))
             {
-                instance.Health = newHealth;
-                _stressVisualizer.UpdateHealthVisualization(instance, newHealth);
+                // Update plant health visualization
+                UpdatePlantHealthVisualization(instance, plant.Health);
             }
         }
         
-        private void HandleEnvironmentalChange(EnvironmentalConditions conditions)
+        /// <summary>
+        /// Update plant health visualization
+        /// </summary>
+        private void UpdatePlantHealthVisualization(SpeedTreePlantData instance, float newHealth)
+        {
+            if (instance == null) return;
+            
+            // Update stress visualizer
+            _stressVisualizer?.UpdateHealthVisualization(instance, newHealth);
+            
+            // Update plant appearance based on health
+            if (instance.Renderer != null)
+            {
+                var healthFactor = newHealth / 100f;
+                var stressFactor = 1f - healthFactor;
+                
+                // Apply health-based visual changes
+                ApplyHealthVisualization(instance, healthFactor, stressFactor);
+            }
+        }
+        
+        /// <summary>
+        /// Apply health-based visual changes to plant
+        /// </summary>
+        private void ApplyHealthVisualization(SpeedTreePlantData instance, float healthFactor, float stressFactor)
+        {
+            // Implement health visualization logic here
+            // This could include color changes, wilting effects, etc.
+        }
+        
+        private void HandleEnvironmentalChange(ProjectChimera.Data.Environment.EnvironmentalConditions conditions)
         {
             foreach (var instance in _plantInstances.Values)
             {
-                _environmentalProcessor.ApplyEnvironmentalConditions(instance, conditions);
+                _environmentalProcessor.UpdateEnvironmentalResponse(instance, conditions);
             }
         }
         
-        private void HandleWindChange(Vector3 windDirection, float windStrength)
+        private void HandleWindChange(float windStrength)
         {
-            _windController.UpdateGlobalWind(windDirection, windStrength);
+            // Update wind settings for all plant instances
+            _windController?.UpdateGlobalWindStrength(windStrength);
         }
         
-        private void HandleLightingChange(float lightIntensity, Color lightColor)
+        private void HandleLightingChange(LightingConditions lightingConditions)
         {
+            // Update lighting for all plant instances
             foreach (var instance in _plantInstances.Values)
             {
-                UpdatePlantLighting(instance, lightIntensity, lightColor);
+                UpdatePlantLighting(instance, lightingConditions.Intensity, lightingConditions.Color);
             }
         }
         
-        private void UpdatePlantLighting(SpeedTreePlantInstance instance, float intensity, Color color)
+        private void UpdatePlantLighting(SpeedTreePlantData instance, float intensity, Color color)
         {
 #if UNITY_SPEEDTREE
             if (instance.Renderer?.materialProperties == null) return;
@@ -872,17 +1039,17 @@ namespace ProjectChimera.Systems.SpeedTree
         
         #region Public Interface
         
-        public SpeedTreePlantInstance GetPlantInstance(int instanceId)
+        public SpeedTreePlantData GetPlantInstance(int instanceId)
         {
             return _plantInstances.TryGetValue(instanceId, out var instance) ? instance : null;
         }
         
-        public List<SpeedTreePlantInstance> GetAllPlantInstances()
+        public List<SpeedTreePlantData> GetAllPlantInstances()
         {
             return _plantInstances.Values.ToList();
         }
         
-        public List<SpeedTreePlantInstance> GetPlantInstancesByStrain(string strainId)
+        public List<SpeedTreePlantData> GetPlantInstancesByStrain(string strainId)
         {
             return _plantInstances.Values.Where(i => i.StrainAsset.StrainId == strainId).ToList();
         }
@@ -955,19 +1122,19 @@ namespace ProjectChimera.Systems.SpeedTree
             _stressVisualizer?.Cleanup();
             
             // Disconnect events
-            DisconnectGameSystemEvents();
+            DisconnectSystemEvents();
             
             LogInfo("Advanced SpeedTree Manager shutdown complete");
         }
         
-        private void DisconnectGameSystemEvents()
+        private void DisconnectSystemEvents()
         {
             if (_plantManager != null)
             {
                 _plantManager.OnPlantAdded -= HandlePlantAdded;
-                _plantManager.OnPlantRemoved -= HandlePlantRemoved;
+                _plantManager.OnPlantHarvested -= HandlePlantRemoved;
                 _plantManager.OnPlantStageChanged -= HandlePlantStageChanged;
-                _plantManager.OnPlantHealthChanged -= HandlePlantHealthChanged;
+                _plantManager.OnPlantHealthUpdated -= HandlePlantHealthChanged;
             }
             
             if (_environmentalManager != null)
@@ -976,6 +1143,23 @@ namespace ProjectChimera.Systems.SpeedTree
                 _environmentalManager.OnWindChanged -= HandleWindChange;
                 _environmentalManager.OnLightingChanged -= HandleLightingChange;
             }
+        }
+        
+        /// <summary>
+        /// Convert DataPlantGrowthStage to PlantGrowthStage for compatibility
+        /// </summary>
+        private PlantGrowthStage ConvertToPlantGrowthStage(DataPlantGrowthStage dataStage)
+        {
+            return dataStage switch
+            {
+                DataPlantGrowthStage.Seed => PlantGrowthStage.Seed,
+                DataPlantGrowthStage.Seedling => PlantGrowthStage.Seedling,
+                DataPlantGrowthStage.Vegetative => PlantGrowthStage.Vegetative,
+                DataPlantGrowthStage.Flowering => PlantGrowthStage.Flowering,
+                DataPlantGrowthStage.Ripening => PlantGrowthStage.Harvest,
+                DataPlantGrowthStage.Harvest => PlantGrowthStage.Harvest,
+                _ => PlantGrowthStage.Seedling
+            };
         }
     }
 }

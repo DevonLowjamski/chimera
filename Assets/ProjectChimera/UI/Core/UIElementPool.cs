@@ -160,7 +160,7 @@ namespace ProjectChimera.UI.Core
             
             // Reset transform properties
             element.style.translate = new Translate(new Length(0), new Length(0));
-            element.style.rotate = new Rotate(Angle.Zero());
+            element.style.rotate = new Rotate(new Angle(0));
             element.style.scale = new Scale(Vector2.one);
             
             // Reset layout properties
@@ -177,14 +177,14 @@ namespace ProjectChimera.UI.Core
             {
                 label.text = string.Empty;
             }
-            // else if (element is Button button)
-            // {
+            if (element is Button button)
+            {
                 button.text = string.Empty;
-            // }
-            // else if (element is TextField textField)
-            // {
+            }
+            else if (element is TextField textField)
+            {
                 textField.value = string.Empty;
-            // }
+            }
             
             // Clear children
             element.Clear();

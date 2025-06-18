@@ -9,7 +9,8 @@
         "ProjectChimera.Environment",
         "ProjectChimera.Construction",
         "ProjectChimera.Genetics",
-        "ProjectChimera.Systems.Facilities"
+        "ProjectChimera.Systems.Facilities",
+        "ProjectChimera.Effects"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

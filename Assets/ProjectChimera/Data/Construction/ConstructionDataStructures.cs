@@ -129,6 +129,7 @@ namespace ProjectChimera.Data.Construction
         Industrial
     }
 
+
     // Core Building and Construction Classes
     [System.Serializable]
     public class BuildingProject
@@ -768,7 +769,9 @@ namespace ProjectChimera.Data.Construction
         Labor,
         Permits,
         Weather,
-        Design_Change
+        Design_Change,
+        Equipment,
+        Other
     }
 
     [System.Serializable]
@@ -928,6 +931,7 @@ namespace ProjectChimera.Data.Construction
         public string ProjectName;
         public string Description;
         public Vector3 BuildingSite;
+        public Vector3 Position;
         public FacilityTemplate FacilityTemplate;
         
         [Header("Status and Progress")]
@@ -937,6 +941,9 @@ namespace ProjectChimera.Data.Construction
         public List<ConstructionPhaseData> PhaseDetails;
         public float OverallProgress; // 0-1
         public List<string> CompletedTasks;
+        
+        [Header("Workforce")]
+        public List<ConstructionWorker> AssignedWorkers = new List<ConstructionWorker>();
         
         [Header("Dates")]
         public DateTime CreatedDate;
@@ -1080,6 +1087,7 @@ namespace ProjectChimera.Data.Construction
         public string ProjectId;
         public string TaskId;
         public ConstructionTask Task;
+        public ConstructionProject Project;
         public DateTime StartTime;
         public float Progress; // 0-1 (alias for CompletionPercentage)
         public float CompletionPercentage; // 0-1
@@ -1242,6 +1250,7 @@ namespace ProjectChimera.Data.Construction
     public enum RoomStatus
     {
         Planned,
+        Idle,
         InProgress,
         Completed,
         OnHold,

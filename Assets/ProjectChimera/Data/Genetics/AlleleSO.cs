@@ -77,6 +77,16 @@ namespace ProjectChimera.Data.Genetics
         public string AlleleSymbol => _alleleSymbol;
         public string AlleleCode => _alleleCode;
         public string AlleleDescription => _alleleDescription;
+        
+        /// <summary>
+        /// Gets the allele ID (same as AlleleCode for compatibility)
+        /// </summary>
+        public string AlleleId => _alleleCode;
+        
+        /// <summary>
+        /// Gets the ID of the parent gene for compatibility
+        /// </summary>
+        public string GeneId => _parentGene?.GeneCode ?? string.Empty;
 
         // Molecular
         public AlleleType AlleleType => _alleleType;

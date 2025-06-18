@@ -1,6 +1,10 @@
 using NUnit.Framework;
 using UnityEngine;
 using System.Collections.Generic;
+using ProjectChimera.Systems.Economy;
+using ProjectChimera.Data.Economy;
+using ProjectChimera.Systems.Economy;
+using ProjectChimera.Data.Economy;
 
 namespace ProjectChimera.Testing.Economy
 {

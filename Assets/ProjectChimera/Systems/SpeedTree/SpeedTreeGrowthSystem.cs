@@ -1,6 +1,7 @@
 using UnityEngine;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Genetics;
+using ProjectChimera.Data.Environment;
 using ProjectChimera.Systems.Cultivation;
 using ProjectChimera.Systems.Environment;
 using ProjectChimera.Systems.Effects;
@@ -9,6 +10,11 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 using System;
+
+// Explicit alias for Data layer EnvironmentalConditions to resolve namespace conflicts
+using EnvironmentalConditions = ProjectChimera.Data.Environment.EnvironmentalConditions;
+// Explicit alias for EnvironmentalManager to resolve ambiguity
+using EnvironmentalManager = ProjectChimera.Systems.Environment.EnvironmentalManager;
 
 #if UNITY_SPEEDTREE
 using SpeedTree;
@@ -104,7 +110,7 @@ namespace ProjectChimera.Systems.SpeedTree
         public int ActiveGrowingPlants => _plantGrowthStates.Count(p => p.Value.IsActivelyGrowing);
         public bool GrowthSystemEnabled => _enableRealTimeGrowth;
         
-        protected override void InitializeManager()
+        protected override void OnManagerInitialize()
         {
             InitializeGrowthSystems();
             InitializeLifecycleManagement();
@@ -256,7 +262,7 @@ namespace ProjectChimera.Systems.SpeedTree
         
         #region Plant Growth State Management
         
-        public void RegisterPlantForGrowth(SpeedTreePlantInstance instance)
+        public void RegisterPlantForGrowth(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             if (instance == null) return;
             
@@ -321,7 +327,7 @@ namespace ProjectChimera.Systems.SpeedTree
             LogInfo($"Unregistered plant {instanceId} from growth tracking");
         }
         
-        private float CalculateInitialGrowthRate(SpeedTreePlantInstance instance)
+        private float CalculateInitialGrowthRate(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             var baseRate = 1f;
             
@@ -343,7 +349,7 @@ namespace ProjectChimera.Systems.SpeedTree
             return baseRate;
         }
         
-        private Vector3 CalculateTargetSize(SpeedTreePlantInstance instance)
+        private Vector3 CalculateTargetSize(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             var baseSize = Vector3.one;
             
@@ -365,7 +371,7 @@ namespace ProjectChimera.Systems.SpeedTree
             return baseSize;
         }
         
-        private DateTime CalculateEstimatedHarvestTime(SpeedTreePlantInstance instance)
+        private DateTime CalculateEstimatedHarvestTime(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             var totalLifecycleDays = 120f; // Default 4 months
             
@@ -386,7 +392,7 @@ namespace ProjectChimera.Systems.SpeedTree
             return DateTime.Now.AddDays(totalLifecycleDays);
         }
         
-        private Dictionary<string, float> ExtractGeneticModifiers(SpeedTreePlantInstance instance)
+        private Dictionary<string, float> ExtractGeneticModifiers(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             var modifiers = new Dictionary<string, float>();
             
@@ -594,7 +600,7 @@ namespace ProjectChimera.Systems.SpeedTree
             _rootGrowthSimulator.UpdateRootGrowth(instance, deltaTime);
             
             // Update canopy development
-            _canopyManager.UpdateCanopyGrowth(instance, deltaTime);
+            _canopyManager.UpdateCanopyVisualization(instance);
         }
         
         #endregion
@@ -703,18 +709,18 @@ namespace ProjectChimera.Systems.SpeedTree
         
         private void TriggerStageTransitionEffects(PlantGrowthState growthState, PlantGrowthStage oldStage, PlantGrowthStage newStage)
         {
-            if (_effectsManager == null) return;
-            
             var instance = growthState.PlantInstance;
-            var effectType = GetStageTransitionEffectType(newStage);
+            if (instance?.Renderer == null) return;
             
+            // Play visual effects
+            var effectType = GetStageTransitionEffectType(newStage);
             _effectsManager.PlayEffect(effectType, instance.Position, instance.Renderer?.transform, 3f);
             
             // Play stage-specific sounds
-            var audioClip = GetStageTransitionAudioClip(newStage);
-            if (audioClip != null)
+            var audioEffectName = GetStageTransitionAudioEffectName(newStage);
+            if (!string.IsNullOrEmpty(audioEffectName))
             {
-                _effectsManager.PlayAudioEffect(audioClip, instance.Position, 0.7f);
+                _effectsManager.PlayAudioEffect(audioEffectName, instance.Position, 0.7f);
             }
         }
         
@@ -730,7 +736,7 @@ namespace ProjectChimera.Systems.SpeedTree
             };
         }
         
-        private AudioClip GetStageTransitionAudioClip(PlantGrowthStage stage)
+        private string GetStageTransitionAudioEffectName(PlantGrowthStage stage)
         {
             // This would reference actual audio clips
             return null; // Placeholder
@@ -823,53 +829,47 @@ namespace ProjectChimera.Systems.SpeedTree
             return progress;
         }
         
-        private void UpdateSizeAnimation(SpeedTreePlantInstance instance, GrowthAnimationData animationData, float progress)
+        private void UpdateSizeAnimation(AdvancedSpeedTreeManager.SpeedTreePlantData instance, GrowthAnimationData animationData, float progress)
         {
-            var currentSize = Mathf.Lerp(animationData.CurrentSize, animationData.TargetSize.x, 
-                                        progress * animationData.AnimationSpeed * Time.deltaTime);
+            var targetSize = animationData.TargetSize;
+            var currentSize = Vector3.Lerp(Vector3.one * animationData.CurrentSize, targetSize, progress);
             
-            var newScale = new Vector3(currentSize, currentSize * 1.2f, currentSize); // Cannabis aspect ratio
-            instance.Renderer.transform.localScale = newScale;
-            
-            animationData.CurrentSize = currentSize;
+            if (instance.Renderer?.transform != null)
+            {
+                instance.Renderer.transform.localScale = currentSize;
+            }
         }
         
-        private void UpdateMorphologyAnimation(SpeedTreePlantInstance instance, GrowthAnimationData animationData, float progress)
+        private void UpdateMorphologyAnimation(AdvancedSpeedTreeManager.SpeedTreePlantData instance, GrowthAnimationData animationData, float progress)
         {
 #if UNITY_SPEEDTREE
             if (instance.Renderer?.materialProperties == null) return;
             
-            // Animate branch development
-            var branchDensity = Mathf.Lerp(0.2f, instance.GeneticData?.BranchDensity ?? 1f, progress);
-            instance.Renderer.materialProperties.SetFloat("_BranchDensity", branchDensity);
-            
             // Animate leaf development
-            var leafDensity = Mathf.Lerp(0.1f, instance.GeneticData?.LeafDensity ?? 1f, progress);
-            instance.Renderer.materialProperties.SetFloat("_LeafDensity", leafDensity);
+            var leafDevelopment = Mathf.Lerp(0.1f, 1f, progress);
+            instance.Renderer.materialProperties.SetFloat("_LeafDevelopment", leafDevelopment);
             
-            // Animate internodal spacing
-            var spacing = Mathf.Lerp(2f, 1f, progress); // Closer nodes as plant matures
-            instance.Renderer.materialProperties.SetFloat("_InternodeSpacing", spacing);
+            // Animate stem thickness
+            var stemThickness = Mathf.Lerp(0.5f, 1f, progress);
+            instance.Renderer.materialProperties.SetFloat("_StemThickness", stemThickness);
+            
+            // Animate branch density
+            var branchDensity = Mathf.Lerp(0.3f, 1f, progress);
+            instance.Renderer.materialProperties.SetFloat("_BranchDensity", branchDensity);
 #endif
         }
         
-        private void UpdateWindAnimation(SpeedTreePlantInstance instance, GrowthAnimationData animationData)
+        private void UpdateWindAnimation(AdvancedSpeedTreeManager.SpeedTreePlantData instance, GrowthAnimationData animationData)
         {
 #if UNITY_SPEEDTREE
             if (instance.Renderer?.materialProperties == null) return;
             
-            // Get wind strength from environmental system
             var windStrength = GetCurrentWindStrength(instance.Position);
-            
-            // Apply wind response based on plant size and genetics
-            var windResponse = windStrength * (instance.GeneticData?.WindResistance ?? 1f);
-            var flexibility = instance.GeneticData?.BranchFlexibility ?? 1f;
-            
-            instance.Renderer.materialProperties.SetFloat("_WindStrength", windResponse);
-            instance.Renderer.materialProperties.SetFloat("_WindFlexibility", flexibility);
-            
-            // Update wind direction
             var windDirection = GetCurrentWindDirection();
+            
+            // Apply wind response based on plant size and flexibility
+            var windResponse = windStrength * (1f - animationData.CurrentSize * 0.3f);
+            instance.Renderer.materialProperties.SetFloat("_WindResponse", windResponse);
             instance.Renderer.materialProperties.SetVector("_WindDirection", windDirection);
 #endif
         }
@@ -957,31 +957,31 @@ namespace ProjectChimera.Systems.SpeedTree
             UpdateSpecializedVisualElements(instance, growthState);
         }
         
-        private void UpdateSpecializedVisualElements(SpeedTreePlantInstance instance, PlantGrowthState growthState)
+        private void UpdateSpecializedVisualElements(AdvancedSpeedTreeManager.SpeedTreePlantData instance, PlantGrowthState growthState)
         {
-#if UNITY_SPEEDTREE
-            if (instance.Renderer?.materialProperties == null) return;
-            
-            // Update bud visibility and development
-            if (growthState.CurrentStage == PlantGrowthStage.Flowering || 
-                growthState.CurrentStage == PlantGrowthStage.Harvest)
+            // Update bud development visualization
+            if (_budDevelopmentSystem != null)
             {
-                var budProgress = _budDevelopmentSystem.GetBudProgress(instance.InstanceId);
-                instance.Renderer.materialProperties.SetFloat("_BudDevelopment", budProgress);
+                _budDevelopmentSystem.UpdateVisualBudDevelopment(instance, growthState.GrowthProgress);
             }
             
-            // Update trichrome visibility
-            if (growthState.CurrentStage == PlantGrowthStage.Flowering || 
-                growthState.CurrentStage == PlantGrowthStage.Harvest)
+            // Update trichrome development
+            if (_trichromeGrowthSystem != null)
             {
-                var trichromeProgress = _trichromeGrowthSystem.GetTrichromeProgress(instance.InstanceId);
-                instance.Renderer.materialProperties.SetFloat("_TrichromeAmount", trichromeProgress);
+                _trichromeGrowthSystem.UpdateTrichromeVisualization(instance, growthState.GrowthProgress);
             }
             
-            // Update overall plant health visualization
-            var healthColor = Color.Lerp(Color.red, Color.green, instance.Health / 100f);
-            instance.Renderer.materialProperties.SetColor("_HealthTint", healthColor);
-#endif
+            // Update root system visualization (if visible)
+            if (_rootGrowthSimulator != null)
+            {
+                _rootGrowthSimulator.UpdateRootVisualization(instance);
+            }
+            
+            // Update canopy development
+            if (_canopyManager != null)
+            {
+                _canopyManager.UpdateCanopyVisualization(instance);
+            }
         }
         
         #endregion
@@ -1064,18 +1064,17 @@ namespace ProjectChimera.Systems.SpeedTree
         
         private void TriggerMilestoneEffects(PlantGrowthState growthState, GrowthMilestone milestone)
         {
-            if (_effectsManager == null) return;
-            
             var instance = growthState.PlantInstance;
+            if (instance?.Renderer == null) return;
             
-            // Play milestone particle effect
+            // Play visual effects
             _effectsManager.PlayEffect(EffectType.Achievement, instance.Position, instance.Renderer?.transform, 2f);
             
             // Play milestone sound
-            var audioClip = GetMilestoneAudioClip(milestone.Id);
-            if (audioClip != null)
+            var audioEffectName = GetMilestoneAudioEffectName(milestone.Id);
+            if (!string.IsNullOrEmpty(audioEffectName))
             {
-                _effectsManager.PlayAudioEffect(audioClip, instance.Position, 0.5f);
+                _effectsManager.PlayAudioEffect(audioEffectName, instance.Position, 0.5f);
             }
         }
         
@@ -1095,7 +1094,7 @@ namespace ProjectChimera.Systems.SpeedTree
             };
         }
         
-        private AudioClip GetMilestoneAudioClip(string milestoneId)
+        private string GetMilestoneAudioEffectName(string milestoneId)
         {
             // This would reference actual audio clips
             return null; // Placeholder
@@ -1114,7 +1113,7 @@ namespace ProjectChimera.Systems.SpeedTree
         
         #region Environmental Integration
         
-        private EnvironmentalConditions GetCurrentEnvironmentalConditions(SpeedTreePlantInstance instance)
+        private EnvironmentalConditions GetCurrentEnvironmentalConditions(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             if (_environmentalManager != null)
             {
@@ -1228,12 +1227,12 @@ namespace ProjectChimera.Systems.SpeedTree
         
         #region Event Handlers
         
-        private void HandlePlantInstanceCreated(SpeedTreePlantInstance instance)
+        private void HandlePlantInstanceCreated(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             RegisterPlantForGrowth(instance);
         }
         
-        private void HandlePlantInstanceDestroyed(SpeedTreePlantInstance instance)
+        private void HandlePlantInstanceDestroyed(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             UnregisterPlantFromGrowth(instance.InstanceId);
         }
@@ -1355,12 +1354,23 @@ namespace ProjectChimera.Systems.SpeedTree
         
         public GrowthSystemReport GetSystemReport()
         {
+            var vegetativeCount = _plantGrowthStates.Values.Count(p => p.CurrentStage == PlantGrowthStage.Vegetative);
+            var floweringCount = _plantGrowthStates.Values.Count(p => p.CurrentStage == PlantGrowthStage.Flowering);
+            var harvestCount = _plantGrowthStates.Values.Count(p => p.CurrentStage == PlantGrowthStage.Harvest);
+            var averageGrowthRate = _plantGrowthStates.Values.Any() ? _plantGrowthStates.Values.Average(p => p.GrowthRate) : 0f;
+            var averageGrowthProgress = _plantGrowthStates.Values.Any() ? _plantGrowthStates.Values.Average(p => p.GrowthProgress) : 0f;
+            
             return new GrowthSystemReport
             {
                 PerformanceMetrics = _performanceMetrics,
                 ActiveGrowingPlants = ActiveGrowingPlants,
+                PlantsInVegetativeStage = vegetativeCount,
+                PlantsInFloweringStage = floweringCount,
+                PlantsReadyForHarvest = harvestCount,
+                AverageGrowthRate = averageGrowthRate,
+                SystemEfficiency = CalculateSystemEfficiency(),
                 TotalMilestonesAchieved = _achievedMilestones.Count,
-                AverageGrowthProgress = _plantGrowthStates.Values.Average(p => p.GrowthProgress),
+                AverageGrowthProgress = averageGrowthProgress,
                 SystemStatus = new Dictionary<string, bool>
                 {
                     ["RealTimeGrowth"] = _enableRealTimeGrowth,
@@ -1369,8 +1379,34 @@ namespace ProjectChimera.Systems.SpeedTree
                     ["AutomaticStageProgression"] = _enableAutomaticStageProgression,
                     ["EnvironmentalTriggers"] = _enableEnvironmentalTriggers,
                     ["SeasonalEffects"] = _enableSeasonalEffects
-                }
+                },
+                RecentEvents = GetRecentGrowthEvents(),
+                ReportGenerated = DateTime.Now,
+                LastUpdate = DateTime.Now
             };
+        }
+        
+        private float CalculateSystemEfficiency()
+        {
+            if (_plantGrowthStates.Count == 0) return 1.0f;
+            
+            var healthyPlants = _plantGrowthStates.Values.Count(p => p.HealthMultiplier > 0.8f);
+            var totalPlants = _plantGrowthStates.Count;
+            
+            return (float)healthyPlants / totalPlants;
+        }
+        
+        private List<string> GetRecentGrowthEvents()
+        {
+            var recentEvents = new List<string>();
+            var cutoffTime = DateTime.Now.AddHours(-24); // Last 24 hours
+            
+            foreach (var milestone in _achievedMilestones.Where(m => m.AchievementTime > cutoffTime))
+            {
+                recentEvents.Add($"Milestone achieved: {milestone.Name}");
+            }
+            
+            return recentEvents;
         }
         
         #endregion

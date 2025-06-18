@@ -48,6 +48,7 @@ namespace ProjectChimera.UI.Core
         private Queue<UIOptimizationTask> _optimizationQueue;
         private Dictionary<System.Type, UIElementPool> _elementPools;
         private List<UIUpdateBatch> _updateBatches;
+        private Dictionary<UIUpdatePriority, List<IUIUpdatable>> _batchProcessors;
         private float _optimizationTimer = 0f;
         private float _poolCleanupTimer = 0f;
         
@@ -125,6 +126,18 @@ namespace ProjectChimera.UI.Core
                 return;
                 
             _updateBatches = new List<UIUpdateBatch>();
+            _batchProcessors = new Dictionary<UIUpdatePriority, List<IUIUpdatable>>();
+            
+            // Initialize batch processors for each priority level
+            foreach (UIUpdatePriority priority in System.Enum.GetValues(typeof(UIUpdatePriority)))
+            {
+                _batchProcessors[priority] = new List<IUIUpdatable>();
+            }
+            
+            if (_enablePriorityBatching)
+            {
+                LogInfo("Priority-based UI batching enabled");
+            }
             
             // Create batches for different update priorities
             _updateBatches.Add(new UIUpdateBatch(UIUpdatePriority.Critical, _maxBatchSize / 4));
@@ -175,7 +188,7 @@ namespace ProjectChimera.UI.Core
         /// <summary>
         /// Return element to pool
         /// </summary>
-        public void ReturnToPool<T>(T element) where T : VisualElement
+        public void ReturnToPool<T>(T element) where T : VisualElement, new()
         {
             if (!_enableObjectPooling || element == null || !_elementPools.ContainsKey(typeof(T)))
             {
@@ -625,6 +638,51 @@ namespace ProjectChimera.UI.Core
             // Ensure batching settings are valid
             _maxBatchSize = Mathf.Max(1, _maxBatchSize);
             _batchProcessingTimeMs = Mathf.Max(0.1f, _batchProcessingTimeMs);
+        }
+        
+        /// <summary>
+        /// Initialize element pools
+        /// </summary>
+        private void InitializePools()
+        {
+            InitializePooling();
+        }
+        
+        /// <summary>
+        /// Start the optimization routine
+        /// </summary>
+        private void StartOptimizationRoutine()
+        {
+            if (!_enableAutomaticOptimization) return;
+            
+            LogInfo("Starting UI optimization routine");
+            _optimizationTimer = 0f;
+            _poolCleanupTimer = 0f;
+        }
+        
+        /// <summary>
+        /// Stop the optimization routine
+        /// </summary>
+        private void StopOptimizationRoutine()
+        {
+            LogInfo("Stopping UI optimization routine");
+        }
+        
+        /// <summary>
+        /// Clear all element pools
+        /// </summary>
+        private void ClearAllPools()
+        {
+            if (_elementPools != null)
+            {
+                foreach (var pool in _elementPools.Values)
+                {
+                    pool?.Cleanup();
+                }
+                _elementPools.Clear();
+            }
+            
+            LogInfo("All UI element pools cleared");
         }
         
         protected override void OnManagerInitialize()

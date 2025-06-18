@@ -2,6 +2,8 @@ using NUnit.Framework;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using ProjectChimera.Systems.AI;
+using ProjectChimera.Data.AI;
 
 namespace ProjectChimera.Testing.AI
 {

@@ -42,6 +42,7 @@ namespace ProjectChimera.UI.Core
         public bool IsVisible => _isVisible;
         public bool IsInitialized => _isInitialized;
         public UIDocument UIDocument => _uiDocument;
+        public VisualElement RootElement => _rootElement;
         
         protected virtual void Awake()
         {
@@ -640,6 +641,29 @@ namespace ProjectChimera.UI.Core
         protected UQueryBuilder<T> GetUIElementsByClass<T>(string className) where T : VisualElement
         {
             return _rootElement.Query<T>(className: className);
+        }
+        
+        /// <summary>
+        /// Dispose of the panel and clean up resources
+        /// </summary>
+        public virtual void Dispose()
+        {
+            if (_isVisible)
+            {
+                Hide();
+            }
+            
+            // Cleanup UI elements
+            if (_rootElement != null)
+            {
+                _rootElement.RemoveFromHierarchy();
+            }
+            
+            // Reset state
+            _isInitialized = false;
+            _isVisible = false;
+            
+            LogInfo($"Panel {_panelId} disposed");
         }
     }
     

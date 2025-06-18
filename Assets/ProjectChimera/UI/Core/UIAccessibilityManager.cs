@@ -76,6 +76,9 @@ namespace ProjectChimera.UI.Core
         // Properties
         public bool IsAccessibilityEnabled => _enableAccessibilityFeatures;
         public bool IsScreenReaderActive => _enableScreenReaderSupport && _screenReader != null;
+        public bool IsScreenReaderEnabled => _enableScreenReaderSupport;
+        public bool IsKeyboardNavigationEnabled => _enableKeyboardNavigation;
+        public bool IsHighContrastEnabled => _enableHighContrastMode;
         public VisualElement CurrentFocusedElement => _currentFocusedElement;
         public int FocusableElementCount => _focusableElements?.Count ?? 0;
         public float TextScaleMultiplier => _textScaleMultiplier;
@@ -824,7 +827,7 @@ namespace ProjectChimera.UI.Core
         /// </summary>
         private void ApplyTextScalingToElement(VisualElement element)
         {
-            if (element is ITextElement textElement)
+            if (element is Label || element is TextField || element is Button)
             {
                 var currentSize = element.resolvedStyle.fontSize;
                 var newSize = currentSize * _textScaleMultiplier;
@@ -864,10 +867,12 @@ namespace ProjectChimera.UI.Core
             if (enable)
             {
                 element.AddToClassList("high-contrast");
-                element.style.borderColor = Color.white;
-                element.style.borderWidth = 2f;
+                element.style.borderTopColor = Color.white;
+                element.style.borderRightColor = Color.white;
+                element.style.borderBottomColor = Color.white;
+                element.style.borderLeftColor = Color.white;
                 
-                if (element is ITextElement)
+                if (element is Label || element is TextField || element is Button)
                 {
                     element.style.color = Color.white;
                 }
@@ -973,8 +978,14 @@ namespace ProjectChimera.UI.Core
                 return;
             
             element.AddToClassList("focused");
-            element.style.borderColor = Color.yellow;
-            element.style.borderWidth = 3f;
+            element.style.borderTopColor = Color.yellow;
+            element.style.borderRightColor = Color.yellow;
+            element.style.borderBottomColor = Color.yellow;
+            element.style.borderLeftColor = Color.yellow;
+            element.style.borderTopWidth = 3f;
+            element.style.borderRightWidth = 3f;
+            element.style.borderBottomWidth = 3f;
+            element.style.borderLeftWidth = 3f;
         }
         
         /// <summary>
@@ -1102,6 +1113,33 @@ namespace ProjectChimera.UI.Core
                 TextScaleMultiplier = _textScaleMultiplier,
                 PendingAnnouncements = _announcementQueue.Count
             };
+        }
+        
+        /// <summary>
+        /// Dispose of accessibility manager resources
+        /// </summary>
+        public void Dispose()
+        {
+            // Clear event registrations
+            OnScreenReaderAnnouncement = null;
+            OnFocusChanged = null;
+            OnAccessibilityEvent = null;
+            OnHighContrastModeChanged = null;
+            
+            // Clean up collections
+            _accessibilityInfo?.Clear();
+            _focusableElements?.Clear();
+            _colorAdjustments?.Clear();
+            _textScaling?.Clear();
+            _liveRegions?.Clear();
+            _announcementQueue?.Clear();
+            
+            // Clean up components
+            _screenReader = null;
+            _keyboardNavigator = null;
+            _currentFocusedElement = null;
+            
+            LogInfo("UIAccessibilityManager disposed");
         }
         
         protected override void Update()

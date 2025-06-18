@@ -14,11 +14,14 @@ namespace ProjectChimera.Data.Genetics
     {
         [Header("Strain Identity")]
         [SerializeField] private PlantSpeciesSO _baseSpecies;
+        [SerializeField] private string _strainId;
         [SerializeField] private string _strainName;
         [SerializeField] private string _breederName;
         [SerializeField] private string _originRegion;
         [SerializeField, TextArea(3, 6)] private string _strainDescription;
         [SerializeField] private StrainType _strainType = StrainType.Hybrid;
+        [SerializeField] private bool _isFounderStrain = false;
+        [SerializeField] private bool _isCustomStrain = false;
 
         [Header("Breeding Lineage")]
         [SerializeField] private PlantStrainSO _parentStrain1;
@@ -87,11 +90,14 @@ namespace ProjectChimera.Data.Genetics
 
         // Public Properties
         public PlantSpeciesSO BaseSpecies => _baseSpecies;
-        public string StrainName => _strainName;
+        public string StrainId { get => _strainId; set => _strainId = value; }
+        public string StrainName { get => _strainName; set => _strainName = value; }
         public string BreederName => _breederName;
         public string OriginRegion => _originRegion;
-        public string StrainDescription => _strainDescription;
-        public StrainType StrainType => _strainType;
+        public string StrainDescription { get => _strainDescription; set => _strainDescription = value; }
+        public StrainType StrainType { get => _strainType; set => _strainType = value; }
+        public bool IsFounderStrain => _isFounderStrain;
+        public bool IsCustomStrain => _isCustomStrain;
 
         // Breeding Properties
         public PlantStrainSO ParentStrain1 => _parentStrain1;
@@ -100,6 +106,7 @@ namespace ProjectChimera.Data.Genetics
         public bool IsLandrace => _isLandrace;
         public bool IsStabilized => _isStabilized;
         public float BreedingStability => _breedingStability;
+        public PlantStrainSO GeneticProfile => this; // Self-reference for compatibility
 
         // Genetic Modifiers
         public float HeightModifier => _heightModifier;
@@ -152,6 +159,37 @@ namespace ProjectChimera.Data.Genetics
         public float BasePotencyModifier => _basePotencyModifier;
         public int BaseFloweringTime => _baseFloweringTime;
         public float BaseHeight => _baseHeight;
+
+        // UI Compatibility Properties
+        public StrainRarity StrainRarity => StrainRarity.Common; // Default rarity - could be calculated based on breeding complexity
+        public string Type => _strainType.ToString();
+        public float THCLevel => _cannabinoidProfile?.ThcPercentage ?? 0f;
+        public float CBDLevel => _cannabinoidProfile?.CbdPercentage ?? 0f;
+        public float YieldPotential => _baseYieldGrams;
+
+        /// <summary>
+        /// Gets the THC content percentage for this strain.
+        /// </summary>
+        public float THCContent()
+        {
+            return _cannabinoidProfile?.ThcPercentage ?? 0f;
+        }
+
+        /// <summary>
+        /// Gets the CBD content percentage for this strain.
+        /// </summary>
+        public float CBDContent()
+        {
+            return _cannabinoidProfile?.CbdPercentage ?? 0f;
+        }
+
+        /// <summary>
+        /// Gets the base yield in grams for this strain.
+        /// </summary>
+        public float BaseYield()
+        {
+            return _baseYieldGrams;
+        }
 
         /// <summary>
         /// Calculates the modified height range for this strain.
@@ -428,12 +466,37 @@ namespace ProjectChimera.Data.Genetics
         public string[] ParentStrains;
         public string StrainID;
         
-        // Compatibility properties for UI
+        // Additional properties for testing compatibility
+        public string GeneticLineage;
+        public string BreedingGeneration;
+        public System.Collections.Generic.List<string> Traits;
+        
+        // Compatibility properties for UI and testing
         public string Id => StrainID;
         public string Name => StrainName;
         public string Type => StrainType.ToString();
         public float THCLevel => THCPercentage;
         public float CBDLevel => CBDPercentage;
+        public string StrainId 
+        { 
+            get => StrainID; 
+            set => StrainID = value; 
+        }
+        public float ThcContent 
+        { 
+            get => THCPercentage; 
+            set => THCPercentage = value; 
+        }
+        public float CbdContent 
+        { 
+            get => CBDPercentage; 
+            set => CBDPercentage = value; 
+        }
+        public float Yield 
+        { 
+            get => YieldPotential; 
+            set => YieldPotential = value; 
+        }
         
         public static PlantStrainData FromSO(PlantStrainSO strainSO)
         {
@@ -455,7 +518,10 @@ namespace ProjectChimera.Data.Genetics
                     IsStable = false,
                     IsAutoflower = false,
                     ParentStrains = new string[0],
-                    StrainID = ""
+                    StrainID = "",
+                    GeneticLineage = "Unknown",
+                    BreedingGeneration = "F1",
+                    Traits = new System.Collections.Generic.List<string>()
                 };
             }
             
@@ -467,15 +533,18 @@ namespace ProjectChimera.Data.Genetics
                 Description = strainSO.StrainDescription,
                 StrainType = strainSO.StrainType,
                 Rarity = StrainRarity.Common,
-                THCPercentage = 15f, // Placeholder - would need actual calculation
-                CBDPercentage = 2f,  // Placeholder - would need actual calculation
-                FloweringTime = 60f, // Placeholder - would need actual calculation
-                YieldPotential = 0.5f, // Placeholder - would need actual calculation
+                THCPercentage = strainSO.THCLevel, // Use actual THC level
+                CBDPercentage = strainSO.CBDLevel, // Use actual CBD level
+                FloweringTime = strainSO.BaseFloweringTime, // Use actual flowering time
+                YieldPotential = strainSO.YieldPotential, // Use actual yield potential
                 PotencyRating = 0.7f,  // Placeholder - would need actual calculation
-                IsStable = true, // Placeholder - would need actual property
-                IsAutoflower = false, // Placeholder - would need actual property
+                IsStable = strainSO.IsStabilized, // Use actual stability
+                IsAutoflower = strainSO.Autoflowering, // Use actual autoflower status
                 ParentStrains = new string[0], // Placeholder - would need actual parent tracking
-                StrainID = strainSO.name
+                StrainID = strainSO.StrainId,
+                GeneticLineage = $"{strainSO.ParentStrain1?.StrainName ?? "Unknown"} x {strainSO.ParentStrain2?.StrainName ?? "Unknown"}",
+                BreedingGeneration = $"F{strainSO.GenerationNumber}",
+                Traits = new System.Collections.Generic.List<string> { strainSO.StrainType.ToString(), strainSO.BudStructure.ToString() }
             };
         }
     }

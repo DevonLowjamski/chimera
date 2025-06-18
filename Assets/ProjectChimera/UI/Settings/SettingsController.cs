@@ -11,6 +11,18 @@ using ProjectChimera.Data.UI;
 namespace ProjectChimera.UI.Settings
 {
     /// <summary>
+    /// Interface for settings manager to avoid dependency issues
+    /// </summary>
+    public interface ISettingsManager
+    {
+        Dictionary<string, object> GetAllSettings();
+        void ApplySettings(Dictionary<string, object> settings);
+        List<SettingsProfile> GetAvailableProfiles();
+        void SaveProfile(SettingsProfile profile);
+        void DeleteProfile(SettingsProfile profile);
+    }
+
+    /// <summary>
     /// Settings & Configuration UI Controller for Project Chimera.
     /// Provides comprehensive system preferences, customization options, and configuration management.
     /// Features organized settings panels, real-time preview, and profile management with gaming aesthetics.
@@ -39,10 +51,9 @@ namespace ProjectChimera.UI.Settings
         [SerializeField] private AudioClip _resetSound;
         [SerializeField] private AudioSource _audioSource;
         
-        // System references
-        // private SettingsManager _settingsManager;
-        // private GameManager _gameManager;
-        
+        // System References
+        private ISettingsManager _settingsManager; // Placeholder for SettingsManager when available
+
         // UI Elements - Main Interface
         private VisualElement _rootElement;
         private Button _gameplayTabButton;
@@ -712,15 +723,15 @@ namespace ProjectChimera.UI.Settings
             
             _isApplyingSettings = true;
             
-            // if (_settingsManager != null)
-            // {
-                // _settingsManager.ApplySettings(_currentSettings);
-            // }
-            // else
-            // {
+            if (_settingsManager != null)
+            {
+                _settingsManager.ApplySettings(_currentSettings);
+            }
+            else
+            {
                 // Apply settings directly to Unity systems
                 ApplyUnitySettings();
-            // }
+            }
             
             // Copy current to original
             _originalSettings.Clear();
@@ -849,14 +860,14 @@ namespace ProjectChimera.UI.Settings
         
         private void LoadSettings()
         {
-            // if (_settingsManager != null)
-            // {
-                // var loadedSettings = _settingsManager.GetAllSettings();
+            if (_settingsManager != null)
+            {
+                var loadedSettings = _settingsManager.GetAllSettings();
                 if (loadedSettings != null)
                 {
                     _currentSettings = new Dictionary<string, object>(loadedSettings);
                 }
-            // }
+            }
             
             if (_currentSettings.Count == 0)
             {
@@ -1084,10 +1095,10 @@ namespace ProjectChimera.UI.Settings
             // Load available profiles
             _availableProfiles.Clear();
             
-            // if (_settingsManager != null)
-            // {
-                // _availableProfiles = _settingsManager.GetAvailableProfiles()?.ToList() ?? new List<SettingsProfile>();
-            // }
+            if (_settingsManager != null)
+            {
+                _availableProfiles = _settingsManager.GetAvailableProfiles()?.ToList() ?? new List<SettingsProfile>();
+            }
             
             if (_availableProfiles.Count == 0)
             {
@@ -1143,10 +1154,10 @@ namespace ProjectChimera.UI.Settings
             
             _currentProfile.Settings = new Dictionary<string, object>(_currentSettings);
             
-            // if (_settingsManager != null)
-            // {
-                // _settingsManager.SaveProfile(_currentProfile);
-            // }
+            if (_settingsManager != null)
+            {
+                _settingsManager.SaveProfile(_currentProfile);
+            }
             
             UpdateStatusLabel($"Profile saved: {_currentProfile.Name}");
             Debug.Log($"Profile saved: {_currentProfile.Name}");
@@ -1158,10 +1169,10 @@ namespace ProjectChimera.UI.Settings
             
             _availableProfiles.Remove(_currentProfile);
             
-            // if (_settingsManager != null)
-            // {
-                // _settingsManager.DeleteProfile(_currentProfile);
-            // }
+            if (_settingsManager != null)
+            {
+                _settingsManager.DeleteProfile(_currentProfile);
+            }
             
             // Switch to default profile
             _currentProfile = _availableProfiles.FirstOrDefault(p => p.IsDefault);
@@ -1277,6 +1288,14 @@ namespace ProjectChimera.UI.Settings
         private void OnDestroy()
         {
             CancelInvoke();
+        }
+        
+        /// <summary>
+        /// Gets all current settings as a dictionary.
+        /// </summary>
+        public Dictionary<string, object> GetAllSettings()
+        {
+            return new Dictionary<string, object>(_currentSettings);
         }
     }
     

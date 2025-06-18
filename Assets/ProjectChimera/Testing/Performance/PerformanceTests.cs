@@ -2,6 +2,13 @@ using NUnit.Framework;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Diagnostics;
+using ProjectChimera.Systems.Economy;
+using ProjectChimera.Data.Economy;
+using ProjectChimera.Systems.AI;
+using ProjectChimera.UI.Core;
+using ProjectChimera.UI.Financial;
+using ProjectChimera.UI.AIAdvisor;
+using ProjectChimera.Data.Automation;
 
 namespace ProjectChimera.Testing.Performance
 {

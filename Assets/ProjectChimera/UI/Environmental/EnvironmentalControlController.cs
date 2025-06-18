@@ -45,7 +45,7 @@ namespace ProjectChimera.UI.Environmental
         [SerializeField] private AudioSource _audioSource;
         
         // System references
-        // private HVACManager _hvacManager;
+        private object _hvacManager; // Placeholder - will be replaced with actual HVACManager when assembly references are fixed
         // private LightingManager _lightingManager;
         // private AutomationManager _automationManager;
         
@@ -838,20 +838,23 @@ namespace ProjectChimera.UI.Environmental
             // {
                 // var readings = _automationManager.GetZoneSensorReadings(zoneId);
                 
-                foreach (var reading in readings)
+            // Create empty readings list when automation manager is not available
+            var readings = new List<SensorReading>();
+                
+            foreach (var reading in readings)
+            {
+                UpdateZoneData(zoneId, zd =>
                 {
-                    UpdateZoneData(zoneId, zd =>
-                    {
-                        if (reading.SensorId.Contains("temp"))
-                            zd.Temperature = reading.Value;
-                        else if (reading.SensorId.Contains("humidity"))
-                            zd.Humidity = reading.Value;
-                        else if (reading.SensorId.Contains("co2"))
-                            zd.CO2Level = reading.Value;
-                        else if (reading.SensorId.Contains("light"))
-                            zd.LightIntensity = reading.Value;
-                    });
-                }
+                    if (reading.SensorId.Contains("temp"))
+                        zd.Temperature = reading.Value;
+                    else if (reading.SensorId.Contains("humidity"))
+                        zd.Humidity = reading.Value;
+                    else if (reading.SensorId.Contains("co2"))
+                        zd.CO2Level = reading.Value;
+                    else if (reading.SensorId.Contains("light"))
+                        zd.LightIntensity = reading.Value;
+                });
+            }
             // }
             // else
             // {
@@ -1689,5 +1692,15 @@ namespace ProjectChimera.UI.Environmental
         public float DefaultUpdateInterval = 2f;
         public bool PlaySoundEffects = true;
         public bool ShowTooltips = true;
+    }
+    
+    // Temporary SensorReading class for compatibility
+    [System.Serializable]
+    public class SensorReading
+    {
+        public string SensorId;
+        public float Value;
+        public DateTime Timestamp;
+        public string Units;
     }
 }

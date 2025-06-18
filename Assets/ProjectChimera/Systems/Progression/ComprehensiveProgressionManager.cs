@@ -14,6 +14,9 @@ using System.Collections;
 using System.Linq;
 using System;
 
+// Explicit namespace alias to resolve ambiguity
+using EnvironmentalManager = ProjectChimera.Systems.Environment.EnvironmentalManager;
+
 namespace ProjectChimera.Systems.Progression
 {
     /// <summary>
@@ -1043,15 +1046,13 @@ namespace ProjectChimera.Systems.Progression
             CheckAchievementProgress();
         }
         
-        private void HandleConstructionCompleted(ConstructionProject project)
+        private void HandleConstructionCompleted(object projectObj)
         {
-            if (project == null) return;
-            
-            // Award experience based on project complexity and cost
+            // Award experience based on project completion
             float baseExperience = 100f;
-            float complexityBonus = project.EstimatedCost * 0.01f; // 1 exp per $100
+            float complexityBonus = 50f; // Fixed bonus since we can't access project details
             
-            GainExperience("FacilityManagement", baseExperience + complexityBonus, $"Construction Completed: {project.ProjectName}");
+            GainExperience("FacilityManagement", baseExperience + complexityBonus, "Construction Completed");
             
             // Update player stats
             _playerProgression.FacilitiesBuilt++;

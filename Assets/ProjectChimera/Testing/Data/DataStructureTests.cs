@@ -6,6 +6,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ProjectChimera.Core;
+using ProjectChimera.Testing.Core;
+using ProjectChimera.Data.Automation;
+using ProjectChimera.Systems.Economy;
+using ProjectChimera.Data.Cultivation;
+using ProjectChimera.Data.Genetics;
+using ProjectChimera.Data.UI;
+using ProjectChimera.Data.AI;
+using ProjectChimera.UI.Core;
 
 namespace ProjectChimera.Testing.Data
 {
@@ -68,27 +76,25 @@ namespace ProjectChimera.Testing.Data
         {
             // Arrange
             var sourceStrain = ScriptableObject.CreateInstance<PlantStrainSO>();
-            sourceStrain.strainId = "ConversionTest_001";
-            sourceStrain.strainName = "Conversion Test Strain";
-            sourceStrain.thcPercentage = 22.0f;
-            sourceStrain.cbdPercentage = 0.8f;
-            sourceStrain.floweringDays = 70;
-            sourceStrain.expectedYield = 500.0f;
+            sourceStrain.StrainId = "ConversionTest_001";
+            sourceStrain.StrainName = "Conversion Test Strain";
+            // Note: THC/CBD percentages are set via CannabinoidProfile, using default values
+            // FloweringDays and ExpectedYield are calculated properties, not directly settable
 
             // Act
             var strainData = PlantStrainData.FromSO(sourceStrain);
 
             // Assert
             Assert.IsNotNull(strainData, "Conversion should produce valid PlantStrainData");
-            Assert.AreEqual(sourceStrain.strainId, strainData.StrainId, "Strain ID should be converted correctly");
-            Assert.AreEqual(sourceStrain.strainName, strainData.StrainName, "Strain name should be converted correctly");
-            Assert.AreEqual(sourceStrain.thcPercentage, strainData.ThcContent, 0.01f, "THC content should be converted correctly");
-            Assert.AreEqual(sourceStrain.cbdPercentage, strainData.CbdContent, 0.01f, "CBD content should be converted correctly");
-            Assert.AreEqual(sourceStrain.floweringDays, strainData.FloweringTime, "Flowering time should be converted correctly");
-            Assert.AreEqual(sourceStrain.expectedYield, strainData.Yield, 0.01f, "Yield should be converted correctly");
+            Assert.AreEqual(sourceStrain.StrainId, strainData.StrainId, "Strain ID should be converted correctly");
+            Assert.AreEqual(sourceStrain.StrainName, strainData.StrainName, "Strain name should be converted correctly");
+            Assert.AreEqual(sourceStrain.THCLevel, strainData.ThcContent, 0.01f, "THC content should be converted correctly");
+            Assert.AreEqual(sourceStrain.CBDLevel, strainData.CbdContent, 0.01f, "CBD content should be converted correctly");
+            Assert.AreEqual(sourceStrain.BaseFloweringTime, strainData.FloweringTime, "Flowering time should be converted correctly");
+            Assert.AreEqual(sourceStrain.YieldPotential, strainData.Yield, 0.01f, "Yield should be converted correctly");
             
             UnityEngine.Debug.Log($"PlantStrainData FromSO conversion - " +
-                                 $"Source THC: {sourceStrain.thcPercentage}% -> Data THC: {strainData.ThcContent}%");
+                                 $"Source THC: {sourceStrain.THCLevel}% -> Data THC: {strainData.ThcContent}%");
             
             // Cleanup
             UnityEngine.Object.DestroyImmediate(sourceStrain);
@@ -106,10 +112,9 @@ namespace ProjectChimera.Testing.Data
             for (int i = 0; i < conversionCount; i++)
             {
                 var strain = ScriptableObject.CreateInstance<PlantStrainSO>();
-                strain.strainId = $"PerfTest_{i:D3}";
-                strain.strainName = $"Performance Test Strain {i}";
-                strain.thcPercentage = 15.0f + (i % 20);
-                strain.cbdPercentage = 0.5f + (i % 5) * 0.2f;
+                strain.StrainId = $"PerfTest_{i:D3}";
+                strain.StrainName = $"Performance Test Strain {i}";
+                // Note: THC/CBD percentages are handled via CannabinoidProfile
                 sourceStrains.Add(strain);
             }
 
@@ -190,14 +195,14 @@ namespace ProjectChimera.Testing.Data
             {
                 Message = "Test accessibility announcement",
                 Priority = UIAnnouncementPriority.Normal,
-                Timestamp = System.DateTime.Now
+                Timestamp = Time.time
             };
 
             // Assert
             Assert.IsNotNull(announcement, "UIAnnouncement should be created successfully");
             Assert.AreEqual("Test accessibility announcement", announcement.Message, "Message should be set correctly");
             Assert.AreEqual(UIAnnouncementPriority.Normal, announcement.Priority, "Priority should be set correctly");
-            Assert.That(announcement.Timestamp, Is.GreaterThan(System.DateTime.MinValue), "Timestamp should be valid");
+            Assert.That(announcement.Timestamp, Is.GreaterThan(0f), "Timestamp should be valid");
             
             UnityEngine.Debug.Log($"UIAnnouncement creation - Message: {announcement.Message}, " +
                                  $"Priority: {announcement.Priority}");
@@ -234,7 +239,7 @@ namespace ProjectChimera.Testing.Data
                 {
                     Message = $"Performance test announcement {i}",
                     Priority = (UIAnnouncementPriority)(i % 5),
-                    Timestamp = System.DateTime.Now
+                    Timestamp = Time.time + i * 0.01f
                 });
             }
             
@@ -264,9 +269,9 @@ namespace ProjectChimera.Testing.Data
                 StartTime = System.DateTime.Now,
                 EndTime = System.DateTime.Now.AddHours(8),
                 RepeatPattern = ScheduleRepeatPattern.Daily,
-                TimeSlots = new List<AutomationTimeSlot>
+                TimeSlots = new List<ScheduleTimeSlot>
                 {
-                    new AutomationTimeSlot
+                    new ScheduleTimeSlot
                     {
                         StartTime = System.TimeSpan.FromHours(6),
                         EndTime = System.TimeSpan.FromHours(18),
@@ -297,21 +302,18 @@ namespace ProjectChimera.Testing.Data
         public void Test_AutomationTimeSlot_Validation()
         {
             // Arrange & Act
-            var validTimeSlot = new AutomationTimeSlot
+            var validTimeSlot = new ScheduleTimeSlot
             {
                 StartTime = System.TimeSpan.FromHours(6),
                 EndTime = System.TimeSpan.FromHours(18),
-                ActionType = "Lighting",
-                IntensityLevel = 80.0f,
                 IsEnabled = true
             };
 
-            var invalidTimeSlot = new AutomationTimeSlot
+            var invalidTimeSlot = new ScheduleTimeSlot
             {
                 StartTime = System.TimeSpan.FromHours(18), // Invalid: start after end
                 EndTime = System.TimeSpan.FromHours(6),
-                ActionType = "", // Invalid: empty action type
-                IntensityLevel = -10.0f // Invalid: negative intensity
+                IsEnabled = false
             };
 
             // Assert
@@ -322,11 +324,9 @@ namespace ProjectChimera.Testing.Data
                                  $"Invalid: {IsValidTimeSlot(invalidTimeSlot)}");
         }
 
-        private bool IsValidTimeSlot(AutomationTimeSlot slot)
+        private bool IsValidTimeSlot(ScheduleTimeSlot slot)
         {
-            return slot.StartTime < slot.EndTime &&
-                   !string.IsNullOrEmpty(slot.ActionType) &&
-                   slot.IntensityLevel >= 0;
+            return slot.StartTime < slot.EndTime && slot.IsEnabled;
         }
 
         //[Test]
@@ -363,7 +363,7 @@ namespace ProjectChimera.Testing.Data
                     StartTime = System.DateTime.Now.AddHours(i),
                     EndTime = System.DateTime.Now.AddHours(i + 8),
                     RepeatPattern = (ScheduleRepeatPattern)(i % 4),
-                    TimeSlots = new List<AutomationTimeSlot>(),
+                    TimeSlots = new List<ScheduleTimeSlot>(),
                     RuleIds = new List<string>(),
                     Priority = i % 10,
                     CreatedAt = System.DateTime.Now,
@@ -407,16 +407,23 @@ namespace ProjectChimera.Testing.Data
             Assert.IsNotNull(stateData, "UIStateData should be created successfully");
             Assert.AreEqual("TestUIState", stateData.StateId, "State ID should be set correctly");
             Assert.AreEqual(1, stateData.StateVersion, "State version should be set correctly");
-            Assert.AreEqual(4, stateData.StateData.Count, "State data should contain all entries");
-            Assert.IsTrue((bool)stateData.StateData["panelVisible"], "Boolean state should be stored correctly");
-            Assert.AreEqual("Dashboard", stateData.StateData["selectedTab"], "String state should be stored correctly");
-            Assert.AreEqual(1.5f, stateData.StateData["zoomLevel"], "Float state should be stored correctly");
+            
+            // Cast StateData to Dictionary for proper access
+            var stateDict = stateData.StateData as Dictionary<string, object>;
+            Assert.IsNotNull(stateDict, "StateData should be a valid Dictionary");
+            Assert.AreEqual(4, stateDict.Count, "State data should contain all entries");
+            Assert.IsTrue((bool)stateDict["panelVisible"], "Boolean state should be stored correctly");
+            Assert.AreEqual("Dashboard", stateDict["selectedTab"], "String state should be stored correctly");
+            Assert.AreEqual(1.5f, stateDict["zoomLevel"], "Float state should be stored correctly");
             
             UnityEngine.Debug.Log($"UIStateData creation - ID: {stateData.StateId}, " +
-                                 $"Version: {stateData.StateVersion}, Data count: {stateData.StateData.Count}");
+                                 $"Version: {stateData.StateVersion}, Data count: {stateDict.Count}");
         }
 
         //[Test]
+        // NOTE: UIComponentPrefab is abstract class - cannot be instantiated directly
+        // Test disabled until concrete implementation is available
+        /*
         public void Test_UIComponentPrefab_Properties()
         {
             // Arrange & Act
@@ -439,6 +446,7 @@ namespace ProjectChimera.Testing.Data
             UnityEngine.Debug.Log($"UIComponentPrefab - ID: {componentPrefab.PrefabId}, " +
                                  $"Type: {componentPrefab.ComponentType}, Pooled: {componentPrefab.IsPooled}");
         }
+        */
 
         #endregion
 
@@ -453,27 +461,27 @@ namespace ProjectChimera.Testing.Data
                 RecommendationId = "AI_REC_001",
                 Title = "Optimize Lighting Schedule",
                 Description = "Adjust lighting schedule for better energy efficiency",
-                RecommendationType = RecommendationType.Performance,
+                Type = RecommendationType.Performance,
                 Priority = RecommendationPriority.High,
-                ConfidenceLevel = 0.85f,
-                EstimatedImpact = "15% energy savings",
+                ConfidenceScore = 0.85f,
+                EstimatedBenefit = 15.0f,
                 CreatedAt = System.DateTime.Now,
-                IsImplemented = false,
-                SourceData = new List<string> { "SensorData_001", "HistoricalData_002" }
+                Status = RecommendationStatus.Active,
+                RelatedSystems = new List<string> { "SensorData_001", "HistoricalData_002" }
             };
 
             // Assert
             Assert.IsNotNull(recommendation, "AIRecommendation should be created successfully");
             Assert.AreEqual("AI_REC_001", recommendation.RecommendationId, "Recommendation ID should be set correctly");
             Assert.AreEqual("Optimize Lighting Schedule", recommendation.Title, "Title should be set correctly");
-            Assert.AreEqual(RecommendationType.Performance, recommendation.RecommendationType, "Type should be set correctly");
+            Assert.AreEqual(RecommendationType.Performance, recommendation.Type, "Type should be set correctly");
             Assert.AreEqual(RecommendationPriority.High, recommendation.Priority, "Priority should be set correctly");
-            Assert.AreEqual(0.85f, recommendation.ConfidenceLevel, 0.01f, "Confidence level should be set correctly");
-            Assert.IsFalse(recommendation.IsImplemented, "Implementation status should be set correctly");
-            Assert.AreEqual(2, recommendation.SourceData.Count, "Source data should be added correctly");
+            Assert.AreEqual(0.85f, recommendation.ConfidenceScore, 0.01f, "Confidence score should be set correctly");
+            Assert.AreEqual(RecommendationStatus.Active, recommendation.Status, "Status should be set correctly");
+            Assert.AreEqual(2, recommendation.RelatedSystems.Count, "Related systems should be added correctly");
             
             UnityEngine.Debug.Log($"AIRecommendation creation - ID: {recommendation.RecommendationId}, " +
-                                 $"Type: {recommendation.RecommendationType}, Confidence: {recommendation.ConfidenceLevel:F2}");
+                                 $"Type: {recommendation.Type}, Confidence: {recommendation.ConfidenceScore:F2}");
         }
 
         //[Test]
@@ -483,26 +491,26 @@ namespace ProjectChimera.Testing.Data
             var opportunity = new OptimizationOpportunity
             {
                 OpportunityId = "OPT_001",
-                Area = "Environmental Control",
+                Title = "Environmental Control",
                 Description = "Temperature optimization opportunity detected",
-                OptimizationType = OptimizationType.Automation,
-                PotentialSavings = 12.5f,
-                ImplementationEffort = ImplementationEffort.Medium,
-                DetectedAt = System.DateTime.Now,
+                Type = OptimizationType.Automation,
+                BenefitScore = 12.5f,
+                Complexity = OptimizationComplexity.Medium,
+                DiscoveredAt = System.DateTime.Now,
                 IsActive = true
             };
 
             // Assert
             Assert.IsNotNull(opportunity, "OptimizationOpportunity should be created successfully");
             Assert.AreEqual("OPT_001", opportunity.OpportunityId, "Opportunity ID should be set correctly");
-            Assert.AreEqual("Environmental Control", opportunity.Area, "Area should be set correctly");
-            Assert.AreEqual(OptimizationType.Automation, opportunity.OptimizationType, "Type should be set correctly");
-            Assert.AreEqual(12.5f, opportunity.PotentialSavings, 0.01f, "Potential savings should be set correctly");
-            Assert.AreEqual(ImplementationEffort.Medium, opportunity.ImplementationEffort, "Effort should be set correctly");
+            Assert.AreEqual("Environmental Control", opportunity.Title, "Title should be set correctly");
+            Assert.AreEqual(OptimizationType.Automation, opportunity.Type, "Type should be set correctly");
+            Assert.AreEqual(12.5f, opportunity.BenefitScore, 0.01f, "Benefit score should be set correctly");
+            Assert.AreEqual(OptimizationComplexity.Medium, opportunity.Complexity, "Complexity should be set correctly");
             Assert.IsTrue(opportunity.IsActive, "Active status should be set correctly");
             
             UnityEngine.Debug.Log($"OptimizationOpportunity creation - ID: {opportunity.OpportunityId}, " +
-                                 $"Savings: {opportunity.PotentialSavings}%, Effort: {opportunity.ImplementationEffort}");
+                                 $"Benefit: {opportunity.BenefitScore}%, Complexity: {opportunity.Complexity}");
         }
 
         #endregion

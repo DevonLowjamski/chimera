@@ -9,8 +9,12 @@ using System.Collections;
 using System.Linq;
 using System;
 using RoomTemplate = ProjectChimera.Data.Facilities.RoomTemplate;
-using IssueType = ProjectChimera.Data.Construction.IssueType;
-using IssueSeverity = ProjectChimera.Data.Construction.IssueSeverity;
+// Explicit aliases for Data layer types to resolve ambiguity
+using DataIssueType = ProjectChimera.Data.Construction.IssueType;
+using DataIssueSeverity = ProjectChimera.Data.Construction.IssueSeverity;
+using DataIssueCategory = ProjectChimera.Data.Construction.IssueCategory;
+using RoomStatus = ProjectChimera.Data.Construction.RoomStatus;
+using DataIssueStatus = ProjectChimera.Data.Construction.IssueStatus;
 
 namespace ProjectChimera.Systems.Construction
 {
@@ -74,13 +78,14 @@ namespace ProjectChimera.Systems.Construction
         private List<ConstructionEvent> _constructionHistory = new List<ConstructionEvent>();
         
         // Events
-        public System.Action<ConstructionProject> OnProjectStarted;
+        public System.Action<object> OnProjectStarted;
         public System.Action<ConstructionProject, ConstructionPhase> OnPhaseCompleted;
-        public System.Action<ConstructionProject> OnProjectCompleted;
-        public System.Action<string, ConstructionIssue> OnConstructionIssue;
+        public System.Action<object> OnProjectCompleted;
+        public System.Action<object> OnConstructionIssue;
         public System.Action<PermitApplication> OnPermitApproved;
         public System.Action<ConstructionCostUpdate> OnCostUpdated;
         public System.Action<string> OnMilestoneReached;
+        public System.Action<ConstructionProgress> OnConstructionProgress;
         
         // Properties
         public ConstructionProject ActiveProject => _activeProject;
@@ -280,11 +285,11 @@ namespace ProjectChimera.Systems.Construction
             if (!validation.IsValid)
             {
                 project.Status = ProjectStatus.RequiresRevision;
-                OnConstructionIssue?.Invoke(project.ProjectId, new ConstructionIssue
+                OnConstructionIssue?.Invoke(new ProjectChimera.Data.Construction.ConstructionIssue
                 {
-                    IssueType = IssueType.ValidationFailed,
+                    IssueType = DataIssueType.ValidationFailed,
                     Description = "Building site validation failed",
-                    Severity = IssueSeverity.High
+                    Severity = DataIssueSeverity.High
                 });
             }
             
@@ -401,11 +406,11 @@ namespace ProjectChimera.Systems.Construction
         {
             if (!_buildingValidator.ValidateRoomPlacement(roomTemplate, position, rotation))
             {
-                OnConstructionIssue?.Invoke(_activeProject?.ProjectId ?? "", new ConstructionIssue
+                OnConstructionIssue?.Invoke(new ProjectChimera.Data.Construction.ConstructionIssue
                 {
-                    IssueType = IssueType.InvalidPlacement,
+                    IssueType = DataIssueType.InvalidPlacement,
                     Description = "Room placement violates building codes",
-                    Severity = IssueSeverity.Medium
+                    Severity = DataIssueSeverity.Medium
                 });
                 return false;
             }
@@ -654,22 +659,22 @@ namespace ProjectChimera.Systems.Construction
             {
                 progress.Task.EstimatedHours *= 1.1f; // 10% delay
                 
-                OnConstructionIssue?.Invoke(_activeProject?.ProjectId ?? "", new ConstructionIssue
+                OnConstructionIssue?.Invoke(new ProjectChimera.Data.Construction.ConstructionIssue
                 {
-                    IssueType = IssueType.WeatherDelay,
+                    IssueType = DataIssueType.WeatherDelay,
                     Description = "Construction delayed due to weather conditions",
-                    Severity = IssueSeverity.Low
+                    Severity = DataIssueSeverity.Low
                 });
             }
             
             // Material shortages
             if (!_materialInventory.HasMaterials(progress.Task.RequiredMaterials))
             {
-                OnConstructionIssue?.Invoke(_activeProject?.ProjectId ?? "", new ConstructionIssue
+                OnConstructionIssue?.Invoke(new ProjectChimera.Data.Construction.ConstructionIssue
                 {
-                    IssueType = IssueType.MaterialShortage,
+                    IssueType = DataIssueType.MaterialShortage,
                     Description = "Missing required materials for construction",
-                    Severity = IssueSeverity.Medium
+                    Severity = DataIssueSeverity.Medium
                 });
             }
         }

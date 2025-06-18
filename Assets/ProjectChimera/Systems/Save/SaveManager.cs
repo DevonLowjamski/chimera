@@ -3,13 +3,14 @@ using ProjectChimera.Core;
 using ProjectChimera.Data.Save;
 using ProjectChimera.Systems.Cultivation;
 using ProjectChimera.Systems.Economy;
-using ProjectChimera.Systems.Environment;
+using EnvironmentSystems = ProjectChimera.Systems.Environment;
 using ProjectChimera.Systems.Progression;
 using ProjectChimera.Systems.Events;
 using System.Collections.Generic;
 using System.IO;
 using System;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace ProjectChimera.Systems.Save
 {
@@ -51,7 +52,7 @@ namespace ProjectChimera.Systems.Save
         // System references
         private PlantManager _plantManager;
         private MarketManager _marketManager;
-        private EnvironmentalManager _environmentalManager;
+        private EnvironmentSystems.EnvironmentalManager _environmentalManager;
         private ProgressionManager _progressionManager;
         private ObjectiveManager _objectiveManager;
         private RandomEventManager _eventManager;
@@ -403,7 +404,7 @@ namespace ProjectChimera.Systems.Save
             {
                 _plantManager = gameManager.GetManager<PlantManager>();
                 _marketManager = gameManager.GetManager<MarketManager>();
-                _environmentalManager = gameManager.GetManager<EnvironmentalManager>();
+                _environmentalManager = gameManager.GetManager<EnvironmentSystems.EnvironmentalManager>();
                 _progressionManager = gameManager.GetManager<ProgressionManager>();
                 _objectiveManager = gameManager.GetManager<ObjectiveManager>();
                 _eventManager = gameManager.GetManager<RandomEventManager>();

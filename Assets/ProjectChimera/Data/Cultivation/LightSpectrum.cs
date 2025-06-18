@@ -8,6 +8,15 @@ namespace ProjectChimera.Data.Cultivation
     /// </summary>
     public enum LightSpectrum
     {
+        // Individual color spectrums
+        Red,                    // Pure red spectrum
+        Blue,                   // Pure blue spectrum  
+        Green,                  // Pure green spectrum
+        FarRed,                 // Far-red spectrum
+        UVA,                    // UV-A spectrum
+        UVB,                    // UV-B spectrum
+        WhiteBalance,           // White balance spectrum
+        
         // Full spectrum options
         FullSpectrum,           // Complete spectrum including UV and IR
         SunlightSpectrum,       // Natural sunlight spectrum

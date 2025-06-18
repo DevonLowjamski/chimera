@@ -6,6 +6,8 @@ using ProjectChimera.Data.Visuals;
 using ProjectChimera.Data.Genetics;
 using ProjectChimera.Data.Cultivation;
 using PlantGrowthStage = ProjectChimera.Data.Genetics.PlantGrowthStage;
+// Explicit alias to resolve Camera namespace conflict
+using Camera = UnityEngine.Camera;
 
 namespace ProjectChimera.Systems.Visuals
 {

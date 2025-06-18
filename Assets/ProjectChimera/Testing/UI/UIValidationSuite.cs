@@ -3,6 +3,9 @@ using UnityEngine.UIElements;
 using System.Collections.Generic;
 using System.Linq;
 using ProjectChimera.Core;
+using ProjectChimera.Testing;
+using ProjectChimera.UI.Core;
+using ProjectChimera.Data.UI;
 
 namespace ProjectChimera.Testing.UI
 {
@@ -569,10 +572,8 @@ namespace ProjectChimera.Testing.UI
             return ValidateManagerIntegration(); // Reuse manager validation
         }
         
-        protected override void Update()
+        private void Update()
         {
-            base.Update();
-            
             if (!_enableRuntimeValidation)
                 return;
             
@@ -585,10 +586,8 @@ namespace ProjectChimera.Testing.UI
             }
         }
         
-        protected override void OnValidate()
+        private void OnValidate()
         {
-            base.OnValidate();
-            
             _validationInterval = Mathf.Max(1f, _validationInterval);
             _maxActiveComponents = Mathf.Max(1, _maxActiveComponents);
             _maxMemoryUsageMB = Mathf.Max(1f, _maxMemoryUsageMB);

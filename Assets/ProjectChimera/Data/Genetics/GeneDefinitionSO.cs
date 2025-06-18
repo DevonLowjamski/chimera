@@ -83,6 +83,65 @@ namespace ProjectChimera.Data.Genetics
         public GeneFunction PrimaryFunction => _primaryFunction;
         public List<TraitInfluence> InfluencedTraits => _influencedTraits;
         public GeneInteractionType InteractionType => _interactionType;
+        
+        /// <summary>
+        /// Gets the gene type based on the primary function for compatibility with gene library
+        /// </summary>
+        public GeneType GeneType
+        {
+            get
+            {
+                // Map GeneFunction to GeneType based on the gene's primary trait influence
+                if (_influencedTraits.Count > 0)
+                {
+                    var primaryTrait = _influencedTraits[0].TraitType;
+                    return MapTraitToGeneType(primaryTrait);
+                }
+                
+                // Fallback mapping based on function
+                return MapFunctionToGeneType(_primaryFunction);
+            }
+        }
+        
+        private GeneType MapTraitToGeneType(PlantTrait trait)
+        {
+            switch (trait)
+            {
+                case PlantTrait.Height: return Data.Genetics.GeneType.PlantHeight;
+                case PlantTrait.LeafSize: return Data.Genetics.GeneType.LeafSize;
+                case PlantTrait.BranchingPattern: return Data.Genetics.GeneType.BranchingPattern;
+                case PlantTrait.StemThickness: return Data.Genetics.GeneType.StemThickness;
+                case PlantTrait.FloweringTime: return Data.Genetics.GeneType.FloweringTime;
+                case PlantTrait.THCContent: return Data.Genetics.GeneType.THCProduction;
+                case PlantTrait.CBDContent: return Data.Genetics.GeneType.CBDProduction;
+                case PlantTrait.TerpeneProfile: return Data.Genetics.GeneType.TerpeneProfile;
+                case PlantTrait.DiseaseResistance: return Data.Genetics.GeneType.DiseaseResistance;
+                case PlantTrait.PestResistance: return Data.Genetics.GeneType.PestResistance;
+                case PlantTrait.HeatTolerance: return Data.Genetics.GeneType.HeatTolerance;
+                case PlantTrait.ColdTolerance: return Data.Genetics.GeneType.ColdTolerance;
+                case PlantTrait.DroughtTolerance: return Data.Genetics.GeneType.DroughtTolerance;
+                case PlantTrait.GrowthRate: return Data.Genetics.GeneType.GrowthRate;
+                case PlantTrait.TotalBiomass: return Data.Genetics.GeneType.YieldPotential;
+                case PlantTrait.FlowerYield: return Data.Genetics.GeneType.YieldPotential;
+                case PlantTrait.Resin: return Data.Genetics.GeneType.ResinProduction;
+                case PlantTrait.Aroma: return Data.Genetics.GeneType.AromaticCompounds;
+                default: return Data.Genetics.GeneType.PlantMorphology;
+            }
+        }
+        
+        private GeneType MapFunctionToGeneType(GeneFunction function)
+        {
+            switch (function)
+            {
+                case GeneFunction.StructuralProtein: return Data.Genetics.GeneType.PlantMorphology;
+                case GeneFunction.Enzyme: return Data.Genetics.GeneType.THCProduction;
+                case GeneFunction.Transcriptionfactor: return Data.Genetics.GeneType.GrowthRate;
+                case GeneFunction.MetabolicPathway: return Data.Genetics.GeneType.PhotosyntheticEfficiency;
+                case GeneFunction.StressResponse: return Data.Genetics.GeneType.EnvironmentalTolerance;
+                case GeneFunction.Development: return Data.Genetics.GeneType.FloweringTime;
+                default: return Data.Genetics.GeneType.PlantMorphology;
+            }
+        }
 
         // Alleles
         public List<AlleleSO> KnownAlleles => _knownAlleles;
@@ -121,6 +180,25 @@ namespace ProjectChimera.Data.Genetics
         public bool CanBeSelected => _canBeSelected;
         public DifficultyLevel SelectionDifficulty => _selectionDifficulty;
         public float Heritability => _heritability;
+
+        // Missing property for Error Wave 136
+        /// <summary>
+        /// Gene ID compatibility property for genetics engine
+        /// </summary>
+        public string GeneId => _geneCode ?? name;
+
+        // Missing properties for Error Wave 137
+        /// <summary>
+        /// Base expression level for genetics engine compatibility
+        /// </summary>
+        public float BaseExpression => _influencedTraits.Count > 0 ? _influencedTraits[0].InfluenceStrength : 1.0f;
+        
+        /// <summary>
+        /// Dominance value for genetics engine compatibility
+        /// </summary>
+        public float Dominance => _dominanceType == DominanceType.Complete ? 1.0f : 
+                                 _dominanceType == DominanceType.Incomplete ? 0.5f : 
+                                 _dominanceType == DominanceType.Codominant ? 0.7f : 0.6f;
 
         /// <summary>
         /// Calculates the phenotypic effect of a given genotype for this gene.

@@ -77,6 +77,8 @@ namespace ProjectChimera.Systems.Cultivation
         public System.Action<PlantInstance> OnPlantAdded;
         public System.Action<PlantInstance> OnPlantHarvested;
         public System.Action<PlantInstance> OnPlantStageChanged;
+        public System.Action<PlantInstance> OnPlantWatered;
+        public System.Action<PlantInstance> OnPlantHealthUpdated;
         
         public override ManagerPriority Priority => ManagerPriority.High;
         
@@ -213,6 +215,138 @@ namespace ProjectChimera.Systems.Cultivation
         }
         
         /// <summary>
+        /// Registers a plant instance (alternative signature for compatibility).
+        /// </summary>
+        public void RegisterPlantInstance(PlantInstance plantInstance)
+        {
+            RegisterPlant(plantInstance);
+        }
+
+        /// <summary>
+        /// Registers a SpeedTree plant instance (compatibility overload).
+        /// NOTE: SpeedTree integration commented out until proper assembly references are configured
+        /// </summary>
+        public void RegisterPlantInstance(object speedTreeInstance)
+        {
+            // Generic object parameter to avoid SpeedTree dependency issues
+            LogWarning("SpeedTree plant registration attempted but SpeedTree integration is disabled");
+        }
+
+        /// <summary>
+        /// Registers an interactive plant component (compatibility overload).
+        /// </summary>
+        public void RegisterPlantInstance(ProjectChimera.Systems.Cultivation.InteractivePlantComponent interactivePlant)
+        {
+            if (interactivePlant == null)
+            {
+                LogError("Cannot register null interactive plant component");
+                return;
+            }
+
+            // Try to get the underlying PlantInstance from the component
+            var plantInstance = interactivePlant.GetComponent<PlantInstance>();
+            if (plantInstance != null)
+            {
+                RegisterPlant(plantInstance);
+                LogInfo($"Registered interactive plant component: {interactivePlant.name}");
+            }
+            else
+            {
+                LogWarning($"Interactive plant component {interactivePlant.name} has no PlantInstance component");
+            }
+        }
+
+        /// <summary>
+        /// Unregisters a SpeedTree plant instance.
+        /// NOTE: SpeedTree integration commented out until proper assembly references are configured
+        /// </summary>
+        /*
+        public void UnregisterPlantInstance(ProjectChimera.Systems.SpeedTree.SpeedTreePlantInstance plantInstance)
+        {
+            if (plantInstance == null)
+            {
+                LogError("Cannot unregister null SpeedTree plant instance");
+                return;
+            }
+
+            var plantId = plantInstance.PlantId;
+            UnregisterPlant(plantId, PlantRemovalReason.Removed);
+        }
+        */
+
+        /// <summary>
+        /// Unregisters a plant instance by ID (compatibility method).
+        /// </summary>
+        public void UnregisterPlantInstance(string plantID)
+        {
+            UnregisterPlant(plantID, PlantRemovalReason.Removed);
+        }
+
+        /// <summary>
+        /// Unregisters a plant instance by object (compatibility method).
+        /// </summary>
+        public void UnregisterPlantInstance(PlantInstance plantInstance)
+        {
+            if (plantInstance == null)
+            {
+                LogError("Cannot unregister null plant instance");
+                return;
+            }
+            
+            UnregisterPlant(plantInstance.PlantID, PlantRemovalReason.Removed);
+        }
+
+        /// <summary>
+        /// Unregisters a plant instance by instance ID (compatibility method).
+        /// </summary>
+        public void UnregisterPlantInstance(int instanceId)
+        {
+            // Find plant by Unity instance ID
+            var plant = _activePlants.Values.FirstOrDefault(p => p.GetInstanceID() == instanceId);
+            if (plant != null)
+            {
+                UnregisterPlant(plant.PlantID, PlantRemovalReason.Removed);
+            }
+            else
+            {
+                LogWarning($"No plant found with instance ID: {instanceId}");
+            }
+        }
+
+        /// <summary>
+        /// Updates environmental adaptation for all plants based on current conditions.
+        /// </summary>
+        public void UpdateEnvironmentalAdaptation(EnvironmentalConditions conditions)
+        {
+            foreach (var plant in _activePlants.Values)
+            {
+                if (plant != null)
+                {
+                    // Update plant's environmental adaptation
+                    plant.UpdateEnvironmentalAdaptation(conditions);
+                }
+            }
+            
+            LogInfo($"Updated environmental adaptation for {_activePlants.Count} plants");
+        }
+
+        /// <summary>
+        /// Updates environmental adaptation for a specific plant.
+        /// </summary>
+        public void UpdateEnvironmentalAdaptation(string plantID, EnvironmentalConditions conditions)
+        {
+            if (_activePlants.TryGetValue(plantID, out var plant))
+            {
+                plant.UpdateEnvironmentalAdaptation(conditions);
+                LogInfo($"Updated environmental adaptation for plant {plantID}");
+            }
+            else
+            {
+                LogWarning($"Plant {plantID} not found for environmental adaptation update");
+            }
+        }
+
+        /// <summary>
         /// Removes a plant from management (for harvesting, death, etc.).
         /// </summary>
         public void UnregisterPlant(string plantID, PlantRemovalReason reason = PlantRemovalReason.Other)
@@ -252,6 +386,30 @@ namespace ProjectChimera.Systems.Cultivation
         {
             _activePlants.TryGetValue(plantID, out var plant);
             return plant;
+        }
+        
+        /// <summary>
+        /// Gets a plant instance by ID (alternative method name for compatibility).
+        /// </summary>
+        public PlantInstance GetPlantInstance(string plantID)
+        {
+            return GetPlant(plantID);
+        }
+        
+        /// <summary>
+        /// Gets all active plants.
+        /// </summary>
+        public List<PlantInstance> GetAllPlants()
+        {
+            return _activePlants.Values.ToList();
+        }
+        
+        /// <summary>
+        /// Gets all active plant instances (alternative method name for compatibility).
+        /// </summary>
+        public List<PlantInstance> GetAllPlantInstances()
+        {
+            return GetAllPlants();
         }
         
         /// <summary>
@@ -296,7 +454,7 @@ namespace ProjectChimera.Systems.Cultivation
         }
         
         /// <summary>
-        /// Applies environmental stress to plants based on conditions.
+        /// Applies environmental stress to all plants.
         /// </summary>
         public void ApplyEnvironmentalStress(EnvironmentalStressSO stressSource, float intensity)
         {
@@ -452,6 +610,9 @@ namespace ProjectChimera.Systems.Cultivation
             
             _onPlantHealthChanged?.Raise(plant);
             
+            // Invoke OnPlantHealthUpdated event for other systems
+            OnPlantHealthUpdated?.Invoke(plant);
+            
             // Track health-related achievements
             if (_enableAchievementTracking && _eventTracker != null)
             {
@@ -498,6 +659,66 @@ namespace ProjectChimera.Systems.Cultivation
             }
         }
 
+        /// <summary>
+        /// Calculate expected yield for a plant instance based on its current state and growth conditions
+        /// </summary>
+        public float CalculateExpectedYield(PlantInstance plantInstance)
+        {
+            if (plantInstance == null)
+            {
+                LogWarning("Cannot calculate expected yield for null plant instance");
+                return 0f;
+            }
+
+            // Get base yield from strain data
+            float baseYield = plantInstance.Strain?.BaseYieldGrams ?? 50f; // Default 50g if strain data missing
+            
+            // Apply health modifier
+            float healthModifier = plantInstance.Health / 100f;
+            
+            // Apply growth stage modifier
+            float stageModifier = GetStageYieldModifier(plantInstance.CurrentGrowthStage);
+            
+            // Apply environmental stress modifier
+            float stressModifier = 1f - (plantInstance.StressLevel / 100f);
+            
+            // Apply global growth modifier
+            float globalModifier = _globalGrowthModifier;
+            
+            // Calculate final expected yield
+            float expectedYield = baseYield * healthModifier * stageModifier * stressModifier * globalModifier;
+            
+            // Apply harvest quality multiplier if enabled
+            if (_enableYieldVariability)
+            {
+                expectedYield *= _harvestQualityMultiplier;
+            }
+            
+            return Mathf.Max(0f, expectedYield);
+        }
+        
+        /// <summary>
+        /// Get yield modifier based on growth stage
+        /// </summary>
+        private float GetStageYieldModifier(PlantGrowthStage stage)
+        {
+            return stage switch
+            {
+                PlantGrowthStage.Seed => 0f,
+                PlantGrowthStage.Germination => 0f,
+                PlantGrowthStage.Seedling => 0.1f,
+                PlantGrowthStage.Vegetative => 0.3f,
+                PlantGrowthStage.PreFlowering => 0.5f,
+                PlantGrowthStage.Flowering => 0.8f,
+                PlantGrowthStage.Ripening => 0.95f,
+                PlantGrowthStage.Harvest => 1f,
+                PlantGrowthStage.Harvestable => 1f,
+                PlantGrowthStage.Harvested => 0f,
+                PlantGrowthStage.Drying => 0f,
+                PlantGrowthStage.Curing => 0f,
+                _ => 0.5f // Default fallback
+            };
+        }
     }
     
     /// <summary>

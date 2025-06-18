@@ -1,6 +1,7 @@
 using UnityEngine;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Environment;
+using ProjectChimera.Data.Genetics;
 using ProjectChimera.Systems.Environment;
 using ProjectChimera.Systems.Cultivation;
 using ProjectChimera.Systems.Progression;
@@ -8,6 +9,11 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 using System;
+
+// Explicit alias to resolve EnvironmentalConditions namespace ambiguity
+using EnvironmentalConditions = ProjectChimera.Data.Environment.EnvironmentalConditions;
+// Explicit alias for EnvironmentalManager to resolve ambiguity
+using EnvironmentalManager = ProjectChimera.Systems.Environment.EnvironmentalManager;
 
 #if UNITY_SPEEDTREE
 using SpeedTree;
@@ -90,7 +96,7 @@ namespace ProjectChimera.Systems.SpeedTree
         public int ActivePlantCount => _plantStates.Count;
         public bool SystemEnabled => _enableRealTimeResponse;
         
-        protected override void InitializeManager()
+        protected override void OnManagerInitialize()
         {
             InitializeEnvironmentalSystems();
             InitializeZoneManagement();
@@ -297,7 +303,7 @@ namespace ProjectChimera.Systems.SpeedTree
         
         #region Plant Environmental State Management
         
-        public void RegisterPlant(SpeedTreePlantInstance instance)
+        public void RegisterPlant(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             if (instance == null) return;
             
@@ -407,7 +413,7 @@ namespace ProjectChimera.Systems.SpeedTree
                 LightIntensityDelta = current.LightIntensity - previous.LightIntensity,
                 CO2Delta = current.CO2Level - previous.CO2Level,
                 AirVelocityDelta = current.AirVelocity - previous.AirVelocity,
-                DeltaTime = Time.time - previous.Timestamp
+                DeltaTime = (float)(current.Timestamp - previous.Timestamp).TotalSeconds
             };
         }
         
@@ -452,7 +458,7 @@ namespace ProjectChimera.Systems.SpeedTree
 #endif
         }
         
-        private void ApplyMorphologicalResponse(SpeedTreePlantInstance instance, EnvironmentalResponse response)
+        private void ApplyMorphologicalResponse(AdvancedSpeedTreeManager.SpeedTreePlantData instance, EnvironmentalResponse response)
         {
 #if UNITY_SPEEDTREE
             if (instance.Renderer?.materialProperties == null) return;
@@ -498,7 +504,7 @@ namespace ProjectChimera.Systems.SpeedTree
 #endif
         }
         
-        private void ApplyAnimationResponse(SpeedTreePlantInstance instance, EnvironmentalResponse response)
+        private void ApplyAnimationResponse(AdvancedSpeedTreeManager.SpeedTreePlantData instance, EnvironmentalResponse response)
         {
 #if UNITY_SPEEDTREE
             if (instance.Renderer?.materialProperties == null) return;
@@ -624,7 +630,7 @@ namespace ProjectChimera.Systems.SpeedTree
             _adaptationData[plantState.InstanceId].AdaptationFactors[adaptation.AdaptationType] = adaptation.AdaptationStrength;
         }
         
-        private void ApplyGeneticAdaptation(SpeedTreePlantInstance instance, string adaptationType, float strength)
+        private void ApplyGeneticAdaptation(AdvancedSpeedTreeManager.SpeedTreePlantData instance, string adaptationType, float strength)
         {
             switch (adaptationType)
             {
@@ -643,13 +649,13 @@ namespace ProjectChimera.Systems.SpeedTree
             }
         }
         
-        private void ApplyToleranceImprovement(SpeedTreePlantInstance instance, string toleranceType, float improvement)
+        private void ApplyToleranceImprovement(AdvancedSpeedTreeManager.SpeedTreePlantData instance, string toleranceType, float improvement)
         {
             // These would modify the plant's response curves
             instance.EnvironmentalModifiers[$"tolerance_{toleranceType}"] = 1f + improvement;
         }
         
-        private void ApplyEfficiencyImprovement(SpeedTreePlantInstance instance, string efficiencyType, float improvement)
+        private void ApplyEfficiencyImprovement(AdvancedSpeedTreeManager.SpeedTreePlantData instance, string efficiencyType, float improvement)
         {
             instance.EnvironmentalModifiers[$"efficiency_{efficiencyType}"] = 1f + improvement;
         }
@@ -811,7 +817,7 @@ namespace ProjectChimera.Systems.SpeedTree
                 LightIntensity = baseConditions.LightIntensity + UnityEngine.Random.Range(-50f, 50f),
                 CO2Level = baseConditions.CO2Level + UnityEngine.Random.Range(-20f, 20f),
                 AirVelocity = baseConditions.AirVelocity + UnityEngine.Random.Range(-0.1f, 0.1f),
-                Timestamp = Time.time
+                Timestamp = DateTime.Now
             };
             
             return zoneConditions;
@@ -892,7 +898,7 @@ namespace ProjectChimera.Systems.SpeedTree
                                     LightIntensity = 800f,
                                     CO2Level = 400f,
                                     AirVelocity = 0.3f,
-                                    Timestamp = Time.time
+                                    Timestamp = DateTime.Now
                                 };
             
             // Apply microclimate modifications
@@ -1019,17 +1025,17 @@ namespace ProjectChimera.Systems.SpeedTree
         
         #region Event Handlers
         
-        private void HandlePlantInstanceCreated(SpeedTreePlantInstance instance)
+        private void HandlePlantInstanceCreated(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             RegisterPlant(instance);
         }
         
-        private void HandlePlantInstanceDestroyed(SpeedTreePlantInstance instance)
+        private void HandlePlantInstanceDestroyed(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             UnregisterPlant(instance.InstanceId);
         }
         
-        private void HandlePlantStageChanged(SpeedTreePlantInstance instance, PlantGrowthStage newStage)
+        private void HandlePlantStageChanged(AdvancedSpeedTreeManager.SpeedTreePlantData instance, PlantGrowthStage newStage)
         {
             if (_plantStates.TryGetValue(instance.InstanceId, out var plantState))
             {
@@ -1141,11 +1147,11 @@ namespace ProjectChimera.Systems.SpeedTree
             }
         }
         
-        private void HandleLightingChange(float lightIntensity, Color lightColor)
+        private void HandleLightingChange(LightingConditions lightingConditions)
         {
             foreach (var plantState in _plantStates.Values)
             {
-                var lightResponse = _responseProcessor.ProcessLightResponse(plantState, lightIntensity, lightColor);
+                var lightResponse = _responseProcessor.ProcessLightResponse(plantState, lightingConditions.Intensity, lightingConditions.Color);
                 ApplyLightResponse(plantState, lightResponse);
             }
         }

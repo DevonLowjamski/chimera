@@ -1,7 +1,12 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.UIElements;
-using System.Collections.Generic;
+using TMPro;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using ProjectChimera.Core;
 
 namespace ProjectChimera.Systems.Effects
 {
@@ -50,7 +55,10 @@ namespace ProjectChimera.Systems.Effects
         Position,
         Color,
         Rotation,
-        Size
+        Size,
+        Fade,
+        Slide,
+        Bounce
     }
     
     public enum HapticType

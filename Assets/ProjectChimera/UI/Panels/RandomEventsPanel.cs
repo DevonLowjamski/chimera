@@ -1,12 +1,18 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using ProjectChimera.Core;
-using ProjectChimera.Data.Events;
-// using ProjectChimera.Systems.Events;
+using ProjectChimera.Systems.Events;
 using System.Collections.Generic;
 using System.Linq;
 using System;
 using ProjectChimera.UI.Core;
+
+// Use aliases to resolve ambiguous references
+using EventDisplayData = ProjectChimera.Data.Events.EventDisplayData;
+using ActiveRandomEvent = ProjectChimera.Data.Events.ActiveRandomEvent;
+using EventChoice = ProjectChimera.Data.Events.EventChoice;
+using EventSeverity = ProjectChimera.Data.Events.EventSeverity;
+using RandomEventData = ProjectChimera.Data.UI.RandomEventData;
 
 namespace ProjectChimera.UI.Panels
 {
@@ -117,7 +123,7 @@ namespace ProjectChimera.UI.Panels
             CreateHistoryView();
             CreateNoEventsPlaceholder();
             
-            Add(_rootContainer);
+            _contentContainer.Add(_rootContainer);
             
             // Show active events by default
             ShowActiveEventsTab();
@@ -179,7 +185,10 @@ namespace ProjectChimera.UI.Panels
             _activeEventsTab.text = "🚨 Active Events";
             _activeEventsTab.name = "active-events-tab";
             _activeEventsTab.AddToClassList("tab-button");
-            _activeEventsTab.style.padding = new StyleLength(10f);
+            _activeEventsTab.style.paddingTop = new StyleLength(10f);
+            _activeEventsTab.style.paddingBottom = new StyleLength(10f);
+            _activeEventsTab.style.paddingLeft = new StyleLength(10f);
+            _activeEventsTab.style.paddingRight = new StyleLength(10f);
             _activeEventsTab.style.marginRight = 5f;
             _activeEventsTab.style.backgroundColor = new Color(0.2f, 0.6f, 0.8f, 1f);
             _activeEventsTab.style.color = Color.white;
@@ -193,7 +202,10 @@ namespace ProjectChimera.UI.Panels
             _eventHistoryTab.text = "📚 History";
             _eventHistoryTab.name = "event-history-tab";
             _eventHistoryTab.AddToClassList("tab-button");
-            _eventHistoryTab.style.padding = new StyleLength(10f);
+            _eventHistoryTab.style.paddingTop = new StyleLength(10f);
+            _eventHistoryTab.style.paddingBottom = new StyleLength(10f);
+            _eventHistoryTab.style.paddingLeft = new StyleLength(10f);
+            _eventHistoryTab.style.paddingRight = new StyleLength(10f);
             _eventHistoryTab.style.backgroundColor = new Color(0.3f, 0.3f, 0.3f, 1f);
             _eventHistoryTab.style.color = new Color(0.8f, 0.8f, 0.8f, 1f);
             _eventHistoryTab.style.borderTopLeftRadius = 8f;
@@ -219,7 +231,10 @@ namespace ProjectChimera.UI.Panels
             
             _eventsContainer = new VisualElement();
             _eventsContainer.name = "events-container";
-            _eventsContainer.style.padding = new StyleLength(10f);
+            _eventsContainer.style.paddingTop = new StyleLength(10f);
+            _eventsContainer.style.paddingBottom = new StyleLength(10f);
+            _eventsContainer.style.paddingLeft = new StyleLength(10f);
+            _eventsContainer.style.paddingRight = new StyleLength(10f);
             
             _eventsScrollView.Add(_eventsContainer);
             _activeEventsContent.Add(_eventsScrollView);
@@ -240,7 +255,10 @@ namespace ProjectChimera.UI.Panels
             
             _eventHistoryContainer = new VisualElement();
             _eventHistoryContainer.name = "event-history-container";
-            _eventHistoryContainer.style.padding = new StyleLength(10f);
+            _eventHistoryContainer.style.paddingTop = new StyleLength(10f);
+            _eventHistoryContainer.style.paddingBottom = new StyleLength(10f);
+            _eventHistoryContainer.style.paddingLeft = new StyleLength(10f);
+            _eventHistoryContainer.style.paddingRight = new StyleLength(10f);
             
             _historyScrollView.Add(_eventHistoryContainer);
             _historyContent.Add(_historyScrollView);
@@ -264,7 +282,10 @@ namespace ProjectChimera.UI.Panels
             placeholderContainer.style.borderTopRightRadius = 12f;
             placeholderContainer.style.borderBottomLeftRadius = 12f;
             placeholderContainer.style.borderBottomRightRadius = 12f;
-            placeholderContainer.style.padding = new StyleLength(30f);
+            placeholderContainer.style.paddingTop = new StyleLength(30f);
+            placeholderContainer.style.paddingBottom = new StyleLength(30f);
+            placeholderContainer.style.paddingLeft = new StyleLength(30f);
+            placeholderContainer.style.paddingRight = new StyleLength(30f);
             placeholderContainer.style.maxWidth = 400f;
             
             var placeholderIcon = new Label("🌟");
@@ -331,6 +352,10 @@ namespace ProjectChimera.UI.Panels
         private void RefreshEventDisplay()
         {
             // if (_eventManager == null) return;
+            
+            // Placeholder data until event manager is implemented
+            var activeEvents = new List<ActiveRandomEvent>();
+            var eventDisplayData = new List<EventDisplayData>();
             
             // var activeEvents = _eventManager.ActiveEvents;
             // var eventDisplayData = _eventManager.GetEventDisplayData();
@@ -437,8 +462,14 @@ namespace ProjectChimera.UI.Panels
                 severityLabel.style.fontSize = 12f;
                 severityLabel.style.color = eventData.SeverityColor;
                 severityLabel.style.backgroundColor = new Color(eventData.SeverityColor.r, eventData.SeverityColor.g, eventData.SeverityColor.b, 0.2f);
-                severityLabel.style.padding = new StyleLength(4f);
-                severityLabel.style.borderRadius = 4f;
+                severityLabel.style.paddingTop = new StyleLength(4f);
+                severityLabel.style.paddingBottom = new StyleLength(4f);
+                severityLabel.style.paddingLeft = new StyleLength(4f);
+                severityLabel.style.paddingRight = new StyleLength(4f);
+                severityLabel.style.borderTopLeftRadius = 4f;
+                severityLabel.style.borderTopRightRadius = 4f;
+                severityLabel.style.borderBottomLeftRadius = 4f;
+                severityLabel.style.borderBottomRightRadius = 4f;
                 headerContainer.Add(severityLabel);
             }
             
@@ -462,7 +493,7 @@ namespace ProjectChimera.UI.Panels
                 var contextLabel = new Label($"💭 {eventData.StoryContext}");
                 contextLabel.style.fontSize = 12f;
                 contextLabel.style.color = new Color(0.7f, 0.7f, 0.9f, 1f);
-                contextLabel.style.fontStyle = FontStyle.Italic;
+                contextLabel.style.unityFontStyleAndWeight = FontStyle.Italic;
                 contextLabel.style.marginBottom = 10f;
                 container.Add(contextLabel);
             }
@@ -481,16 +512,18 @@ namespace ProjectChimera.UI.Panels
                 var choiceButton = new Button();
                 choiceButton.text = choiceText;
                 choiceButton.name = $"choice-{choiceIndex}";
-                choiceButton.style.padding = new StyleLength(12f);
+                choiceButton.style.paddingTop = new StyleLength(12f);
+                choiceButton.style.paddingBottom = new StyleLength(12f);
+                choiceButton.style.paddingLeft = new StyleLength(12f);
+                choiceButton.style.paddingRight = new StyleLength(12f);
                 choiceButton.style.marginBottom = 8f;
                 choiceButton.style.backgroundColor = new Color(0.2f, 0.5f, 0.7f, 0.8f);
                 choiceButton.style.color = Color.white;
-                choiceButton.style.borderRadius = 6f;
+                choiceButton.style.borderTopLeftRadius = 6f;
+                choiceButton.style.borderTopRightRadius = 6f;
+                choiceButton.style.borderBottomLeftRadius = 6f;
+                choiceButton.style.borderBottomRightRadius = 6f;
                 choiceButton.style.borderTopWidth = 0f;
-                choiceButton.style.borderRightWidth = 0f;
-                choiceButton.style.borderBottomWidth = 0f;
-                choiceButton.style.borderLeftWidth = 0f;
-                choiceButton.style.whiteSpace = WhiteSpace.Normal;
                 
                 // Add hover effect
                 choiceButton.RegisterCallback<MouseEnterEvent>(evt =>
@@ -521,8 +554,14 @@ namespace ProjectChimera.UI.Panels
             timerContainer.style.alignItems = Align.Center;
             timerContainer.style.justifyContent = Justify.Center;
             timerContainer.style.backgroundColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
-            timerContainer.style.padding = new StyleLength(8f);
-            timerContainer.style.borderRadius = 6f;
+            timerContainer.style.paddingTop = new StyleLength(8f);
+            timerContainer.style.paddingBottom = new StyleLength(8f);
+            timerContainer.style.paddingLeft = new StyleLength(8f);
+            timerContainer.style.paddingRight = new StyleLength(8f);
+            timerContainer.style.borderTopLeftRadius = 6f;
+            timerContainer.style.borderTopRightRadius = 6f;
+            timerContainer.style.borderBottomLeftRadius = 6f;
+            timerContainer.style.borderBottomRightRadius = 6f;
             
             var timerIcon = new Label("⏰");
             timerIcon.style.fontSize = 14f;
@@ -562,14 +601,15 @@ namespace ProjectChimera.UI.Panels
                 
                 if (timerLabel != null)
                 {
-                    // var eventData = _eventManager.GetEventDisplayData()
-                        // .FirstOrDefault(e => e.EventId == kvp.Key);
-                    RandomEventData eventData = null; // Placeholder
+                    // Get event data from the event manager
+                    // var eventDisplayData = _eventManager?.GetEventDisplayData()
+                    //     ?.FirstOrDefault(e => e.EventId == kvp.Key);
+                    EventDisplayData eventDisplayData = null; // Placeholder until event manager is connected
                     
-                    if (eventData != null && eventData.HasTimeLimit)
+                    if (eventDisplayData != null && eventDisplayData.HasTimeLimit)
                     {
-                        timerLabel.text = FormatTimeRemaining(eventData.TimeRemaining);
-                        timerLabel.style.color = GetTimerColor(eventData.TimeRemaining);
+                        timerLabel.text = FormatTimeRemaining(eventDisplayData.TimeRemaining);
+                        timerLabel.style.color = GetTimerColor(eventDisplayData.TimeRemaining);
                     }
                 }
             }
@@ -592,10 +632,10 @@ namespace ProjectChimera.UI.Panels
                     
                     _elementAnimationStates[eventId] = animationTime + Time.deltaTime;
                 }
-                // else
-                // {
+                else
+                {
                     _elementAnimationStates.Remove(eventId);
-                // }
+                }
             }
         }
         
@@ -614,7 +654,10 @@ namespace ProjectChimera.UI.Panels
                 fadeContainer.style.right = 0;
                 fadeContainer.style.bottom = 0;
                 fadeContainer.style.backgroundColor = new Color(0f, 0.5f, 0f, 0.3f);
-                fadeContainer.style.borderRadius = 12f;
+                fadeContainer.style.borderTopLeftRadius = 12f;
+                fadeContainer.style.borderTopRightRadius = 12f;
+                fadeContainer.style.borderBottomLeftRadius = 12f;
+                fadeContainer.style.borderBottomRightRadius = 12f;
                 
                 var confirmLabel = new Label("✓ Decision Made");
                 confirmLabel.style.color = new Color(0.2f, 0.8f, 0.2f, 1f);
@@ -628,7 +671,7 @@ namespace ProjectChimera.UI.Panels
                 eventElement.Add(fadeContainer);
                 
                 // Refresh display after a short delay
-                this.schedule.Execute(() => RefreshEventDisplay()).ExecuteLater(1000);
+                _rootContainer.schedule.Execute(() => RefreshEventDisplay()).ExecuteLater(1000);
             }
         }
         

@@ -2,6 +2,13 @@ using UnityEngine;
 using UnityEngine.VFX;
 using System.Collections.Generic;
 using System;
+using System.Linq;
+using ProjectChimera.Data.Construction;
+using ProjectChimera.Data.Genetics;
+using ProjectChimera.Systems.Construction;
+using ProjectChimera.Systems.Cultivation;
+// Explicit alias for Data layer PlantGrowthStage to resolve ambiguity
+using DataPlantGrowthStage = ProjectChimera.Data.Genetics.PlantGrowthStage;
 
 namespace ProjectChimera.Systems.Effects
 {
@@ -16,6 +23,8 @@ namespace ProjectChimera.Systems.Effects
         PlantGrowth,
         PlantWatering,
         PlantHarvest,
+        PlantFlowering,
+        PlantMaturation,
         Construction,
         Environmental,
         Sparks,
@@ -26,7 +35,8 @@ namespace ProjectChimera.Systems.Effects
         Water,
         Magic,
         UI,
-        Cinematic
+        Cinematic,
+        Achievement
     }
     
     public enum EnvironmentalEffectType
@@ -100,6 +110,7 @@ namespace ProjectChimera.Systems.Effects
         public float LastParticleSpawn;
         public float Intensity = 1f;
         public Transform AttachedTransform;
+        public GameObject EffectObject;
         public Dictionary<string, object> Parameters = new Dictionary<string, object>();
     }
     
@@ -121,7 +132,7 @@ namespace ProjectChimera.Systems.Effects
     public class PlantEffectData
     {
         public string PlantId;
-        public PlantGrowthStage GrowthStage;
+        public DataPlantGrowthStage GrowthStage;
         public float Health;
         public float GrowthProgress;
         public Vector3 PlantPosition;
@@ -188,12 +199,12 @@ namespace ProjectChimera.Systems.Effects
         
         private void UpdateStageEffects()
         {
-            switch (_plant.CurrentStage)
+            switch (_plant.CurrentGrowthStage)
             {
-                case PlantGrowthStage.Flowering:
+                case DataPlantGrowthStage.Flowering:
                     CreateFloweringEffect();
                     break;
-                case PlantGrowthStage.Harvest:
+                case DataPlantGrowthStage.Harvest:
                     CreateHarvestReadyEffect();
                     break;
             }
@@ -201,39 +212,40 @@ namespace ProjectChimera.Systems.Effects
         
         private void CreateGrowthEffect()
         {
-            _effectsManager.PlayEffect(EffectType.PlantGrowth, _plant.transform.position, _plant.transform, 5f);
+            _effectsManager.PlayEffect(EffectType.PlantGrowth, _plant.transform.position, _plant.transform, 3f);
         }
         
         private void CreateStressEffect()
         {
-            _effectsManager.PlayEffect(EffectType.Steam, _plant.transform.position + Vector3.up * 0.3f, _plant.transform, 3f);
+            _effectsManager.PlayEffect(EffectType.Steam, _plant.transform.position + Vector3.up * 0.5f, _plant.transform, 2f);
         }
         
         private void CreateFloweringEffect()
         {
-            if (UnityEngine.Random.value < 0.02f) // 2% chance per update
+            if (UnityEngine.Random.value < 0.1f) // 10% chance per update
             {
-                _effectsManager.PlayEffect(EffectType.Environmental, _plant.transform.position + Vector3.up * 0.8f, _plant.transform, 4f);
+                _effectsManager.PlayEffect(EffectType.Environmental, _plant.transform.position + Vector3.up * 1f, _plant.transform, 4f);
             }
         }
         
         private void CreateHarvestReadyEffect()
         {
-            if (UnityEngine.Random.value < 0.01f) // 1% chance per update
+            if (UnityEngine.Random.value < 0.05f) // 5% chance per update
             {
-                _effectsManager.PlayEffect(EffectType.PlantHarvest, _plant.transform.position, _plant.transform, 6f);
+                _effectsManager.PlayEffect(EffectType.PlantHarvest, _plant.transform.position + Vector3.up * 1.2f, _plant.transform, 5f);
             }
         }
         
         public void Cleanup()
         {
+            // Clean up any active effects for this plant
             _activeEffects.Clear();
         }
     }
     
     public class PlantEffectLibrary
     {
-        private Dictionary<PlantGrowthStage, List<EffectType>> _stageEffects;
+        private Dictionary<DataPlantGrowthStage, List<EffectType>> _stageEffects;
         
         public PlantEffectLibrary()
         {
@@ -242,16 +254,16 @@ namespace ProjectChimera.Systems.Effects
         
         private void InitializeEffectLibrary()
         {
-            _stageEffects = new Dictionary<PlantGrowthStage, List<EffectType>>
+            _stageEffects = new Dictionary<DataPlantGrowthStage, List<EffectType>>
             {
-                [PlantGrowthStage.Seedling] = new List<EffectType> { EffectType.PlantGrowth, EffectType.Steam },
-                [PlantGrowthStage.Vegetative] = new List<EffectType> { EffectType.PlantGrowth, EffectType.Environmental },
-                [PlantGrowthStage.Flowering] = new List<EffectType> { EffectType.PlantGrowth, EffectType.Environmental, EffectType.Dust },
-                [PlantGrowthStage.Harvest] = new List<EffectType> { EffectType.PlantHarvest }
+                { DataPlantGrowthStage.Seedling, new List<EffectType> { EffectType.PlantGrowth, EffectType.PlantWatering } },
+                { DataPlantGrowthStage.Vegetative, new List<EffectType> { EffectType.PlantGrowth, EffectType.Environmental } },
+                { DataPlantGrowthStage.Flowering, new List<EffectType> { EffectType.PlantGrowth, EffectType.Environmental, EffectType.Dust } },
+                { DataPlantGrowthStage.Harvest, new List<EffectType> { EffectType.PlantHarvest, EffectType.Environmental } }
             };
         }
         
-        public List<EffectType> GetEffectsForStage(PlantGrowthStage stage)
+        public List<EffectType> GetEffectsForStage(DataPlantGrowthStage stage)
         {
             return _stageEffects.TryGetValue(stage, out var effects) ? effects : new List<EffectType>();
         }
@@ -351,6 +363,14 @@ namespace ProjectChimera.Systems.Effects
                 _effectsManager.PlayEffect(EffectType.Sparks, _project.BuildingSite + Vector3.up * 1.5f, null, 1.5f);
             }
         }
+        
+        public void Cleanup()
+        {
+            // Clean up any active effects for this construction project
+            _activeEffects.Clear();
+            _lastDustEffect = 0f;
+            _lastSparksEffect = 0f;
+        }
     }
     
     // Weather Effects
@@ -409,6 +429,22 @@ namespace ProjectChimera.Systems.Effects
         private void UpdateWeatherDirection()
         {
             // Update wind direction and effects
+        }
+        
+        public void Cleanup()
+        {
+            // Clean up weather effects
+            if (_rainParticles != null)
+            {
+                _rainParticles.Stop();
+                _rainParticles = null;
+            }
+            
+            if (_fogParticles != null)
+            {
+                _fogParticles.Stop();
+                _fogParticles = null;
+            }
         }
     }
     

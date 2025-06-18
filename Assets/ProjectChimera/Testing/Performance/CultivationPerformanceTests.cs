@@ -1,10 +1,14 @@
 using UnityEngine;
 using UnityEngine.TestTools;
 using NUnit.Framework;
+using System;
 using System.Collections;
 using System.Diagnostics;
 using ProjectChimera.Core;
-using ProjectChimera.Testing;
+using ProjectChimera.Testing.Core;
+using ProjectChimera.Systems.Cultivation;
+using ProjectChimera.Systems.Economy;
+using ProjectChimera.Data.Automation;
 
 namespace ProjectChimera.Testing.Performance
 {
@@ -31,7 +35,7 @@ namespace ProjectChimera.Testing.Performance
             _stopwatch.Start();
             
             // Initialize cultivation manager
-            _cultivationManager.Initialize();
+            // CultivationManager initializes automatically when created
             
             _stopwatch.Stop();
             
@@ -44,14 +48,14 @@ namespace ProjectChimera.Testing.Performance
         
         public void CultivationManager_PlantCreationPerformance()
         {
-            _cultivationManager.Initialize();
+            // CultivationManager initializes automatically when created
             
             _stopwatch.Start();
             
             // Create multiple plants
             for (int i = 0; i < 100; i++)
             {
-                _cultivationManager.CreatePlant($"TestPlant_{i}", Vector3.zero);
+                _cultivationManager.PlantSeed($"TestPlant_{i}", null, null, Vector3.zero);
             }
             
             _stopwatch.Stop();
@@ -65,12 +69,12 @@ namespace ProjectChimera.Testing.Performance
         
         public void CultivationManager_UpdateCyclePerformance()
         {
-            _cultivationManager.Initialize();
+            // CultivationManager initializes automatically when created
             
             // Create some test plants
             for (int i = 0; i < 10; i++)
             {
-                _cultivationManager.CreatePlant($"TestPlant_{i}", Vector3.zero);
+                _cultivationManager.PlantSeed($"TestPlant_{i}", null, null, Vector3.zero);
             }
             
             _stopwatch.Start();
@@ -78,7 +82,7 @@ namespace ProjectChimera.Testing.Performance
             // Run multiple update cycles
             for (int i = 0; i < 100; i++)
             {
-                _cultivationManager.UpdateCultivation(Time.fixedDeltaTime);
+                // CultivationManager updates automatically via Update() method
             }
             
             _stopwatch.Stop();
@@ -94,12 +98,12 @@ namespace ProjectChimera.Testing.Performance
         {
             long initialMemory = GC.GetTotalMemory(true);
             
-            _cultivationManager.Initialize();
+            // CultivationManager initializes automatically when created
             
             // Create many plants to test memory usage
             for (int i = 0; i < 1000; i++)
             {
-                _cultivationManager.CreatePlant($"TestPlant_{i}", Vector3.zero);
+                _cultivationManager.PlantSeed($"TestPlant_{i}", null, null, Vector3.zero);
             }
             
             long finalMemory = GC.GetTotalMemory(true);
@@ -114,12 +118,12 @@ namespace ProjectChimera.Testing.Performance
         
         public IEnumerator CultivationManager_LongTermPerformanceTest()
         {
-            _cultivationManager.Initialize();
+            // CultivationManager initializes automatically when created
             
             // Create test plants
             for (int i = 0; i < 20; i++)
             {
-                _cultivationManager.CreatePlant($"TestPlant_{i}", Vector3.zero);
+                _cultivationManager.PlantSeed($"TestPlant_{i}", null, null, Vector3.zero);
             }
             
             _stopwatch.Start();
@@ -127,7 +131,7 @@ namespace ProjectChimera.Testing.Performance
             // Simulate long-term operation
             for (int frame = 0; frame < 1000; frame++)
             {
-                _cultivationManager.UpdateCultivation(Time.fixedDeltaTime);
+                // CultivationManager updates automatically via Update() method
                 
                 // Yield periodically to prevent blocking
                 if (frame % 100 == 0)
@@ -147,12 +151,15 @@ namespace ProjectChimera.Testing.Performance
         
         public void CultivationManager_BatchOperationPerformance()
         {
-            _cultivationManager.Initialize();
+            // CultivationManager initializes automatically when created
             
             _stopwatch.Start();
             
-            // Test batch plant creation
-            _cultivationManager.CreatePlantBatch(100, "BatchTestPlant");
+            // Test batch plant creation using PlantSeed method
+            for (int i = 0; i < 100; i++)
+            {
+                _cultivationManager.PlantSeed($"BatchTestPlant_{i}", null, null, Vector3.zero);
+            }
             
             _stopwatch.Stop();
             

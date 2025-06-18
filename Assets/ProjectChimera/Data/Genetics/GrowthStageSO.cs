@@ -315,12 +315,15 @@ namespace ProjectChimera.Data.Genetics
     {
         Seed,
         Germination,
+        Sprout,
         Seedling,
         Vegetative,
         PreFlowering,
         Flowering,
         Ripening,
         Harvest,
+        Harvestable,
+        Harvested,
         Drying,
         Curing
     }

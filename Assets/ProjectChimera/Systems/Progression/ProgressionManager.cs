@@ -68,6 +68,7 @@ namespace ProjectChimera.Systems.Progression
         // Public Properties
         public int PlayerLevel => _playerProfile?.PlayerLevel ?? 1;
         public float TotalExperience => _totalExperience;
+        public float CurrentExperience => _currentLevelExperience;
         public int AvailableSkillPoints => _availableSkillPoints;
         public int ActiveResearchProjects => _activeResearch.Count;
         public int CompletedResearchProjects => _completedResearch.Count;

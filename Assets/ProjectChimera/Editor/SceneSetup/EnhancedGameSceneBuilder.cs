@@ -6,7 +6,6 @@ using UnityEngine.Rendering.Universal;
 using ProjectChimera.Core;
 using ProjectChimera.Systems.Cultivation;
 using ProjectChimera.Systems.Economy;
-using ProjectChimera.Systems.Environment;
 using ProjectChimera.Systems.Genetics;
 using ProjectChimera.Systems.Progression;
 using ProjectChimera.Systems.Community;
@@ -14,9 +13,16 @@ using ProjectChimera.Systems.Construction;
 using ProjectChimera.Systems.Tutorial;
 using ProjectChimera.Systems.Facilities;
 using ProjectChimera.UI;
+using ProjectChimera.Data.Cultivation;
+using ProjectChimera.Scripts.Environment;
+using ProjectChimera.Scripts.Cultivation;
+using ProjectChimera.Scripts.Facilities;
+using EnvironmentSystems = ProjectChimera.Systems.Environment;
+using CultivationLightType = ProjectChimera.Data.Cultivation.LightType;
 
 namespace ProjectChimera.Editor.SceneSetup
 {
+    // Enhanced Game Scene Builder for Project Chimera
     /// <summary>
     /// Enhanced scene builder that creates functional prefabs and connects all systems.
     /// Builds a complete playable game scene with all components properly configured.
@@ -83,7 +89,7 @@ namespace ProjectChimera.Editor.SceneSetup
             // Add System Managers
             gameManagerGO.AddComponent<PlantManager>();
             gameManagerGO.AddComponent<GeneticsManager>();
-            gameManagerGO.AddComponent<EnvironmentalManager>();
+            gameManagerGO.AddComponent<EnvironmentSystems.EnvironmentalManager>();
             gameManagerGO.AddComponent<CurrencyManager>();
             gameManagerGO.AddComponent<ProgressionManager>();
             gameManagerGO.AddComponent<CommunityManager>();
@@ -142,7 +148,7 @@ namespace ProjectChimera.Editor.SceneSetup
             GameObject sunLightGO = new GameObject("Sun Light");
             sunLightGO.transform.SetParent(lightingSystemGO.transform);
             Light sunLight = sunLightGO.AddComponent<Light>();
-            sunLight.type = LightType.Directional;
+            sunLight.type = UnityEngine.LightType.Directional;
             sunLight.color = new Color(1f, 0.95f, 0.8f);
             sunLight.intensity = 1.2f;
             sunLight.shadows = LightShadows.Soft;
@@ -168,15 +174,15 @@ namespace ProjectChimera.Editor.SceneSetup
             growLightsParent.transform.SetParent(parent.transform);
             
             // LED Grow Light with controller
-            GameObject ledLightGO = CreateGrowLight("LED Grow Light", LightType.LED, growLightsParent.transform);
+            GameObject ledLightGO = CreateGrowLight("LED Grow Light", CultivationLightType.LED, growLightsParent.transform);
             ledLightGO.transform.position = new Vector3(0f, 3f, 0f);
             
             // HPS Grow Light with controller
-            GameObject hpsLightGO = CreateGrowLight("HPS Grow Light", Environment.LightType.HPS, growLightsParent.transform);
+            GameObject hpsLightGO = CreateGrowLight("HPS Grow Light", CultivationLightType.HPS, growLightsParent.transform);
             hpsLightGO.transform.position = new Vector3(5f, 3f, 0f);
         }
         
-        private static GameObject CreateGrowLight(string name, Environment.LightType lightType, Transform parent)
+        private static GameObject CreateGrowLight(string name, CultivationLightType lightType, Transform parent)
         {
             GameObject lightGO = new GameObject(name);
             lightGO.transform.SetParent(parent);
@@ -194,9 +200,9 @@ namespace ProjectChimera.Editor.SceneSetup
             // Set color based on light type
             light.color = lightType switch
             {
-                Environment.LightType.LED => Color.white,
-                Environment.LightType.HPS => new Color(1f, 0.7f, 0.3f),
-                Environment.LightType.CMH => new Color(0.9f, 0.9f, 1f),
+                CultivationLightType.LED => Color.white,
+                CultivationLightType.HPS => new Color(1f, 0.7f, 0.3f),
+                CultivationLightType.CMH => new Color(0.9f, 0.9f, 1f),
                 _ => Color.white
             };
             

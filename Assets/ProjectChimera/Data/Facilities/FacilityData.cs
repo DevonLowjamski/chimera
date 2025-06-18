@@ -270,7 +270,12 @@ namespace ProjectChimera.Data.Facilities
         OutdoorFarm,
         MixedFacility,
         ProcessingFacility,
-        ResearchFacility
+        ResearchFacility,
+        GrowRoom,
+        ProcessingRoom,
+        StorageRoom,
+        UtilityRoom,
+        Office
     }
     
     public enum RoomType
@@ -533,9 +538,19 @@ namespace ProjectChimera.Data.Facilities
     [System.Serializable]
     public class LightSchedule
     {
+        public string ScheduleName = "Default Schedule";
         public TimeSpan LightsOn = TimeSpan.FromHours(6);
         public TimeSpan LightsOff = TimeSpan.FromHours(18);
+        public float LightPeriodHours = 12f;
+        public float DarkPeriodHours = 12f;
+        public TimeSpan LightStartTime = TimeSpan.FromHours(6);
+        public float IntensityRampTime = 30f;
+        public bool IsActive = true;
         public bool AutoAdjust = false;
+        
+        // Compatibility properties for OnTime/OffTime access
+        public TimeSpan OnTime => LightsOn;
+        public TimeSpan OffTime => LightsOff;
     }
     
     [System.Serializable]

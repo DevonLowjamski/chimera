@@ -258,7 +258,10 @@ namespace ProjectChimera.Data.Tutorial
         Custom,
         SystemEvent,
         ManagerState,
-        UIInteraction
+        UIInteraction,
+        UIElementClick,
+        GameObjectClick,
+        PlayerInput
     }
     
     /// <summary>
@@ -267,8 +270,10 @@ namespace ProjectChimera.Data.Tutorial
     public enum TutorialCategory
     {
         Onboarding,
+        Basic,
         BasicCultivation,
         AdvancedCultivation,
+        Cultivation,
         Genetics,
         Economics,
         FacilityManagement,
@@ -440,6 +445,7 @@ namespace ProjectChimera.Data.Tutorial
         public bool IsRequired;
         public List<TutorialStep> Steps = new List<TutorialStep>();
         public List<string> UnlockRequirements = new List<string>();
+        public List<string> Prerequisites = new List<string>(); // Prerequisites for this sequence
         public TutorialReward CompletionReward;
         public TutorialDifficultyLevel DifficultyLevel;
         public float EstimatedDuration; // Total estimated duration in minutes
@@ -492,6 +498,8 @@ namespace ProjectChimera.Data.Tutorial
         public bool AutoComplete; // Whether step auto-completes when conditions are met
         public float EstimatedDuration; // Expected completion time in seconds
         public List<ContextualHint> ContextualHints = new List<ContextualHint>();
+        public TutorialCategory Category = TutorialCategory.Onboarding; // Category for step
+        public int MaxHints = 3; // Maximum hints allowed for this step
         
         public TutorialStep() { }
         
@@ -549,10 +557,14 @@ namespace ProjectChimera.Data.Tutorial
         public Dictionary<string, TutorialProgress> SequenceProgress = new Dictionary<string, TutorialProgress>();
         public string CurrentSequenceId;
         public string CurrentStepId;
-        public DateTime LastPlayTime;
+        public System.DateTime LastPlayTime;
         public int TotalTutorialsCompleted;
         public float TotalTimeSpent;
+        public float TotalTutorialTime = 0f; // Total time spent in tutorials
         public Dictionary<string, object> CustomData = new Dictionary<string, object>();
+        public string PlayerId = "";
+        public List<string> SkippedTutorials = new List<string>();
+        public TutorialDifficulty PreferredDifficulty = TutorialDifficulty.Normal;
     }
 
     /// <summary>
@@ -573,6 +585,9 @@ namespace ProjectChimera.Data.Tutorial
         public float AverageActionTime;
         public float ErrorRate;
         public float HintUsageRate;
+        public System.DateTime SessionStartTime;
+        public float TotalSessionTime;
+        public List<string> CompletedTutorials = new List<string>();
     }
 
     /// <summary>
@@ -643,7 +658,10 @@ namespace ProjectChimera.Data.Tutorial
         public float OverallSuccessRate;
         public Dictionary<string, float> SequenceCompletionRates = new Dictionary<string, float>();
         public Dictionary<string, float> StepDifficultyRatings = new Dictionary<string, float>();
-        public DateTime LastUpdated;
+        public System.DateTime LastUpdated;
+        public float HintUsageRate = 0f; // Rate at which hints are used
+        public int TotalErrors = 0; // Total number of errors encountered
+        public float ErrorRate => TotalStepsCompleted > 0 ? (float)TotalErrors / TotalStepsCompleted : 0f;
     }
 
     /// <summary>
@@ -659,5 +677,11 @@ namespace ProjectChimera.Data.Tutorial
         public int HintsUsed;
         public float DifficultyRating;
         public List<string> CommonErrors = new List<string>();
+        public TutorialCategory Category = TutorialCategory.Onboarding; // Category for performance tracking
+        public float SuccessRate { get; set; } = 0f; // Success rate for this step
+        public float ExpectedTime = 30f; // Expected completion time for this step
+        public int CompletionCount { get; set; } = 0; // Completion count for this step
+        public float TotalCompletionTime = 0f; // Total time spent completing this step
+        public System.DateTime LastCompletionTime; // Last time this step was completed
     }
 }

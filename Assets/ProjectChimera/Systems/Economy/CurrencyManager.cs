@@ -263,6 +263,22 @@ namespace ProjectChimera.Systems.Economy
         {
             return _currencies.TryGetValue(currencyType, out float amount) ? amount : 0f;
         }
+
+        /// <summary>
+        /// Get balance (alias for GetCurrencyAmount with Cash)
+        /// </summary>
+        public float GetBalance()
+        {
+            return GetCurrencyAmount(CurrencyType.Cash);
+        }
+        
+        /// <summary>
+        /// Get balance for specific currency type
+        /// </summary>
+        public float GetBalance(CurrencyType currencyType)
+        {
+            return GetCurrencyAmount(currencyType);
+        }
         
         /// <summary>
         /// Set currency amount (for loading saves or admin functions)

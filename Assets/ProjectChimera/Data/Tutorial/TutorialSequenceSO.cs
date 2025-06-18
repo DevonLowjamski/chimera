@@ -67,6 +67,26 @@ namespace ProjectChimera.Data.Tutorial
         public bool AllowSequenceSkipping => _allowSequenceSkipping;
         public int StepCount => _tutorialSteps.Count;
         
+        /// <summary>
+        /// Calculate estimated duration based on steps - compatibility property for testing framework
+        /// </summary>
+        public float EstimatedDuration
+        {
+            get
+            {
+                float totalDuration = 0f;
+                foreach (var step in _tutorialSteps)
+                {
+                    if (step != null)
+                    {
+                        // Use TimeoutDuration as an approximation for estimated step duration
+                        totalDuration += step.TimeoutDuration;
+                    }
+                }
+                return totalDuration;
+            }
+        }
+        
         public List<string> UnlockRequirements => _unlockRequirements;
         public List<TutorialSequenceSO> PrerequisiteSequences => _prerequisiteSequences;
         public int MinimumPlayerLevel => _minimumPlayerLevel;

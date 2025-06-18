@@ -471,6 +471,9 @@ namespace ProjectChimera.UI.Core
         [SerializeField] public bool IsEnabled = true;
         [SerializeField] public int Priority = 0;
         [SerializeField] public Texture2D Icon;
+        
+        // Compatibility property for legacy code
+        public string PrefabName => DisplayName ?? PrefabId ?? Prefab?.name ?? "Unknown";
     }
     
     /// <summary>

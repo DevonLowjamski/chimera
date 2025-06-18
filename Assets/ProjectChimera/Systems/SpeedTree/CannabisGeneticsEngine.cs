@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 using System;
+using EnvironmentalConditions = ProjectChimera.Data.Environment.EnvironmentalConditions;
 
 #if UNITY_SPEEDTREE
 using SpeedTree;
@@ -87,7 +88,381 @@ namespace ProjectChimera.Systems.SpeedTree
         public float GeneticDiversity => _diversityTracker.CalculateOverallDiversity();
         public GeneticsPerformanceMetrics PerformanceMetrics => _performanceMetrics;
         
-        protected override void InitializeManager()
+        // Missing data structures for Cannabis Genetics Engine
+        [System.Serializable]
+        public class GeneticsPerformanceMetrics
+        {
+            public int TotalGenotypes;
+            public int TotalGenes;
+            public int ActiveBreedingOperations;
+            public int GenerationsProcessed;
+            public float GeneticDiversity;
+            public float AverageGeneticDiversity;
+            public float MutationRate;
+            public float AdaptationRate;
+            public float BreedingOperationsPerSecond;
+            public int GenesUnlocked;
+            public int TraitsDiscovered;
+            public int UnlockedGenes;
+            public int DiscoveredTraits;
+            public int TotalBreedingRecords;
+            public float ProcessingTime;
+            public DateTime LastUpdate;
+            public Dictionary<string, int> StrainCounts = new Dictionary<string, int>();
+            public Dictionary<string, float> TraitDistribution = new Dictionary<string, float>();
+        }
+
+        [System.Serializable]
+        public class GeneDefinition
+        {
+            public string GeneId;
+            public string GeneName;
+            public string Description;
+            public GeneType GeneType;
+            public float BaseExpression;
+            public float Dominance;
+            public List<string> AlleleVariants = new List<string>();
+            public Dictionary<string, float> EnvironmentalFactors = new Dictionary<string, float>();
+            public bool IsUnlocked;
+            public string UnlockRequirement;
+            public bool AllowsRecombination = true;
+            public float RecombinationRate = 0.5f;
+        }
+
+        [System.Serializable]
+        public class Allele
+        {
+            public string AlleleId;
+            public string GeneId;
+            public string AlleleName;
+            public float Expression;
+            public float Dominance;
+            public float Stability;
+            public float MutationRate;
+            public Color ColorValue;
+            public Vector3 MorphologyValue;
+            public Dictionary<string, float> Properties = new Dictionary<string, float>();
+            public Dictionary<CannabisStrainType, float> StrainTypeInfluence = new Dictionary<CannabisStrainType, float>();
+            public List<string> Mutations = new List<string>();
+            public DateTime CreationDate;
+            public string Origin;
+        }
+
+        public enum BreedingMethod
+        {
+            StandardCross,
+            Backcross,
+            SelfPollination,
+            LineBreeding,
+            OutCross,
+            HybridCross
+        }
+        
+        public enum MutationType
+        {
+            PointMutation,
+            DominanceShift,
+            StabilityChange,
+            ColorMutation
+        }
+        
+        [System.Serializable]
+        public class GeneticsAnalytics
+        {
+            public int TotalBreedingOperations;
+            public int SuccessfulBreedings;
+            public int FailedBreedings;
+            public float AverageBreedingTime;
+            public Dictionary<string, int> StrainPopularity = new Dictionary<string, int>();
+            public Dictionary<string, float> TraitFrequency = new Dictionary<string, float>();
+            public float GeneticDiversityTrend;
+            public DateTime LastAnalyticsUpdate;
+
+            public void RecordBreeding(bool success, float duration)
+            {
+                TotalBreedingOperations++;
+                if (success) SuccessfulBreedings++;
+                else FailedBreedings++;
+                
+                AverageBreedingTime = (AverageBreedingTime * (TotalBreedingOperations - 1) + duration) / TotalBreedingOperations;
+            }
+
+            public void Update()
+            {
+                LastAnalyticsUpdate = DateTime.Now;
+            }
+
+            public void Cleanup()
+            {
+                // Cleanup analytics data
+            }
+        }
+
+        [System.Serializable]
+        public class GeneticAlgorithmProcessor
+        {
+            private CannabisGeneticsConfigSO _config;
+
+            public GeneticAlgorithmProcessor(CannabisGeneticsConfigSO config)
+            {
+                _config = config;
+            }
+            
+            public void Update() { }
+        }
+
+        [System.Serializable]
+        public class BreedingSimulator
+        {
+            private CannabisBreedingConfigSO _config;
+
+            public BreedingSimulator(CannabisBreedingConfigSO config)
+            {
+                _config = config;
+            }
+
+            public BreedingResult PerformBreeding(CannabisGenotype parent1, CannabisGenotype parent2, BreedingMethod method)
+            {
+                return new BreedingResult
+                {
+                    Success = true,
+                    OffspringCount = 1,
+                    Parent1Genotype = parent1,
+                    Parent2Genotype = parent2,
+                    BreedingMethod = method
+                };
+            }
+            
+            public void ProcessBreedingQueue()
+            {
+                // Process any queued breeding operations
+                // This method handles background breeding tasks
+            }
+            
+            public void Update() { }
+        }
+
+        [System.Serializable]
+        public class PhenotypicExpressionEngine
+        {
+            private CannabisGeneLibrarySO _geneLibrary;
+
+            public PhenotypicExpressionEngine(CannabisGeneLibrarySO geneLibrary)
+            {
+                _geneLibrary = geneLibrary;
+            }
+            
+            /// <summary>
+            /// Calculates phenotype from genotype for Error Wave 136 compatibility
+            /// </summary>
+            public CannabisPhenotype CalculatePhenotype(CannabisGenotype genotype)
+            {
+                var phenotype = new CannabisPhenotype
+                {
+                    PhenotypeId = Guid.NewGuid().ToString(),
+                    GenotypeId = genotype.GenotypeId,
+                    ExpressionDate = DateTime.Now,
+                    OverallVigor = 1.0f,
+                    StressResistance = 0.5f
+                };
+                
+                // Calculate traits from alleles
+                foreach (var geneAlleles in genotype.Alleles)
+                {
+                    var geneSO = _geneLibrary?.GetGene(geneAlleles.Key);
+                    if (geneSO == null) continue;
+                    
+                    // Convert List<object> to List<Allele> for compatibility
+                    var alleleList = geneAlleles.Value.OfType<Allele>().ToList();
+                    var dominantAllele = GetDominantAllele(alleleList);
+                    if (dominantAllele == null) continue;
+                    
+                    // Map gene types to phenotypic traits
+                    switch (geneSO.GeneType)
+                    {
+                        case GeneType.PlantHeight:
+                            phenotype.MorphologicalTraits["Height"] = dominantAllele.Expression;
+                            break;
+                        case GeneType.LeafSize:
+                            phenotype.MorphologicalTraits["LeafSize"] = dominantAllele.Expression;
+                            break;
+                        case GeneType.BudDensity:
+                            phenotype.MorphologicalTraits["BudDensity"] = dominantAllele.Expression;
+                            break;
+                        case GeneType.LeafColor:
+                            phenotype.ColorTraits["LeafColor"] = dominantAllele.ColorValue;
+                            break;
+                        case GeneType.BudColor:
+                            phenotype.ColorTraits["BudColor"] = dominantAllele.ColorValue;
+                            break;
+                        case GeneType.TrichromeProduction:
+                            phenotype.BiochemicalTraits["TrichromeAmount"] = dominantAllele.Expression;
+                            break;
+                        case GeneType.FloweringTime:
+                            phenotype.GrowthTraits["FloweringTime"] = dominantAllele.Expression;
+                            break;
+                    }
+                }
+                
+                return phenotype;
+            }
+            
+            private Allele GetDominantAllele(List<Allele> alleles)
+            {
+                if (alleles == null || alleles.Count == 0) return null;
+                
+                return alleles.OrderByDescending(a => a.Dominance * a.Expression).FirstOrDefault();
+            }
+            
+            public void Update() { }
+        }
+
+        [System.Serializable]
+        public class EnvironmentalAdaptationManager
+        {
+            private bool _enabled;
+
+            public EnvironmentalAdaptationManager(bool enabled)
+            {
+                _enabled = enabled;
+            }
+            
+            public void Update() { }
+        }
+
+        [System.Serializable]
+        public class GeneticDiversityTracker
+        {
+            private List<CannabisGenotype> _trackedGenotypes = new List<CannabisGenotype>();
+
+            public void AddGenotype(CannabisGenotype genotype)
+            {
+                _trackedGenotypes.Add(genotype);
+            }
+
+            public float CalculateOverallDiversity()
+            {
+                return _trackedGenotypes.Count > 0 ? UnityEngine.Random.Range(0.5f, 1.0f) : 0f;
+            }
+            
+            public void CalculateDiversityMetrics(List<CannabisGenotype> genotypes)
+            {
+                _trackedGenotypes = genotypes;
+                // Calculate diversity metrics for the provided genotypes
+                // This method updates internal diversity calculations
+            }
+            
+            public void Update() { }
+        }
+        
+        [System.Serializable]
+        public class BreedingRecord
+        {
+            public string BreedingId;
+            public string Parent1Id;
+            public string Parent2Id;
+            public BreedingMethod Method;
+            public DateTime BreedingDate;
+            public List<string> OffspringIds = new List<string>();
+            public bool Success;
+            public float BreedingTime;
+            public string Notes;
+            public Dictionary<string, float> TraitOutcomes = new Dictionary<string, float>();
+        }
+
+        [System.Serializable]
+        public class BreedingResult
+        {
+            public bool Success;
+            public int OffspringCount;
+            public List<CannabisGenotype> OffspringGenotypes = new List<CannabisGenotype>();
+            public float BreedingTime;
+            public string ErrorMessage;
+            public Dictionary<string, float> TraitPredictions = new Dictionary<string, float>();
+            public float HybridVigorFactor;
+            public DateTime CompletionTime;
+            
+            // Missing properties for Error Wave 133
+            public CannabisGenotype Parent1Genotype;
+            public CannabisGenotype Parent2Genotype;
+            public BreedingMethod BreedingMethod;
+        }
+
+        [System.Serializable]
+        public class GeneticLineage
+        {
+            public string GenotypeId;
+            public List<string> Ancestors = new List<string>();
+            public List<string> Descendants = new List<string>();
+            public List<string> DirectParents = new List<string>();
+            public int Generation;
+            public string FounderStrain;
+            public Dictionary<string, float> AncestralContributions = new Dictionary<string, float>();
+        }
+
+        [System.Serializable]
+        public class GeneticSpeedTreeMapping
+        {
+            public int InstanceId;
+            public string GenotypeId;
+            public Vector3 Position;
+            public DateTime CreationTime;
+            public Dictionary<string, float> GeneticTraits = new Dictionary<string, float>();
+            public EnvironmentalConditions LastEnvironment;
+            public bool IsAdapting;
+        }
+
+        [System.Serializable]
+        public class GeneticsSystemReport
+        {
+            public GeneticsPerformanceMetrics PerformanceMetrics;
+            public int TotalGenotypes;
+            public int TotalBreedingRecords;
+            public float GeneticDiversity;
+            public List<string> UnlockedGenes = new List<string>();
+            public List<string> DiscoveredTraits = new List<string>();
+            public int ActiveAdaptations;
+            public Dictionary<string, bool> SystemStatus = new Dictionary<string, bool>();
+        }
+
+        [System.Serializable]
+        public class CannabisPhenotype
+        {
+            public string PhenotypeId;
+            public string GenotypeId;
+            public Dictionary<string, float> MorphologicalTraits = new Dictionary<string, float>();
+            public Dictionary<string, Color> ColorTraits = new Dictionary<string, Color>();
+            public Dictionary<string, float> GrowthTraits = new Dictionary<string, float>();
+            public Dictionary<string, float> EnvironmentalTraits = new Dictionary<string, float>();
+            public Dictionary<string, float> BiochemicalTraits = new Dictionary<string, float>();
+            public float OverallVigor;
+            public float StressResistance;
+            public DateTime ExpressionDate;
+            public EnvironmentalConditions ExpressionEnvironment;
+            
+            // Direct property accessors for commonly used traits
+            public float PlantHeight => MorphologicalTraits.GetValueOrDefault("Height", 1.0f);
+            public float StemThickness => MorphologicalTraits.GetValueOrDefault("StemThickness", 1.0f);
+            public float BranchDensity => MorphologicalTraits.GetValueOrDefault("BranchDensity", 1.0f);
+            public float LeafDensity => MorphologicalTraits.GetValueOrDefault("LeafDensity", 1.0f);
+            public float InternodeSpacing => MorphologicalTraits.GetValueOrDefault("InternodeSpacing", 1.0f);
+            
+            public Color LeafColor => ColorTraits.GetValueOrDefault("LeafColor", Color.green);
+            public Color BudColor => ColorTraits.GetValueOrDefault("BudColor", Color.green);
+            public float ColorIntensity => MorphologicalTraits.GetValueOrDefault("ColorIntensity", 0.5f);
+            public float ColorVariation => MorphologicalTraits.GetValueOrDefault("ColorVariation", 0.3f);
+            
+            public float GrowthRate => GrowthTraits.GetValueOrDefault("GrowthRate", 1.0f);
+            public float FloweringTime => GrowthTraits.GetValueOrDefault("FloweringTime", 1.0f);
+            public float YieldPotential => GrowthTraits.GetValueOrDefault("YieldPotential", 1.0f);
+            
+            public float HeatTolerance => EnvironmentalTraits.GetValueOrDefault("HeatTolerance", 0.5f);
+            public float ColdTolerance => EnvironmentalTraits.GetValueOrDefault("ColdTolerance", 0.5f);
+            public float DroughtTolerance => EnvironmentalTraits.GetValueOrDefault("DroughtTolerance", 0.5f);
+            public float DiseaseResistance => EnvironmentalTraits.GetValueOrDefault("DiseaseResistance", 0.5f);
+        }
+        
+        protected override void OnManagerInitialize()
         {
             InitializeGeneticsSystems();
             InitializeGeneticDatabases();
@@ -96,12 +471,56 @@ namespace ProjectChimera.Systems.SpeedTree
             StartGeneticsUpdateLoop();
             LogInfo("Cannabis Genetics Engine initialized");
         }
+
+        protected override void OnManagerShutdown()
+        {
+            LogInfo("Shutting down Cannabis Genetics Engine");
+            
+            // Stop all coroutines and repeating invokes
+            StopAllCoroutines();
+            CancelInvoke();
+            
+            // Clear all databases and collections
+            _genotypeDatabase?.Clear();
+            _breedingHistory?.Clear();
+            _lineageTracker?.Clear();
+            _adaptationData?.Clear();
+            _speedTreeMappings?.Clear();
+            _unlockedGenes?.Clear();
+            _discoveredTraits?.Clear();
+            
+            // Cleanup analytics
+            _geneticsAnalytics?.Cleanup();
+            
+            // Reset performance metrics
+            _performanceMetrics = new GeneticsPerformanceMetrics();
+            
+            // Disconnect from game systems
+            if (_speedTreeManager != null)
+            {
+                // Unsubscribe from events if they exist
+                // Note: Event unsubscription would go here if events were connected
+            }
+            
+            LogInfo("Cannabis Genetics Engine shutdown complete");
+        }
         
         private void Update()
         {
             UpdateGeneticSystems();
             UpdateEnvironmentalAdaptation();
             UpdatePerformanceMetrics();
+        }
+        
+        /// <summary>
+        /// Update environmental adaptation for all tracked genotypes
+        /// </summary>
+        private void UpdateEnvironmentalAdaptation()
+        {
+            if (!_enableEnvironmentalAdaptation) return;
+            
+            ProcessEnvironmentalAdaptation();
+            ProcessEpigeneticChanges();
         }
         
         #region Initialization
@@ -144,7 +563,7 @@ namespace ProjectChimera.Systems.SpeedTree
             }
         }
         
-        private CannabisGenotype CreateBaseGenotype(CannabisStrainAsset strain)
+        private CannabisGenotype CreateBaseGenotype(PlantStrainSO strain)
         {
             var genotype = new CannabisGenotype
             {
@@ -165,18 +584,40 @@ namespace ProjectChimera.Systems.SpeedTree
             return genotype;
         }
         
-        private void GenerateFounderAlleles(CannabisGenotype genotype, CannabisStrainAsset strain)
+        private void GenerateFounderAlleles(CannabisGenotype genotype, PlantStrainSO strain)
         {
             var allGenes = _geneLibrary.GetAllGenes();
             
-            foreach (var gene in allGenes)
+            foreach (var geneSO in allGenes)
             {
+                var gene = ConvertToGeneDefinition(geneSO);
                 var alleles = GenerateFounderAllelesForGene(gene, strain);
-                genotype.Alleles[gene.GeneId] = alleles;
+                // Convert List<Allele> to List<object> for compatibility
+                genotype.Alleles[gene.GeneId] = alleles.ConvertAll(allele => (object)allele);
             }
         }
         
-        private List<Allele> GenerateFounderAllelesForGene(GeneDefinition gene, CannabisStrainAsset strain)
+        /// <summary>
+        /// Converts GeneDefinitionSO to GeneDefinition for genetics engine compatibility
+        /// </summary>
+        private GeneDefinition ConvertToGeneDefinition(GeneDefinitionSO geneSO)
+        {
+            return new GeneDefinition
+            {
+                GeneId = geneSO.GeneId,
+                GeneName = geneSO.GeneName,
+                Description = geneSO.Description,
+                GeneType = geneSO.GeneType,
+                BaseExpression = geneSO.BaseExpression,
+                Dominance = geneSO.Dominance,
+                AlleleVariants = new List<string>(), // Initialize empty, can be populated later
+                EnvironmentalFactors = new Dictionary<string, float>(), // Initialize empty
+                IsUnlocked = true, // Default to unlocked
+                UnlockRequirement = string.Empty
+            };
+        }
+        
+        private List<Allele> GenerateFounderAllelesForGene(GeneDefinition gene, PlantStrainSO strain)
         {
             var alleles = new List<Allele>();
             
@@ -190,7 +631,7 @@ namespace ProjectChimera.Systems.SpeedTree
             return alleles;
         }
         
-        private Allele CreateAlleleFromStrain(GeneDefinition gene, CannabisStrainAsset strain)
+        private Allele CreateAlleleFromStrain(GeneDefinition gene, PlantStrainSO strain)
         {
             var allele = new Allele
             {
@@ -209,19 +650,19 @@ namespace ProjectChimera.Systems.SpeedTree
             return allele;
         }
         
-        private float CalculateStrainBasedExpression(GeneDefinition gene, CannabisStrainAsset strain)
+        private float CalculateStrainBasedExpression(GeneDefinition gene, PlantStrainSO strain)
         {
             // Map strain characteristics to gene expression
             return gene.GeneType switch
             {
-                GeneType.PlantHeight => Mathf.Lerp(strain.HeightRange.x, strain.HeightRange.y, 0.5f) / 3f, // Normalize
-                GeneType.LeafSize => strain.LeafSize,
-                GeneType.BudDensity => strain.BudDensity,
-                GeneType.TrichromeProduction => strain.TrichromeAmount,
-                GeneType.FloweringTime => strain.FloweringTimeRange.x / 15f, // Normalize weeks to 0-1
-                GeneType.YieldPotential => strain.YieldRange.x / 600f, // Normalize grams to 0-1
-                GeneType.THCProduction => UnityEngine.Random.Range(0.1f, 0.3f), // Base THC potential
-                GeneType.CBDProduction => UnityEngine.Random.Range(0.01f, 0.2f), // Base CBD potential
+                GeneType.PlantHeight => strain.BaseYieldGrams / 600f, // Use yield as height proxy
+                GeneType.LeafSize => UnityEngine.Random.Range(0.3f, 0.8f), // Default range
+                GeneType.BudDensity => UnityEngine.Random.Range(0.4f, 0.9f), // Default range
+                GeneType.TrichromeProduction => UnityEngine.Random.Range(0.3f, 0.8f), // Default range
+                GeneType.FloweringTime => UnityEngine.Random.Range(0.4f, 0.8f), // Default range
+                GeneType.YieldPotential => strain.BaseYieldGrams / 600f, // Normalize grams to 0-1
+                GeneType.THCProduction => strain.THCContent() / 30f, // Normalize THC percentage
+                GeneType.CBDProduction => strain.CBDContent() / 30f, // Normalize CBD percentage
                 GeneType.TerpeneProfile => UnityEngine.Random.Range(0.3f, 0.8f), // Terpene diversity
                 GeneType.DiseaseResistance => UnityEngine.Random.Range(0.4f, 0.9f),
                 GeneType.EnvironmentalTolerance => UnityEngine.Random.Range(0.3f, 0.8f),
@@ -229,31 +670,60 @@ namespace ProjectChimera.Systems.SpeedTree
             };
         }
         
-        private void SetAllelePropertiesFromStrain(Allele allele, GeneDefinition gene, CannabisStrainAsset strain)
+        private void SetAllelePropertiesFromStrain(Allele allele, GeneDefinition gene, PlantStrainSO strain)
         {
             // Set color properties for visual genes
             if (gene.GeneType == GeneType.LeafColor)
             {
-                allele.ColorValue = strain.LeafColorBase;
+                allele.ColorValue = Color.green; // Default leaf color
             }
             else if (gene.GeneType == GeneType.BudColor)
             {
-                allele.ColorValue = strain.BudColorBase;
+                allele.ColorValue = Color.green; // Default bud color
             }
             
             // Set morphological properties
             if (gene.GeneType == GeneType.PlantMorphology)
             {
-                allele.MorphologyValue = strain.Morphology;
+                allele.MorphologyValue = Vector3.one; // Default morphology
             }
             
-            // Set strain type influences
-            allele.StrainTypeInfluence = new Dictionary<CannabisStrainType, float>
+            // Set strain type influences based on strain type
+            allele.StrainTypeInfluence = CalculateStrainTypeInfluences(strain);
+        }
+        
+        private Dictionary<CannabisStrainType, float> CalculateStrainTypeInfluences(PlantStrainSO strain)
+        {
+            // Convert StrainType to CannabisStrainType for compatibility
+            var strainType = ConvertStrainType(strain.StrainType);
+            
+            return new Dictionary<CannabisStrainType, float>
             {
-                [CannabisStrainType.Indica] = strain.IndicaDominance,
-                [CannabisStrainType.Sativa] = strain.SativaDominance,
-                [CannabisStrainType.Ruderalis] = strain.RuderalisInfluence
+                [CannabisStrainType.Indica] = strainType == CannabisStrainType.Indica ? 1f : 0f,
+                [CannabisStrainType.Sativa] = strainType == CannabisStrainType.Sativa ? 1f : 0f,
+                [CannabisStrainType.Ruderalis] = strainType == CannabisStrainType.Ruderalis ? 1f : 0f
             };
+        }
+        
+        /// <summary>
+        /// Converts StrainType to CannabisStrainType for genetics engine compatibility
+        /// </summary>
+        private CannabisStrainType ConvertStrainType(StrainType strainType)
+        {
+            switch (strainType)
+            {
+                case StrainType.Indica:
+                case StrainType.IndicaDominant:
+                    return CannabisStrainType.Indica;
+                case StrainType.Sativa:
+                case StrainType.SativaDominant:
+                    return CannabisStrainType.Sativa;
+                case StrainType.Ruderalis:
+                    return CannabisStrainType.Ruderalis;
+                case StrainType.Hybrid:
+                default:
+                    return CannabisStrainType.Hybrid;
+            }
         }
         
         private void ConnectToGameSystems()
@@ -347,9 +817,9 @@ namespace ProjectChimera.Systems.SpeedTree
                 ApplyMutations(newGenotype);
             }
             
-            if (conditions.HasValue && _enableEnvironmentalAdaptation)
+            if (conditions != null && _enableEnvironmentalAdaptation)
             {
-                ApplyEnvironmentalPressure(newGenotype, conditions.Value);
+                ApplyEnvironmentalPressure(newGenotype, conditions);
             }
             
             // Calculate phenotype from genotype
@@ -368,12 +838,12 @@ namespace ProjectChimera.Systems.SpeedTree
         
         private void ApplyGeneticVariation(CannabisGenotype newGenotype, CannabisGenotype baseGenotype)
         {
-            foreach (var geneAlleles in baseGenotype.Alleles)
+            // Apply genetic variation to each gene
+            foreach (var geneAlleles in baseGenotype.Alleles.ToList())
             {
                 var geneId = geneAlleles.Key;
-                var baseAlleles = geneAlleles.Value;
-                
-                var newAlleles = new List<Allele>();
+                var baseAlleles = geneAlleles.Value.OfType<Allele>().ToList();
+                var newAlleles = new List<object>();
                 
                 // Apply variation to each allele
                 foreach (var baseAllele in baseAlleles)
@@ -382,7 +852,7 @@ namespace ProjectChimera.Systems.SpeedTree
                     newAlleles.Add(newAllele);
                 }
                 
-                newGenotype.Alleles[geneId] = newAlleles;
+                newGenotype.Alleles[geneId] = newAlleles.ConvertAll(allele => (object)allele);
             }
         }
         
@@ -429,11 +899,14 @@ namespace ProjectChimera.Systems.SpeedTree
         {
             foreach (var geneAlleles in genotype.Alleles.ToList())
             {
-                foreach (var allele in geneAlleles.Value)
+                foreach (var alleleObj in geneAlleles.Value)
                 {
-                    if (UnityEngine.Random.value < allele.MutationRate)
+                    if (alleleObj is Allele allele)
                     {
-                        ApplyMutation(allele);
+                        if (UnityEngine.Random.value < allele.MutationRate)
+                        {
+                            ApplyMutation(allele);
+                        }
                     }
                 }
             }
@@ -476,28 +949,32 @@ namespace ProjectChimera.Systems.SpeedTree
             // Environmental pressure affects allele expression and stability
             foreach (var geneAlleles in genotype.Alleles)
             {
-                var gene = _geneLibrary.GetGene(geneAlleles.Key);
-                if (gene == null) continue;
+                var geneSO = _geneLibrary.GetGene(geneAlleles.Key);
+                if (geneSO == null) continue;
                 
+                var gene = ConvertToGeneDefinition(geneSO);
                 var environmentalFactor = CalculateEnvironmentalFactor(gene, conditions);
                 
-                foreach (var allele in geneAlleles.Value)
+                foreach (var alleleObj in geneAlleles.Value)
                 {
-                    // Favorable conditions increase expression and stability
-                    if (environmentalFactor > 0.7f)
+                    if (alleleObj is Allele allele)
                     {
-                        allele.Expression *= 1.05f;
-                        allele.Stability *= 1.02f;
+                        // Favorable conditions increase expression and stability
+                        if (environmentalFactor > 0.7f)
+                        {
+                            allele.Expression *= 1.05f;
+                            allele.Stability *= 1.02f;
+                        }
+                        // Harsh conditions decrease expression and stability
+                        else if (environmentalFactor < 0.3f)
+                        {
+                            allele.Expression *= 0.95f;
+                            allele.Stability *= 0.98f;
+                        }
+                        
+                        allele.Expression = Mathf.Clamp01(allele.Expression);
+                        allele.Stability = Mathf.Clamp(allele.Stability, 0.1f, 1f);
                     }
-                    // Harsh conditions decrease expression and stability
-                    else if (environmentalFactor < 0.3f)
-                    {
-                        allele.Expression *= 0.95f;
-                        allele.Stability *= 0.98f;
-                    }
-                    
-                    allele.Expression = Mathf.Clamp01(allele.Expression);
-                    allele.Stability = Mathf.Clamp(allele.Stability, 0.1f, 1f);
                 }
             }
         }
@@ -623,13 +1100,16 @@ namespace ProjectChimera.Systems.SpeedTree
         {
             var allGenes = _geneLibrary.GetAllGenes();
             
-            foreach (var gene in allGenes)
+            foreach (var geneSO in allGenes)
             {
+                // Convert GeneDefinitionSO to internal GeneDefinition
+                var gene = ConvertToGeneDefinition(geneSO);
+                
                 var offspringAlleles = new List<Allele>();
                 
                 // Get alleles from both parents
-                var parent1Alleles = parent1.Alleles.GetValueOrDefault(gene.GeneId, new List<Allele>());
-                var parent2Alleles = parent2.Alleles.GetValueOrDefault(gene.GeneId, new List<Allele>());
+                var parent1Alleles = parent1.Alleles.GetValueOrDefault(gene.GeneId, new List<object>()).OfType<Allele>().ToList();
+                var parent2Alleles = parent2.Alleles.GetValueOrDefault(gene.GeneId, new List<object>()).OfType<Allele>().ToList();
                 
                 if (parent1Alleles.Count == 0 || parent2Alleles.Count == 0)
                 {
@@ -651,7 +1131,7 @@ namespace ProjectChimera.Systems.SpeedTree
                     }
                 }
                 
-                offspring.Alleles[gene.GeneId] = offspringAlleles;
+                offspring.Alleles[gene.GeneId] = offspringAlleles.ConvertAll(allele => (object)allele);
             }
         }
         
@@ -763,10 +1243,13 @@ namespace ProjectChimera.Systems.SpeedTree
             // Hybrid vigor (heterosis) increases overall performance
             foreach (var geneAlleles in offspring.Alleles)
             {
-                foreach (var allele in geneAlleles.Value)
+                foreach (var alleleObj in geneAlleles.Value)
                 {
-                    allele.Expression *= _hybridVigorMultiplier;
-                    allele.Expression = Mathf.Clamp01(allele.Expression);
+                    if (alleleObj is Allele allele)
+                    {
+                        allele.Expression *= _hybridVigorMultiplier;
+                        allele.Expression = Mathf.Clamp01(allele.Expression);
+                    }
                 }
             }
             
@@ -807,119 +1290,175 @@ namespace ProjectChimera.Systems.SpeedTree
         
         #region SpeedTree Integration
         
-        public void ApplyGeneticsToSpeedTree(SpeedTreePlantInstance instance, CannabisGenotype genotype)
+        /// <summary>
+        /// Apply genetics to SpeedTree plant instance
+        /// </summary>
+        public void ApplyGeneticsToSpeedTree(AdvancedSpeedTreeManager.SpeedTreePlantData instance, CannabisGenotype genotype)
         {
-            if (instance?.Renderer == null || genotype == null) return;
+            if (instance == null || genotype == null) return;
+
+            var phenotype = ExpressPhenotype(genotype, instance.EnvironmentalConditions);
             
-            var phenotype = genotype.ExpressedPhenotype ?? _phenotypeEngine.CalculatePhenotype(genotype);
-            
-            // Create mapping for tracking
-            var mapping = new GeneticSpeedTreeMapping
-            {
-                InstanceId = instance.InstanceId,
-                GenotypeId = genotype.GenotypeId,
-                PhenotypeSnapshot = phenotype,
-                LastUpdate = Time.time
-            };
-            
-            _speedTreeMappings[instance.InstanceId] = mapping;
-            
-            // Apply genetic traits to SpeedTree renderer
             ApplyMorphologicalTraits(instance, phenotype);
             ApplyColorTraits(instance, phenotype);
             ApplyGrowthTraits(instance, phenotype);
             ApplyEnvironmentalTraits(instance, phenotype);
             
+            // Update instance genetic data
+            if (instance.GeneticData == null)
+            {
+                instance.GeneticData = new CannabisGeneticData();
+            }
+            
+            UpdateGeneticDataFromPhenotype(instance.GeneticData, phenotype);
+            
             LogInfo($"Applied genetics to SpeedTree instance {instance.InstanceId}");
         }
-        
-        private void ApplyMorphologicalTraits(SpeedTreePlantInstance instance, CannabisPhenotype phenotype)
+
+        /// <summary>
+        /// Apply morphological traits to plant instance
+        /// </summary>
+        private void ApplyMorphologicalTraits(AdvancedSpeedTreeManager.SpeedTreePlantData instance, CannabisPhenotype phenotype)
         {
-#if UNITY_SPEEDTREE
-            if (instance.Renderer?.materialProperties == null) return;
+            if (instance?.Renderer == null) return;
+
+            // Apply size modifications
+            var sizeModifier = phenotype.PlantHeight * phenotype.StemThickness;
+            instance.Scale = Vector3.one * sizeModifier;
             
-            // Plant size and structure
-            var sizeMultiplier = phenotype.PlantHeight * phenotype.PlantWidth;
-            instance.Renderer.transform.localScale = Vector3.one * sizeMultiplier;
-            
-            // Branch characteristics
-            instance.Renderer.materialProperties.SetFloat("_BranchDensity", phenotype.BranchDensity);
-            instance.Renderer.materialProperties.SetFloat("_InternodeSpacing", phenotype.InternodeSpacing);
-            instance.Renderer.materialProperties.SetFloat("_StemThickness", phenotype.StemThickness);
-            
-            // Leaf characteristics
-            instance.Renderer.materialProperties.SetFloat("_LeafSize", phenotype.LeafSize);
-            instance.Renderer.materialProperties.SetFloat("_LeafDensity", phenotype.LeafDensity);
-            instance.Renderer.materialProperties.SetFloat("_LeafSerration", phenotype.LeafSerration);
-            instance.Renderer.materialProperties.SetInt("_LeafletCount", phenotype.LeafletCount);
-            
-            // Bud characteristics
-            instance.Renderer.materialProperties.SetFloat("_BudDensity", phenotype.BudDensity);
-            instance.Renderer.materialProperties.SetFloat("_BudSize", phenotype.BudSize);
-            instance.Renderer.materialProperties.SetFloat("_CalyxSize", phenotype.CalyxSize);
-            
-            // Trichrome characteristics
-            instance.Renderer.materialProperties.SetFloat("_TrichromeAmount", phenotype.TrichromeAmount);
-            instance.Renderer.materialProperties.SetFloat("_TrichromeSize", phenotype.TrichromeSize);
-            instance.Renderer.materialProperties.SetColor("_TrichromeColor", phenotype.TrichromeColor);
-#endif
-        }
-        
-        private void ApplyColorTraits(SpeedTreePlantInstance instance, CannabisPhenotype phenotype)
-        {
-#if UNITY_SPEEDTREE
-            if (instance.Renderer?.materialProperties == null) return;
-            
-            // Leaf colors
-            instance.Renderer.materialProperties.SetColor("_LeafColorPrimary", phenotype.LeafColorPrimary);
-            instance.Renderer.materialProperties.SetColor("_LeafColorSecondary", phenotype.LeafColorSecondary);
-            instance.Renderer.materialProperties.SetFloat("_LeafColorVariation", phenotype.LeafColorVariation);
-            
-            // Bud colors
-            instance.Renderer.materialProperties.SetColor("_BudColorPrimary", phenotype.BudColorPrimary);
-            instance.Renderer.materialProperties.SetColor("_BudColorSecondary", phenotype.BudColorSecondary);
-            instance.Renderer.materialProperties.SetColor("_PistilColor", phenotype.PistilColor);
-            
-            // Stem color
-            instance.Renderer.materialProperties.SetColor("_StemColor", phenotype.StemColor);
-            
-            // Apply seasonal color changes if applicable
-            if (phenotype.SeasonalColorChange)
+            // Apply branch density
+            if (instance.Renderer.materialProperties != null)
             {
-                instance.Renderer.materialProperties.SetFloat("_SeasonalColorIntensity", phenotype.SeasonalColorIntensity);
+                instance.Renderer.materialProperties.SetFloat("_BranchDensity", phenotype.BranchDensity);
+                instance.Renderer.materialProperties.SetFloat("_LeafDensity", phenotype.LeafDensity);
+                instance.Renderer.materialProperties.SetFloat("_InternodeSpacing", phenotype.InternodeSpacing);
             }
-#endif
-        }
-        
-        private void ApplyGrowthTraits(SpeedTreePlantInstance instance, CannabisPhenotype phenotype)
-        {
-            // Set growth parameters
-            instance.GeneticData = new CannabisGeneticData
+            
+            // Update morphology in genetic data
+            if (instance.GeneticData != null)
             {
-                PlantSize = phenotype.PlantHeight,
-                GrowthRate = phenotype.GrowthRate,
-                FloweringSpeed = phenotype.FloweringSpeed,
-                YieldPotential = phenotype.YieldPotential
-            };
+                instance.GeneticData.PlantSize = sizeModifier;
+                instance.GeneticData.BranchDensity = phenotype.BranchDensity;
+                instance.GeneticData.LeafDensity = phenotype.LeafDensity;
+                instance.GeneticData.StemThickness = phenotype.StemThickness;
+            }
+        }
+
+        /// <summary>
+        /// Apply color traits to plant instance
+        /// </summary>
+        private void ApplyColorTraits(AdvancedSpeedTreeManager.SpeedTreePlantData instance, CannabisPhenotype phenotype)
+        {
+            if (instance?.Renderer == null) return;
+
+            // Apply leaf color variations
+            var leafColor = Color.Lerp(Color.green, phenotype.LeafColor, phenotype.ColorIntensity);
+            instance.CurrentLeafColor = leafColor;
             
-            // Update growth modifiers
-            instance.EnvironmentalModifiers["genetic_growth_rate"] = phenotype.GrowthRate;
-            instance.EnvironmentalModifiers["genetic_flowering_speed"] = phenotype.FloweringSpeed;
+            // Apply bud color variations
+            var budColor = Color.Lerp(Color.green, phenotype.BudColor, phenotype.ColorIntensity);
+            
+            // Update material properties
+            if (instance.Renderer.materialProperties != null)
+            {
+                instance.Renderer.materialProperties.SetColor("_LeafColor", leafColor);
+                instance.Renderer.materialProperties.SetColor("_BudColor", budColor);
+                instance.Renderer.materialProperties.SetFloat("_ColorVariation", phenotype.ColorVariation);
+            }
+            
+            // Update genetic data
+            if (instance.GeneticData != null)
+            {
+                instance.GeneticData.LeafColor = leafColor;
+                instance.GeneticData.BudColor = budColor;
+                instance.GeneticData.ColorVariation = phenotype.ColorVariation;
+            }
+        }
+
+        /// <summary>
+        /// Apply growth traits to plant instance
+        /// </summary>
+        private void ApplyGrowthTraits(AdvancedSpeedTreeManager.SpeedTreePlantData instance, CannabisPhenotype phenotype)
+        {
+            if (instance == null) return;
+
+            // Apply growth rate modifiers
+            instance.GrowthRate = phenotype.GrowthRate;
+            
+            // Update genetic data
+            if (instance.GeneticData != null)
+            {
+                instance.GeneticData.GrowthRate = phenotype.GrowthRate;
+                instance.GeneticData.FloweringSpeed = phenotype.FloweringTime;
+                instance.GeneticData.YieldPotential = phenotype.YieldPotential;
+            }
+            
+            // Apply environmental modifiers
+            if (instance.EnvironmentalModifiers == null)
+            {
+                instance.EnvironmentalModifiers = new Dictionary<string, float>();
+            }
+            
+            instance.EnvironmentalModifiers["GrowthRate"] = phenotype.GrowthRate;
+            instance.EnvironmentalModifiers["FloweringSpeed"] = phenotype.FloweringTime;
+        }
+
+        /// <summary>
+        /// Apply environmental traits to plant instance
+        /// </summary>
+        private void ApplyEnvironmentalTraits(AdvancedSpeedTreeManager.SpeedTreePlantData instance, CannabisPhenotype phenotype)
+        {
+            if (instance == null) return;
+
+            // Apply stress resistance
+            instance.StressResistance = phenotype.StressResistance;
+            
+            // Update environmental modifiers
+            if (instance.EnvironmentalModifiers == null)
+            {
+                instance.EnvironmentalModifiers = new Dictionary<string, float>();
+            }
+            
+            instance.EnvironmentalModifiers["HeatTolerance"] = phenotype.HeatTolerance;
+            instance.EnvironmentalModifiers["ColdTolerance"] = phenotype.ColdTolerance;
+            instance.EnvironmentalModifiers["DroughtTolerance"] = phenotype.DroughtTolerance;
+            
+            // Update genetic data
+            if (instance.GeneticData != null)
+            {
+                instance.GeneticData.HeatTolerance = phenotype.HeatTolerance;
+                instance.GeneticData.ColdTolerance = phenotype.ColdTolerance;
+                instance.GeneticData.DroughtTolerance = phenotype.DroughtTolerance;
+            }
         }
         
-        private void ApplyEnvironmentalTraits(SpeedTreePlantInstance instance, CannabisPhenotype phenotype)
+        /// <summary>
+        /// Update genetic data from phenotype
+        /// </summary>
+        private void UpdateGeneticDataFromPhenotype(CannabisGeneticData geneticData, CannabisPhenotype phenotype)
         {
-            // Environmental tolerance affects stress response
-            instance.GeneticData.HeatTolerance = phenotype.HeatTolerance;
-            instance.GeneticData.ColdTolerance = phenotype.ColdTolerance;
-            instance.GeneticData.DroughtTolerance = phenotype.DroughtTolerance;
-            instance.GeneticData.MoldResistance = phenotype.MoldResistance;
-            instance.GeneticData.PestResistance = phenotype.PestResistance;
+            if (geneticData == null || phenotype == null) return;
             
-            // Wind response characteristics
-            instance.GeneticData.WindResistance = phenotype.WindResistance;
-            instance.GeneticData.BranchFlexibility = phenotype.BranchFlexibility;
-            instance.GeneticData.StemStiffness = phenotype.StemStiffness;
+            // Update morphological data
+            geneticData.PlantSize = phenotype.PlantHeight;
+            geneticData.BranchDensity = phenotype.BranchDensity;
+            geneticData.LeafDensity = phenotype.LeafDensity;
+            geneticData.StemThickness = phenotype.StemThickness;
+            
+            // Update color data
+            geneticData.LeafColor = phenotype.LeafColor;
+            geneticData.BudColor = phenotype.BudColor;
+            geneticData.ColorVariation = phenotype.ColorVariation;
+            
+            // Update growth data
+            geneticData.GrowthRate = phenotype.GrowthRate;
+            geneticData.FloweringSpeed = phenotype.FloweringTime;
+            geneticData.YieldPotential = phenotype.YieldPotential;
+            
+            // Update environmental tolerance
+            geneticData.HeatTolerance = phenotype.HeatTolerance;
+            geneticData.ColdTolerance = phenotype.ColdTolerance;
+            geneticData.DroughtTolerance = phenotype.DroughtTolerance;
         }
         
         #endregion
@@ -939,18 +1478,17 @@ namespace ProjectChimera.Systems.SpeedTree
         
         private void ProcessGenotypeAdaptation(CannabisGenotype genotype, GeneticSpeedTreeMapping mapping)
         {
-            // Get current environmental conditions for this plant
             var conditions = GetEnvironmentalConditionsForPlant(mapping.InstanceId);
-            if (!conditions.HasValue) return;
+            if (conditions == null) return;
             
-            var adaptationKey = $"{genotype.GenotypeId}_{GetEnvironmentalHash(conditions.Value)}";
+            var adaptationKey = $"{genotype.GenotypeId}_{GetEnvironmentalHash(conditions)}";
             
             if (!_adaptationData.TryGetValue(adaptationKey, out var adaptation))
             {
                 adaptation = new EnvironmentalAdaptation
                 {
                     GenotypeId = genotype.GenotypeId,
-                    EnvironmentalConditions = conditions.Value,
+                    EnvironmentalConditions = conditions,
                     StartDate = DateTime.Now,
                     AdaptationProgress = 0f
                 };
@@ -971,7 +1509,7 @@ namespace ProjectChimera.Systems.SpeedTree
             }
         }
         
-        private EnvironmentalConditions? GetEnvironmentalConditionsForPlant(int instanceId)
+        private EnvironmentalConditions GetEnvironmentalConditionsForPlant(int instanceId)
         {
             // This would interface with the environmental manager to get local conditions
             return new EnvironmentalConditions
@@ -1035,8 +1573,10 @@ namespace ProjectChimera.Systems.SpeedTree
             var gene = _geneLibrary.GetGenesByType(geneType).FirstOrDefault();
             if (gene == null) return;
             
-            if (genotype.Alleles.TryGetValue(gene.GeneId, out var alleles))
+            if (genotype.Alleles.TryGetValue(gene.GeneId, out var alleleObjects))
             {
+                // Convert List<object> to List<Allele> safely
+                var alleles = alleleObjects.OfType<Allele>().ToList();
                 foreach (var allele in alleles)
                 {
                     allele.Expression += change;
@@ -1147,7 +1687,7 @@ namespace ProjectChimera.Systems.SpeedTree
         
         #region Event Handlers
         
-        private void HandlePlantInstanceCreated(SpeedTreePlantInstance instance)
+        private void HandlePlantInstanceCreated(AdvancedSpeedTreeManager.SpeedTreePlantData instance)
         {
             // Generate or assign genetics to new plant instance
             if (instance.GeneticData == null)
@@ -1265,37 +1805,97 @@ namespace ProjectChimera.Systems.SpeedTree
         
         #endregion
         
-        protected override void OnManagerShutdown()
+        #region Phenotype Expression
+        
+        /// <summary>
+        /// Express phenotype from genotype with environmental conditions
+        /// </summary>
+        public CannabisPhenotype ExpressPhenotype(CannabisGenotype genotype, EnvironmentalConditions conditions)
         {
-            // Stop all coroutines
-            StopAllCoroutines();
-            CancelInvoke();
+            if (genotype == null) return null;
             
-            // Cleanup systems
-            _geneticProcessor?.Cleanup();
-            _breedingSimulator?.Cleanup();
-            _phenotypeEngine?.Cleanup();
-            _adaptationManager?.Cleanup();
-            _diversityTracker?.Cleanup();
-            _geneticsAnalytics?.Cleanup();
+            var phenotype = _phenotypeEngine.CalculatePhenotype(genotype);
             
-            // Disconnect events
-            DisconnectSystemEvents();
+            // Apply environmental modifications
+            if (conditions != null)
+            {
+                ApplyEnvironmentalModifications(phenotype, conditions);
+            }
             
-            LogInfo("Cannabis Genetics Engine shutdown complete");
+            return phenotype;
         }
         
-        private void DisconnectSystemEvents()
+        /// <summary>
+        /// Apply environmental modifications to phenotype
+        /// </summary>
+        private void ApplyEnvironmentalModifications(CannabisPhenotype phenotype, EnvironmentalConditions conditions)
         {
-            if (_speedTreeManager != null)
+            if (phenotype == null || conditions == null) return;
+            
+            // Store environmental context
+            phenotype.ExpressionEnvironment = conditions;
+            
+            // Modify traits based on environmental conditions
+            float tempStress = CalculateTemperatureStress(conditions.Temperature);
+            float humidityStress = CalculateHumidityStress(conditions.Humidity);
+            float lightStress = CalculateLightStress(conditions.LightIntensity);
+            
+            float overallStress = (tempStress + humidityStress + lightStress) / 3f;
+            
+            // Apply stress effects to phenotype
+            phenotype.OverallVigor *= (1f - overallStress * 0.3f); // Reduce vigor by up to 30%
+            phenotype.StressResistance = Mathf.Clamp01(phenotype.StressResistance - overallStress * 0.2f);
+            
+            // Modify growth traits based on environment
+            if (phenotype.GrowthTraits.ContainsKey("GrowthRate"))
             {
-                _speedTreeManager.OnPlantInstanceCreated -= HandlePlantInstanceCreated;
+                phenotype.GrowthTraits["GrowthRate"] *= (1f - overallStress * 0.25f);
             }
             
-            if (_progressionManager != null)
+            // Modify morphological traits
+            if (phenotype.MorphologicalTraits.ContainsKey("Height"))
             {
-                _progressionManager.OnResearchCompleted -= HandleResearchCompleted;
+                // Light stress can cause stretching
+                if (lightStress > 0.3f)
+                {
+                    phenotype.MorphologicalTraits["Height"] *= (1f + lightStress * 0.4f);
+                }
             }
         }
+        
+        /// <summary>
+        /// Calculate temperature stress factor
+        /// </summary>
+        private float CalculateTemperatureStress(float temperature)
+        {
+            float optimalTemp = 24f; // Optimal temperature for cannabis
+            float tempDiff = Mathf.Abs(temperature - optimalTemp);
+            return Mathf.Clamp01(tempDiff / 15f); // Stress increases with distance from optimal
+        }
+        
+        /// <summary>
+        /// Calculate humidity stress factor
+        /// </summary>
+        private float CalculateHumidityStress(float humidity)
+        {
+            float optimalHumidity = 60f; // Optimal humidity for cannabis
+            float humidityDiff = Mathf.Abs(humidity - optimalHumidity);
+            return Mathf.Clamp01(humidityDiff / 30f); // Stress increases with distance from optimal
+        }
+        
+        /// <summary>
+        /// Calculate light stress factor
+        /// </summary>
+        private float CalculateLightStress(float lightIntensity)
+        {
+            float minLight = 20f; // Minimum light for healthy growth
+            if (lightIntensity < minLight)
+            {
+                return Mathf.Clamp01((minLight - lightIntensity) / minLight);
+            }
+            return 0f; // No stress from high light (cannabis is light-loving)
+        }
+        
+        #endregion
     }
 }

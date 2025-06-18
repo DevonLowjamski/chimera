@@ -6,7 +6,7 @@ using UnityEngine.Rendering.Universal;
 using ProjectChimera.Core;
 using ProjectChimera.Systems.Cultivation;
 using ProjectChimera.Systems.Economy;
-using ProjectChimera.Systems.Environment;
+using EnvironmentSystems = ProjectChimera.Systems.Environment;
 using ProjectChimera.Systems.Genetics;
 using ProjectChimera.Systems.Progression;
 using ProjectChimera.Systems.Community;
@@ -181,7 +181,7 @@ namespace ProjectChimera.Editor.SceneSetup
             // Add System Managers
             gameManagerGO.AddComponent<CultivationManager>();
             gameManagerGO.AddComponent<GeneticsManager>();
-            gameManagerGO.AddComponent<EnvironmentalManager>();
+            gameManagerGO.AddComponent<EnvironmentSystems.EnvironmentalManager>();
             gameManagerGO.AddComponent<CurrencyManager>();
             gameManagerGO.AddComponent<ProgressionManager>();
             gameManagerGO.AddComponent<CommunityManager>();

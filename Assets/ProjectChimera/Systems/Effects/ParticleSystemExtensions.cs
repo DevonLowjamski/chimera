@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ProjectChimera.Systems.Effects
 {
@@ -57,7 +58,7 @@ namespace ProjectChimera.Systems.Effects
             var velocityOverLifetime = particles.velocityOverLifetime;
             velocityOverLifetime.enabled = true;
             velocityOverLifetime.space = ParticleSystemSimulationSpace.Local;
-            velocityOverLifetime.linear = new ParticleSystem.MinMaxCurve(0.5f, new AnimationCurve(
+            velocityOverLifetime.y = new ParticleSystem.MinMaxCurve(0.5f, new AnimationCurve(
                 new Keyframe(0f, 0f),
                 new Keyframe(0.5f, 1f),
                 new Keyframe(1f, 0.2f)

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Tutorial;
 using ProjectChimera.Systems.Cultivation;
-using ProjectChimera.Systems.Environment;
+using EnvironmentSystems = ProjectChimera.Systems.Environment;
 
 namespace ProjectChimera.Systems.Tutorial
 {
@@ -38,7 +38,7 @@ namespace ProjectChimera.Systems.Tutorial
         // Managers
         private TutorialManager _tutorialManager;
         private CultivationManager _cultivationManager;
-        private EnvironmentalManager _environmentalManager;
+        private EnvironmentSystems.EnvironmentalManager _environmentalManager;
         
         // Tutorial tracking
         private Dictionary<string, bool> _moduleCompletionStatus;
@@ -56,7 +56,7 @@ namespace ProjectChimera.Systems.Tutorial
             // Get required managers
             _tutorialManager = GameManager.Instance.GetManager<TutorialManager>();
             _cultivationManager = GameManager.Instance.GetManager<CultivationManager>();
-            _environmentalManager = GameManager.Instance.GetManager<EnvironmentalManager>();
+            _environmentalManager = GameManager.Instance.GetManager<EnvironmentSystems.EnvironmentalManager>();
             
             // Initialize tracking dictionaries
             _moduleCompletionStatus = new Dictionary<string, bool>();

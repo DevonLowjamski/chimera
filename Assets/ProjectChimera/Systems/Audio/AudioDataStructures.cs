@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 
 namespace ProjectChimera.Systems.Audio
 {
@@ -233,6 +234,15 @@ namespace ProjectChimera.Systems.Audio
         public AudioParameterRange PitchRange;
         public AudioParameterRange DurationRange;
         public List<AudioClip> SourceClips = new List<AudioClip>();
+        
+        /// <summary>
+        /// Cleanup method for the procedural audio generator
+        /// </summary>
+        public void Cleanup()
+        {
+            IsActive = false;
+            SourceClips?.Clear();
+        }
     }
     
     public enum ProceduralAudioType
@@ -392,6 +402,17 @@ namespace ProjectChimera.Systems.Audio
         public void SetVolume(float volume)
         {
             _currentVolume = Mathf.Clamp01(volume);
+        }
+        
+        /// <summary>
+        /// Cleanup method for the music controller
+        /// </summary>
+        public void Cleanup()
+        {
+            _isPlaying = false;
+            _isPaused = false;
+            _currentTrackIndex = 0;
+            _currentPlaylist = null;
         }
         
         private void FadeToVolume(AudioSource source, float targetVolume, float duration, System.Action onComplete = null)

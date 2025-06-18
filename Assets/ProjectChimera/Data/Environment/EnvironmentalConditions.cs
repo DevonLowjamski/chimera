@@ -21,6 +21,8 @@ namespace ProjectChimera.Data.Environment
         
         [Header("Air Movement & Quality")]
         public float AirVelocity = 0.3f;                   // m/s
+        public float AirFlow = 0.3f;                       // m/s (alias for AirVelocity)
+        public float AirCirculation = 0.3f;                // m/s (alias for AirFlow)
         public Vector3 AirFlowDirection = Vector3.forward;  // Directional airflow
         public float AirExchangeRate = 1.0f;               // air changes per hour
         public float AirQualityIndex = 1.0f;               // 0-1 (1 = pristine)
@@ -39,6 +41,7 @@ namespace ProjectChimera.Data.Environment
         public float HumidityStability = 1f;               // 0-1 (variance measure)
         public float LightStability = 1f;                  // 0-1 (flicker/consistency)
         public DateTime LastMeasurement = DateTime.Now;
+        public DateTime Timestamp = DateTime.Now;          // Alias for LastMeasurement for compatibility
         public float MeasurementAccuracy = 0.95f;          // Sensor accuracy 0-1
         
         [Header("Microclimate Variations")]

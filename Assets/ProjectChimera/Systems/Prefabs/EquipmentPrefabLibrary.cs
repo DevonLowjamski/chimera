@@ -267,7 +267,7 @@ namespace ProjectChimera.Systems.Prefabs
                 PrefabId = "drying_rack_commercial_8_tier",
                 PrefabName = "8-Tier Commercial Drying Rack",
                 Prefab = null,
-                EquipmentType = EquipmentType.Processing,
+                EquipmentType = EquipmentType.Drying_Rack,
                 Manufacturer = "CureRight",
                 Model = "CR-DRY-8T",
                 PowerRequirement = 0f, // Passive system
@@ -290,7 +290,7 @@ namespace ProjectChimera.Systems.Prefabs
                 PrefabId = "trimming_station_ergonomic",
                 PrefabName = "Ergonomic Trimming Station",
                 Prefab = null,
-                EquipmentType = EquipmentType.Processing,
+                EquipmentType = EquipmentType.Trimming_Machine,
                 Manufacturer = "TrimMaster",
                 Model = "TM-ERGO-ST",
                 PowerRequirement = 100f,

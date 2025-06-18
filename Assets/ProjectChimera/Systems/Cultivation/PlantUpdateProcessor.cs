@@ -348,6 +348,42 @@ namespace ProjectChimera.Systems.Cultivation
             }
         }
         
+        /// <summary>
+        /// Processes environmental adaptation for the plant.
+        /// </summary>
+        public void ProcessAdaptation(EnvironmentalConditions conditions, float adaptationRate)
+        {
+            if (_strain?.GxEProfile == null)
+                return;
+            
+            // Update current conditions
+            _currentConditions = conditions;
+            
+            // Calculate adaptation effects based on environmental fitness and adaptation rate
+            float currentFitness = CalculateEnvironmentalFitness(conditions);
+            
+            // Apply adaptation over time - plants gradually adapt to their environment
+            if (currentFitness < _environmentalFitness)
+            {
+                // Adapting to worse conditions - slower process
+                _environmentalFitness = Mathf.Lerp(_environmentalFitness, currentFitness, adaptationRate * 0.5f);
+            }
+            else
+            {
+                // Adapting to better conditions - faster process
+                _environmentalFitness = Mathf.Lerp(_environmentalFitness, currentFitness, adaptationRate);
+            }
+            
+            // Clamp to ensure valid range
+            _environmentalFitness = Mathf.Clamp01(_environmentalFitness);
+            
+            // Log significant adaptation changes
+            if (Mathf.Abs(_environmentalFitness - currentFitness) > 0.1f)
+            {
+                Debug.Log($"Plant adapting to environment - Current fitness: {currentFitness:F2}, Adapted fitness: {_environmentalFitness:F2}");
+            }
+        }
+        
         public float GetEnvironmentalFitness() => _environmentalFitness;
         
         private float CalculateEnvironmentalFitness(EnvironmentalConditions conditions)

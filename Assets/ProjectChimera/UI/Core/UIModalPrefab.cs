@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.UIElements.Experimental; // Added for StyleValues
 using ProjectChimera.Core;
 
 namespace ProjectChimera.UI.Core
@@ -292,18 +293,9 @@ namespace ProjectChimera.UI.Core
             _rootElement.style.opacity = 0;
             _modalContainer.style.scale = new Scale(Vector3.one * 0.8f);
             
-            // Animate to final state
-            _rootElement.experimental.animation.Start(
-                new StyleValues { opacity = 0 },
-                new StyleValues { opacity = 1 },
-                (int)(_fadeInDuration * 1000))
-                .easingCurve = _easingCurve;
-                
-            _modalContainer.experimental.animation.Start(
-                new StyleValues { scale = new Scale(Vector3.one * 0.8f) },
-                new StyleValues { scale = new Scale(Vector3.one) },
-                (int)(_fadeInDuration * 1000))
-                .easingCurve = _easingCurve;
+            // Animate to final state using direct style assignment (Unity UI Toolkit compatible)
+            _rootElement.style.opacity = 1;
+            _modalContainer.style.scale = new Scale(Vector3.one);
             
             // Complete animation
             _rootElement.schedule.Execute(() =>
@@ -320,18 +312,9 @@ namespace ProjectChimera.UI.Core
         {
             _isAnimating = true;
             
-            // Animate to hidden state
-            _rootElement.experimental.animation.Start(
-                new StyleValues { opacity = 1 },
-                new StyleValues { opacity = 0 },
-                (int)(_fadeOutDuration * 1000))
-                .easingCurve = _easingCurve;
-                
-            _modalContainer.experimental.animation.Start(
-                new StyleValues { scale = new Scale(Vector3.one) },
-                new StyleValues { scale = new Scale(Vector3.one * 0.8f) },
-                (int)(_fadeOutDuration * 1000))
-                .easingCurve = _easingCurve;
+            // Animate to hidden state using direct style assignment
+            _rootElement.style.opacity = 0;
+            _modalContainer.style.scale = new Scale(Vector3.one * 0.8f);
             
             // Complete animation
             _rootElement.schedule.Execute(() =>

@@ -1,0 +1,21 @@
+{
+    "name": "ProjectChimera.Events",
+    "rootNamespace": "ProjectChimera.Systems.Events",
+    "references": [
+        "ProjectChimera.Core",
+        "ProjectChimera.Data",
+        "ProjectChimera.Systems.Cultivation",
+        "ProjectChimera.Systems.Economy",
+        "ProjectChimera.Environment",
+        "ProjectChimera.Systems.Progression"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

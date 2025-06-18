@@ -198,7 +198,8 @@ namespace ProjectChimera.UI.Core
             }
             
             _panelRegistry[panel.PanelId] = panel;
-            panel.Initialize(this);
+            // UIPanel doesn't have Initialize method that takes UIManager parameter
+            // Initialize is called during panel construction
             
             LogInfo($"Registered UI panel: {panel.PanelId}");
         }
@@ -525,6 +526,25 @@ namespace ProjectChimera.UI.Core
             }
         }
         
+        /// <summary>
+        /// Close all open panels
+        /// </summary>
+        public void CloseAllPanels()
+        {
+            foreach (var panel in _panelRegistry.Values)
+            {
+                if (panel.IsVisible)
+                {
+                    panel.Hide();
+                }
+            }
+            
+            _currentPanelId = string.Empty;
+            _panelHistory.Clear();
+            
+            LogInfo("All panels closed");
+        }
+        
         protected override void OnManagerShutdown()
         {
             // Clean up UI system
@@ -554,6 +574,8 @@ namespace ProjectChimera.UI.Core
         Loading,
         MainMenu,
         Gameplay,
+        InGame,
+        Game,
         Paused,
         Settings,
         Tutorial
@@ -586,6 +608,8 @@ namespace ProjectChimera.UI.Core
         Success,
         Warning,
         Error,
-        Achievement
+        Achievement,
+        Alert,
+        Critical
     }
 }

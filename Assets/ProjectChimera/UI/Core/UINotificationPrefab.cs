@@ -274,24 +274,24 @@ namespace ProjectChimera.UI.Core
         {
             _isAnimating = true;
             
-            // Set initial state based on position
             Vector3 slideDirection = GetSlideDirection();
+            
+            // Set initial state
             _rootElement.style.translate = new Translate(new Length(slideDirection.x, LengthUnit.Pixel), 
                                                        new Length(slideDirection.y, LengthUnit.Pixel));
             _rootElement.style.opacity = 0;
             
-            // Animate to final state
-            _rootElement.experimental.animation.Start(
-                new StyleValues { 
-                    opacity = 0,
-                    translate = new Translate(new Length(slideDirection.x, LengthUnit.Pixel), 
-                                            new Length(slideDirection.y, LengthUnit.Pixel))
-                },
-                new StyleValues { 
-                    opacity = 1,
-                    translate = new Translate(Length.Zero(), Length.Zero())
-                },
-                (int)(_slideInDuration * 1000));
+            // Animate to final state - Use proper Unity UI Toolkit style assignments
+            _rootElement.style.opacity = 0;
+            _rootElement.style.translate = new Translate(new Length(slideDirection.x, LengthUnit.Pixel), 
+                                                        new Length(slideDirection.y, LengthUnit.Pixel));
+            
+            // Schedule animation to final state
+            _rootElement.schedule.Execute(() =>
+            {
+                _rootElement.style.opacity = 1;
+                _rootElement.style.translate = new Translate(new Length(0), new Length(0));
+            }).ExecuteLater((long)(_slideInDuration * 1000));
             
             // Complete animation
             _rootElement.schedule.Execute(() =>
@@ -310,18 +310,17 @@ namespace ProjectChimera.UI.Core
             
             Vector3 slideDirection = GetSlideDirection();
             
-            // Animate to hidden state
-            _rootElement.experimental.animation.Start(
-                new StyleValues { 
-                    opacity = 1,
-                    translate = new Translate(Length.Zero(), Length.Zero())
-                },
-                new StyleValues { 
-                    opacity = 0,
-                    translate = new Translate(new Length(slideDirection.x, LengthUnit.Pixel), 
-                                            new Length(slideDirection.y, LengthUnit.Pixel))
-                },
-                (int)(_slideOutDuration * 1000));
+            // Animate to hidden state - Use proper Unity UI Toolkit style assignments
+            _rootElement.style.opacity = 1;
+            _rootElement.style.translate = new Translate(new Length(0), new Length(0));
+            
+            // Schedule animation to hidden state
+            _rootElement.schedule.Execute(() =>
+            {
+                _rootElement.style.opacity = 0;
+                _rootElement.style.translate = new Translate(new Length(slideDirection.x, LengthUnit.Pixel), 
+                                                            new Length(slideDirection.y, LengthUnit.Pixel));
+            }).ExecuteLater(100);
             
             // Complete animation
             _rootElement.schedule.Execute(() =>

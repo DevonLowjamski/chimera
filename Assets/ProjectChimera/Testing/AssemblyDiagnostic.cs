@@ -1,6 +1,9 @@
 using UnityEngine;
 using System.Reflection;
 using System.Linq;
+using ProjectChimera.Core;
+using ProjectChimera.Testing;
+using ProjectChimera.Systems.Progression;
 
 namespace ProjectChimera.Testing
 {

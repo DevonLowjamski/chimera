@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 using System;
+// Explicit alias to resolve Camera namespace conflict
+using Camera = UnityEngine.Camera;
 
 namespace ProjectChimera.Systems.Environment
 {

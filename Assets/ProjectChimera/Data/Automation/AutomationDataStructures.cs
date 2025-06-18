@@ -58,6 +58,7 @@ namespace ProjectChimera.Data.Automation
     public class SensorReading
     {
         public string SensorId;
+        public SensorType SensorType;
         public DateTime Timestamp;
         public float Value;
         public string Unit;
@@ -71,6 +72,7 @@ namespace ProjectChimera.Data.Automation
     {
         public string RuleId;
         public string RuleName;
+        public string Description;
         public bool IsEnabled = true;
         public AutomationTrigger Trigger;
         public List<AutomationAction> Actions = new List<AutomationAction>();
@@ -271,13 +273,16 @@ namespace ProjectChimera.Data.Automation
         Temperature,
         Humidity,
         CO2,
+        CO2Level,
         Light_Intensity,
+        LightLevel,
         Light_Spectrum,
         pH,
         EC_Conductivity,
         Water_Level,
         Air_Pressure,
         Air_Velocity,
+        AirFlow,
         Soil_Moisture,
         Leaf_Temperature,
         VPD,
@@ -450,6 +455,24 @@ namespace ProjectChimera.Data.Automation
         public bool IsActive = true;
         public DateTime StartDate;
         public DateTime? EndDate;
+        
+        // Compatibility properties for testing
+        public DateTime StartTime 
+        { 
+            get => StartDate; 
+            set => StartDate = value; 
+        }
+        
+        public DateTime EndTime 
+        { 
+            get => EndDate ?? StartDate.AddHours(8); 
+            set => EndDate = value; 
+        }
+        
+        public ScheduleRepeatPattern RepeatPattern { get; set; } = ScheduleRepeatPattern.Once;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime LastModified { get; set; } = DateTime.Now;
+        
         public ScheduleType ScheduleType;
         public List<ScheduleTimeSlot> TimeSlots = new List<ScheduleTimeSlot>();
         public List<string> RuleIds = new List<string>();
@@ -473,6 +496,13 @@ namespace ProjectChimera.Data.Automation
         public TimeSpan EndTime;
         public bool IsEnabled = true;
         public Dictionary<string, object> SlotParameters = new Dictionary<string, object>();
+        
+        // Compatibility property for testing
+        public string ActionType 
+        { 
+            get => SlotParameters.ContainsKey("ActionType") ? SlotParameters["ActionType"].ToString() : "Default";
+            set => SlotParameters["ActionType"] = value;
+        }
     }
 
     public enum ScheduleType
@@ -483,6 +513,19 @@ namespace ProjectChimera.Data.Automation
         Monthly,
         Interval,
         Conditional
+    }
+
+    /// <summary>
+    /// Schedule repeat pattern enumeration for automation schedules
+    /// </summary>
+    public enum ScheduleRepeatPattern
+    {
+        Once,
+        Daily,
+        Weekly,
+        Monthly,
+        Yearly,
+        Custom
     }
 
     public enum PredictiveModelType

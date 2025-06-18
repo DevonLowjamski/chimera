@@ -627,7 +627,7 @@ namespace ProjectChimera.UI.Panels
             
             var content = new VisualElement();
             content.style.alignItems = Align.Center;
-            content.style.pointerEvents = PointerEvents.None;
+            content.pickingMode = PickingMode.Ignore;
             
             var iconLabel = new Label(icon);
             iconLabel.style.fontSize = 20;
@@ -735,7 +735,7 @@ namespace ProjectChimera.UI.Panels
                     Name = "Northern Lights #1",
                     StrainName = "Northern Lights",
                     Age = 45,
-                    GrowthStage = PlantGrowthStage.Vegetative,
+                    GrowthStage = UIPlantGrowthStage.Vegetative,
                     Health = 92f,
                     Height = 85f,
                     Width = 65f,
@@ -749,7 +749,7 @@ namespace ProjectChimera.UI.Panels
                     Name = "White Widow #3",
                     StrainName = "White Widow",
                     Age = 72,
-                    GrowthStage = PlantGrowthStage.Flowering,
+                    GrowthStage = UIPlantGrowthStage.Flowering,
                     Health = 88f,
                     Height = 110f,
                     Width = 85f,
@@ -763,7 +763,7 @@ namespace ProjectChimera.UI.Panels
                     Name = "Blue Dream #2",
                     StrainName = "Blue Dream",
                     Age = 28,
-                    GrowthStage = PlantGrowthStage.Seedling,
+                    GrowthStage = UIPlantGrowthStage.Seedling,
                     Health = 95f,
                     Height = 25f,
                     Width = 15f,
@@ -868,11 +868,11 @@ namespace ProjectChimera.UI.Panels
             // Click handler
             item.RegisterCallback<ClickEvent>(evt => SelectPlant(plant));
             
-            // Hover effect
-            item.AddHoverEffects(
-                // _uiManager.DesignSystem.ColorPalette.InteractiveHover,
-                // _uiManager.DesignSystem.ColorPalette.SurfaceDark
-            );
+            // Hover effect - commenting out until AddHoverEffects parameter signature is confirmed
+            // item.AddHoverEffects(
+            //     _uiManager.DesignSystem.ColorPalette.InteractiveHover,
+            //     _uiManager.DesignSystem.ColorPalette.SurfaceDark
+            // );
             
             return item;
         }
@@ -919,7 +919,7 @@ namespace ProjectChimera.UI.Panels
             
             // Calculate flowering progress
             float floweringProgress = 0f;
-            if (_selectedPlant.GrowthStage == PlantGrowthStage.Flowering)
+            if (_selectedPlant.GrowthStage == UIPlantGrowthStage.Flowering)
             {
                 floweringProgress = (_selectedPlant.Age - 60f) / 60f * 100f; // Assume flowering starts at day 60
                 floweringProgress = Mathf.Clamp(floweringProgress, 0f, 100f);
@@ -972,11 +972,11 @@ namespace ProjectChimera.UI.Panels
         {
             switch (plant.GrowthStage)
             {
-                case PlantGrowthStage.Seedling:
+                case UIPlantGrowthStage.Seedling:
                     return (plant.Age / 14f) * 100f; // 14 days for seedling stage
-                case PlantGrowthStage.Vegetative:
+                case UIPlantGrowthStage.Vegetative:
                     return ((plant.Age - 14f) / 46f) * 100f; // 46 days for vegetative
-                case PlantGrowthStage.Flowering:
+                case UIPlantGrowthStage.Flowering:
                     return ((plant.Age - 60f) / 60f) * 100f; // 60 days for flowering
                 default:
                     return 100f;
@@ -1001,9 +1001,9 @@ namespace ProjectChimera.UI.Panels
             // Enable/disable buttons based on plant state
             _waterButton.SetEnabled(true);
             _feedButton.SetEnabled(true);
-            _pruneButton.SetEnabled(_selectedPlant.GrowthStage != PlantGrowthStage.Seedling);
-            _trainButton.SetEnabled(_selectedPlant.GrowthStage == PlantGrowthStage.Vegetative);
-            _harvestButton.SetEnabled(_selectedPlant.GrowthStage == PlantGrowthStage.HarvestReady);
+            _pruneButton.SetEnabled(_selectedPlant.GrowthStage != UIPlantGrowthStage.Seedling);
+            _trainButton.SetEnabled(_selectedPlant.GrowthStage == UIPlantGrowthStage.Vegetative);
+            _harvestButton.SetEnabled(_selectedPlant.GrowthStage == UIPlantGrowthStage.HarvestReady);
         }
         
         /// <summary>
@@ -1115,11 +1115,11 @@ namespace ProjectChimera.UI.Panels
             LogInfo($"Performed {action} on plant {_selectedPlant.Name}");
             
             // Show success notification
-            // if (_uiManager != null)
-            // {
-                // var hud = _uiManager.GetPanel("gameplay-hud") as GameplayHUDPanel;
-                hud?.ShowNotification(message, UIStatus.Success);
-            // }
+            var uiManager = GameManager.Instance?.GetManager<GameUIManager>();
+            if (uiManager != null)
+            {
+                uiManager.ShowNotification("Plant Care", message, NotificationType.Success);
+            }
             
             _onCareTaskCompleted?.Raise();
         }
@@ -1222,7 +1222,7 @@ namespace ProjectChimera.UI.Panels
         public string Name;
         public string StrainName;
         public int Age;
-        public PlantGrowthStage GrowthStage;
+        public UIPlantGrowthStage GrowthStage;
         public float Health;
         public float Height;
         public float Width;
@@ -1234,7 +1234,7 @@ namespace ProjectChimera.UI.Panels
     /// <summary>
     /// Plant growth stages
     /// </summary>
-    public enum PlantGrowthStage
+    public enum UIPlantGrowthStage
     {
         Seed,
         Seedling,

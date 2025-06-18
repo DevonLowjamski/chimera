@@ -2,9 +2,12 @@ using UnityEngine;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Progression;
 using ProjectChimera.Systems.Cultivation;
+using ProjectChimera.Systems.Economy;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+// Use canonical SeasonType from EnvironmentalManager
+using SeasonType = ProjectChimera.Systems.Environment.SeasonType;
 
 namespace ProjectChimera.Systems.Progression
 {
@@ -1043,11 +1046,5 @@ namespace ProjectChimera.Systems.Progression
         StrainMastery = 4
     }
     
-    public enum SeasonType
-    {
-        Spring,
-        Summer,
-        Fall,
-        Winter
-    }
+    // Removed duplicate SeasonType enum - using canonical one from EnvironmentalManager
 }

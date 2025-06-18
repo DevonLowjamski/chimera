@@ -1072,15 +1072,7 @@ namespace ProjectChimera.UI.Core
         #endregion
     }
     
-    // Supporting data structures
-    public enum NotificationType
-    {
-        Info,
-        Success,
-        Warning,
-        Alert,
-        Critical
-    }
+    // Supporting data structures (NotificationType moved to UIManager.cs to avoid duplicates)
     
     [System.Serializable]
     public class NotificationData

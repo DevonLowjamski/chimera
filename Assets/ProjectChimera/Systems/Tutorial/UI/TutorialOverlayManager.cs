@@ -340,6 +340,14 @@ namespace ProjectChimera.UI.Tutorial
         }
         
         /// <summary>
+        /// Update highlights - compatibility method for tutorial system
+        /// </summary>
+        public void UpdateHighlights()
+        {
+            UpdateOverlay();
+        }
+        
+        /// <summary>
         /// Update fade animation
         /// </summary>
         private void UpdateFadeAnimation()

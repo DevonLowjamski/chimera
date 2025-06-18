@@ -285,7 +285,7 @@ namespace ProjectChimera.UI.Panels
             // Create button content
             var content = new VisualElement();
             content.style.alignItems = Align.Center;
-            content.style.pointerEvents = PointerEvents.None;
+            content.pickingMode = PickingMode.Ignore;
             
             var iconLabel = new Label(icon);
             iconLabel.style.fontSize = 24;
@@ -509,11 +509,11 @@ namespace ProjectChimera.UI.Panels
             // if (_timeManager != null)
             // {
                 // Get current game day from time manager
-                // var currentDay = _timeManager.GetCurrentDay();
+                var currentDay = 1; // TODO: Get from time manager
                 _timeCard.Value = currentDay.ToString();
                 
                 // Update time card with additional info
-                // var timeOfDay = _timeManager.GetTimeOfDay();
+                var timeOfDay = System.DateTime.Now; // TODO: Get from time manager
                 _timeCard.Unit = $"{timeOfDay:HH:mm}";
             // }
             // else

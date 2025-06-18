@@ -1,6 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using System.Linq;
+using ProjectChimera.Data.Environment;
+
+// Explicit alias for Data layer EnvironmentalConditions to resolve namespace conflicts
+using EnvironmentalConditions = ProjectChimera.Data.Environment.EnvironmentalConditions;
 
 namespace ProjectChimera.Systems.SpeedTree
 {
@@ -44,7 +49,7 @@ namespace ProjectChimera.Systems.SpeedTree
     public class PlantEnvironmentalState
     {
         public int InstanceId;
-        public SpeedTreePlantInstance PlantInstance;
+        public AdvancedSpeedTreeManager.SpeedTreePlantData PlantInstance;
         public string CurrentZone;
         public EnvironmentalConditions LastConditions;
         public EnvironmentalStressData StressData;
@@ -56,40 +61,25 @@ namespace ProjectChimera.Systems.SpeedTree
         public bool IsMonitored = true;
     }
     
-    // Environmental Conditions Extended
-    [System.Serializable]
-    public class EnvironmentalConditions
-    {
-        public float Temperature;
-        public float Humidity;
-        public float LightIntensity;
-        public float CO2Level;
-        public float AirVelocity;
-        public float SoilMoisture;
-        public float SoilPH;
-        public float SoilTemperature;
-        public Vector3 LightDirection = Vector3.down;
-        public Color LightColor = Color.white;
-        public float UVIndex = 0f;
-        public float VPD; // Vapor Pressure Deficit
-        public float DailyLightIntegral; // DLI
-        public float Timestamp;
-    }
-    
     // Environmental Stress Data
     [System.Serializable]
     public class EnvironmentalStressData
     {
-        public float TemperatureStress = 0f;
-        public float HumidityStress = 0f;
-        public float LightStress = 0f;
-        public float WaterStress = 0f;
-        public float CO2Stress = 0f;
-        public float NutrientStress = 0f;
-        public float WindStress = 0f;
-        public float SoilStress = 0f;
-        public float UVStress = 0f;
-        public float VPDStress = 0f;
+        public int InstanceId;
+        public AdvancedSpeedTreeManager.SpeedTreePlantData PlantInstance;
+        public float TemperatureStress;
+        public float HumidityStress;
+        public float LightStress;
+        public float WaterStress;
+        public float NutrientStress;
+        public float CO2Stress;
+        public float AirflowStress;
+        public float OverallStressLevel;
+        public DateTime LastUpdate;
+        public Dictionary<string, float> StressFactors = new Dictionary<string, float>();
+        public List<string> ActiveStressors = new List<string>();
+        public bool IsUnderStress => OverallStressLevel > 0.3f;
+        public bool IsCriticalStress => OverallStressLevel > 0.7f;
         
         // Cumulative stress tracking
         public float AccumulatedStress = 0f;
@@ -98,8 +88,7 @@ namespace ProjectChimera.Systems.SpeedTree
         public float StressRecoveryRate = 0.1f;
         
         public float OverallStress => (TemperatureStress + HumidityStress + LightStress + 
-                                      WaterStress + CO2Stress + NutrientStress + WindStress + 
-                                      SoilStress + UVStress + VPDStress) / 10f;
+                                      WaterStress + CO2Stress + NutrientStress + AirflowStress) / 7f;
         
         public EnvironmentalSeverity GetStressSeverity()
         {
@@ -133,10 +122,8 @@ namespace ProjectChimera.Systems.SpeedTree
             WaterStress = other.WaterStress;
             CO2Stress = other.CO2Stress;
             NutrientStress = other.NutrientStress;
-            WindStress = other.WindStress;
-            SoilStress = other.SoilStress;
-            UVStress = other.UVStress;
-            VPDStress = other.VPDStress;
+            AirflowStress = other.AirflowStress;
+            OverallStressLevel = other.OverallStressLevel;
             AccumulatedStress = other.AccumulatedStress;
             PeakStress = other.PeakStress;
             LastStressEvent = other.LastStressEvent;
@@ -244,6 +231,13 @@ namespace ProjectChimera.Systems.SpeedTree
         public Dictionary<string, float> ToleranceImprovements = new Dictionary<string, float>();
         public Dictionary<string, float> EfficiencyImprovements = new Dictionary<string, float>();
         public EnvironmentalConditions AdaptationConditions;
+        
+        // Additional properties used by CannabisGeneticsEngine
+        public string GenotypeId;
+        public EnvironmentalConditions EnvironmentalConditions;
+        public DateTime StartDate;
+        public float AdaptationProgress;
+        public bool AdaptationApplied;
     }
     
     [System.Serializable]
@@ -423,13 +417,13 @@ namespace ProjectChimera.Systems.SpeedTree
         public bool EnableStressMemory = true;
         
         [Header("Adaptation Settings")]
-        public float AdaptationThreshold = 0.5f;
+        public bool EnableAdaptation = true;
         public float MaxAdaptationLevel = 0.8f;
         public float AdaptationTimeRequired = 3600f; // 1 hour
         public bool EnableEpigeneticAdaptation = true;
         
         [Header("Performance Settings")]
-        public int MaxUpdatesPerFrame = 10;
+        public float MaxUpdateFrequency = 10f;
         public float MinUpdateInterval = 0.1f;
         public bool EnablePerformanceOptimization = true;
         public int HistoryRetentionDays = 7;
@@ -439,34 +433,31 @@ namespace ProjectChimera.Systems.SpeedTree
     public class EnvironmentalResponseCurvesSO : ScriptableObject
     {
         [Header("Temperature Response Curves")]
-        public AnimationCurve TemperatureGrowthCurve = AnimationCurve.EaseInOut(0f, 0f, 40f, 0f);
+        public AnimationCurve TemperatureGrowthCurve = AnimationCurve.EaseInOut(15f, 0.5f, 30f, 1f);
         public AnimationCurve TemperatureStressCurve = AnimationCurve.Linear(0f, 0f, 40f, 1f);
         public AnimationCurve TemperatureColorCurve = AnimationCurve.EaseInOut(0f, 0f, 40f, 1f);
         
         [Header("Humidity Response Curves")]
-        public AnimationCurve HumidityGrowthCurve = AnimationCurve.EaseInOut(0f, 0f, 100f, 1f);
+        public AnimationCurve HumidityGrowthCurve = AnimationCurve.EaseInOut(40f, 0.5f, 70f, 1f);
         public AnimationCurve HumidityStressCurve = AnimationCurve.Linear(0f, 0f, 100f, 1f);
         public AnimationCurve TranspirationCurve = AnimationCurve.EaseInOut(0f, 0f, 100f, 2f);
         
         [Header("Light Response Curves")]
-        public AnimationCurve PhotosynthesisCurve = AnimationCurve.EaseInOut(0f, 0f, 2000f, 1f);
+        public AnimationCurve PhotosynthesisCurve = AnimationCurve.EaseInOut(200f, 0.2f, 1000f, 1f);
         public AnimationCurve LightSaturationCurve = AnimationCurve.EaseInOut(0f, 0f, 2000f, 1f);
         public AnimationCurve UVStressCurve = AnimationCurve.Linear(0f, 0f, 100f, 1f);
         
         [Header("CO2 Response Curves")]
-        public AnimationCurve CO2EfficiencyCurve = AnimationCurve.EaseInOut(200f, 0.5f, 2000f, 1.5f);
         public AnimationCurve CO2SaturationCurve = AnimationCurve.EaseInOut(400f, 1f, 1500f, 1.2f);
         
         [Header("Airflow Response Curves")]
-        public AnimationCurve AirflowTranspirationCurve = AnimationCurve.EaseInOut(0f, 0.5f, 2f, 1.5f);
+        public AnimationCurve AirflowTranspirationCurve = AnimationCurve.EaseInOut(0f, 0.8f, 2f, 1.5f);
         public AnimationCurve WindStressCurve = AnimationCurve.Linear(0f, 0f, 3f, 1f);
         
         [Header("Adaptation Curves")]
-        public AnimationCurve AdaptationRateCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0.1f);
         public AnimationCurve AdaptationEffectivenessCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
         
         [Header("Recovery Curves")]
-        public AnimationCurve StressRecoveryCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
         public AnimationCurve HealthRecoveryCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
     }
     
@@ -482,19 +473,17 @@ namespace ProjectChimera.Systems.SpeedTree
         public Color CriticalStressColor = Color.magenta;
         
         [Header("Visual Effects")]
-        public bool EnableStressColorChanges = true;
         public bool EnableMorphologicalChanges = true;
         public bool EnableAnimationChanges = true;
         public bool EnableParticleEffects = false;
         
         [Header("Stress Indicators")]
-        public float LeafCurlIntensity = 0.5f;
         public float LeafDroopIntensity = 0.3f;
+        public float LeafCurlIntensity = 0.2f;
         public float WiltingThreshold = 0.7f;
         public float ColorChangeIntensity = 0.8f;
         
         [Header("UI Visualization")]
-        public bool ShowStressOverlay = false;
         public bool ShowStressNumbers = false;
         public bool ShowStressHistory = false;
         public float UIUpdateFrequency = 1f;
@@ -621,6 +610,49 @@ namespace ProjectChimera.Systems.SpeedTree
         public StressAccumulationManager(bool enabled)
         {
             _enabled = enabled;
+        }
+        
+        public void UpdateStressAccumulation(PlantEnvironmentalState plantState, EnvironmentalConditions conditions)
+        {
+            if (!_enabled || plantState == null) return;
+            
+            // Calculate stress based on environmental conditions
+            var stressData = plantState.StressData;
+            var currentTime = DateTime.Now;
+            var deltaTime = (float)(currentTime - stressData.LastStressEvent).TotalHours;
+            
+            // Calculate individual stress factors
+            float tempStress = CalculateTemperatureStress(conditions.Temperature, 24f); // Optimal temp
+            float humidityStress = CalculateHumidityStress(conditions.Humidity, 60f); // Optimal humidity
+            float lightStress = CalculateLightStress(conditions.LightIntensity, 800f); // Optimal light
+            
+            // Update stress data
+            stressData.TemperatureStress = tempStress;
+            stressData.HumidityStress = humidityStress;
+            stressData.LightStress = lightStress;
+            
+            // Calculate overall stress
+            float overallStress = (tempStress + humidityStress + lightStress) / 3f;
+            
+            // Apply stress accumulation
+            if (overallStress > 0.1f)
+            {
+                stressData.AccumulatedStress += overallStress * deltaTime * 0.1f;
+                stressData.AccumulatedStress = Mathf.Clamp01(stressData.AccumulatedStress);
+                
+                if (stressData.AccumulatedStress > stressData.PeakStress)
+                {
+                    stressData.PeakStress = stressData.AccumulatedStress;
+                }
+                
+                stressData.LastStressEvent = currentTime;
+            }
+            else
+            {
+                // Stress recovery when conditions are good
+                stressData.AccumulatedStress -= stressData.StressRecoveryRate * deltaTime;
+                stressData.AccumulatedStress = Mathf.Max(0f, stressData.AccumulatedStress);
+            }
         }
         
         public StressUpdate CalculateStressUpdate(PlantEnvironmentalState plantState, EnvironmentalConditions conditions, EnvironmentalZone zone)
@@ -830,14 +862,14 @@ namespace ProjectChimera.Systems.SpeedTree
             _enabled = enabled;
         }
         
-        public void UpdateStressVisualization(SpeedTreePlantInstance instance, EnvironmentalStressData stressData)
+        public void UpdateStressVisualization(AdvancedSpeedTreeManager.SpeedTreePlantData instance, EnvironmentalStressData stressData)
         {
-            if (!_enabled || instance?.Renderer == null) return;
+            if (!_enabled || instance == null) return;
             
             UpdatePlantVisualization(instance, stressData);
         }
         
-        public void UpdatePlantVisualization(SpeedTreePlantInstance instance, EnvironmentalStressData stressData)
+        public void UpdatePlantVisualization(AdvancedSpeedTreeManager.SpeedTreePlantData instance, EnvironmentalStressData stressData)
         {
 #if UNITY_SPEEDTREE
             if (instance.Renderer?.materialProperties == null) return;
@@ -926,7 +958,7 @@ namespace ProjectChimera.Systems.SpeedTree
                 LightIntensity = baseConditions.LightIntensity + UnityEngine.Random.Range(-20f, 20f),
                 CO2Level = baseConditions.CO2Level + UnityEngine.Random.Range(-10f, 10f),
                 AirVelocity = baseConditions.AirVelocity + UnityEngine.Random.Range(-0.05f, 0.05f),
-                Timestamp = Time.time
+                Timestamp = DateTime.Now
             };
             
             return modifiedConditions;

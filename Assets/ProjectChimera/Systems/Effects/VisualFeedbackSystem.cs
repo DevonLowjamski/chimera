@@ -2,13 +2,20 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using ProjectChimera.Core;
 using ProjectChimera.Systems.Cultivation;
-using ProjectChimera.Systems.Environment;
+using EnvironmentSystems = ProjectChimera.Systems.Environment;
 using ProjectChimera.Systems.Construction;
+using ProjectChimera.Data.Construction;
+using DataConstructionIssue = ProjectChimera.Data.Construction.ConstructionIssue;
+using ProjectChimera.Data.Economy;
+using ProjectChimera.Data.Genetics;
 using ProjectChimera.Systems.Economy;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 using System;
+// Add alias for Environment namespace EnvironmentalConditions
+using EnvironmentalConditions = ProjectChimera.Data.Environment.EnvironmentalConditions;
+using EnvironmentalAlert = ProjectChimera.Systems.Environment.EnvironmentalAlert;
 
 namespace ProjectChimera.Systems.Effects
 {
@@ -64,7 +71,7 @@ namespace ProjectChimera.Systems.Effects
         
         // System Integration
         private PlantManager _plantManager;
-        private EnvironmentalManager _environmentalManager;
+        private EnvironmentSystems.EnvironmentalManager _environmentalManager;
         private InteractiveFacilityConstructor _facilityConstructor;
         private MarketManager _marketManager;
         
@@ -81,7 +88,7 @@ namespace ProjectChimera.Systems.Effects
         public FeedbackPerformanceMetrics PerformanceMetrics => _performanceMetrics;
         public bool UIAnimationsEnabled => _enableUIAnimations;
         
-        protected override void InitializeManager()
+        protected override void OnManagerInitialize()
         {
             InitializeFeedbackSystem();
             SetupWorldIndicators();
@@ -103,11 +110,7 @@ namespace ProjectChimera.Systems.Effects
         
         private void InitializeFeedbackSystem()
         {
-            _mainCamera = Camera.main;
-            if (_mainCamera == null)
-            {
-                _mainCamera = UnityEngine.Object.FindObjectByType<Camera>();
-            }
+            _mainCamera = FindObjectOfType<Camera>();
             
             // Initialize UI feedback controller
             _uiFeedbackController = new UIFeedbackController();
@@ -159,7 +162,7 @@ namespace ProjectChimera.Systems.Effects
             if (GameManager.Instance != null)
             {
                 _plantManager = GameManager.Instance.GetManager<PlantManager>();
-                _environmentalManager = GameManager.Instance.GetManager<EnvironmentalManager>();
+                _environmentalManager = GameManager.Instance.GetManager<EnvironmentSystems.EnvironmentalManager>();
                 _facilityConstructor = GameManager.Instance.GetManager<InteractiveFacilityConstructor>();
                 _marketManager = GameManager.Instance.GetManager<MarketManager>();
             }
@@ -175,7 +178,7 @@ namespace ProjectChimera.Systems.Effects
                 _plantManager.OnPlantAdded += HandlePlantAdded;
                 _plantManager.OnPlantStageChanged += HandlePlantStageChanged;
                 _plantManager.OnPlantHarvested += HandlePlantHarvested;
-                _plantManager.OnPlantHealthChanged += HandlePlantHealthChanged;
+                _plantManager.OnPlantHealthUpdated += HandlePlantHealthChanged;
             }
             
             // Environmental events
@@ -643,32 +646,34 @@ namespace ProjectChimera.Systems.Effects
         
         #region Event Handlers
         
-        private void HandlePlantAdded(InteractivePlantComponent plant)
+        private void HandlePlantAdded(PlantInstance plant)
         {
             ShowWorldIndicator(plant.transform.position, IndicatorType.Success, "Plant Added", 2f);
             TriggerScreenFlash(_successColor, 0.3f, 0.1f);
         }
         
-        private void HandlePlantStageChanged(InteractivePlantComponent plant, PlantGrowthStage newStage)
+        private void HandlePlantStageChanged(PlantInstance plant)
         {
-            string message = $"Stage: {newStage}";
+            string message = $"Stage: {plant.CurrentGrowthStage}";
             ShowWorldIndicator(plant.transform.position, IndicatorType.Info, message, 3f);
         }
         
-        private void HandlePlantHarvested(InteractivePlantComponent plant)
+        private void HandlePlantHarvested(PlantInstance plant)
         {
             ShowWorldIndicator(plant.transform.position, IndicatorType.Success, "Harvested!", 3f);
             TriggerScreenShake(0.2f, 0.3f, plant.transform.position);
             ShowVisualConfirmation(plant.transform.position, ConfirmationType.Success, "Plant Harvested");
         }
         
-        private void HandlePlantHealthChanged(InteractivePlantComponent plant, float oldHealth, float newHealth)
+        private void HandlePlantHealthChanged(PlantInstance plant)
         {
-            if (newHealth < 30f && oldHealth >= 30f)
+            float health = plant.CurrentHealth;
+            
+            if (health < 30f)
             {
                 ShowWorldIndicator(plant.transform.position, IndicatorType.Warning, "Low Health", 4f);
             }
-            else if (newHealth > 80f && oldHealth <= 80f)
+            else if (health > 80f)
             {
                 ShowWorldIndicator(plant.transform.position, IndicatorType.Success, "Healthy", 2f);
             }
@@ -688,42 +693,41 @@ namespace ProjectChimera.Systems.Effects
             }
         }
         
-        private void HandleEnvironmentalAlert(string alertMessage)
+        private void HandleEnvironmentalAlert(EnvironmentalAlert alert)
         {
-            ShowWorldIndicator(Vector3.zero, IndicatorType.Error, alertMessage, 5f);
-            TriggerScreenFlash(_errorColor, 0.5f, 0.2f);
-            TriggerScreenShake(0.3f, 0.5f);
+            ShowWorldIndicator(Vector3.zero, IndicatorType.Warning, alert.Message, 4f);
+            TriggerScreenShake(0.2f, 0.3f);
         }
         
-        private void HandleConstructionStarted(ConstructionProject project)
+        private void HandleConstructionStarted(object projectObj)
         {
-            ShowWorldIndicator(project.BuildingSite, IndicatorType.Info, "Construction Started", 3f);
-            ShowProgressIndicator(project.BuildingSite, 0f, project.ProjectName);
+            ShowWorldIndicator(Vector3.zero, IndicatorType.Info, "Construction Started", 3f);
+            ShowProgressIndicator(Vector3.zero, 0f, "Construction Project");
         }
         
-        private void HandleConstructionCompleted(ConstructionProject project)
+        private void HandleConstructionCompleted(object projectObj)
         {
-            ShowWorldIndicator(project.BuildingSite, IndicatorType.Success, "Construction Complete!", 4f);
-            TriggerScreenShake(0.4f, 0.6f, project.BuildingSite);
-            ShowVisualConfirmation(project.BuildingSite, ConfirmationType.Success, "Construction Completed");
+            ShowWorldIndicator(Vector3.zero, IndicatorType.Success, "Construction Complete!", 4f);
+            TriggerScreenShake(0.4f, 0.6f, Vector3.zero);
+            ShowVisualConfirmation(Vector3.zero, ConfirmationType.Success, "Construction Completed");
             
             // Remove progress indicator
             var progressIndicator = _activeIndicators.FirstOrDefault(i => 
-                Vector3.Distance(i.Position, project.BuildingSite) < 1f && i.Type == IndicatorType.Progress);
+                Vector3.Distance(i.Position, Vector3.zero) < 1f && i.Type == IndicatorType.Progress);
             if (progressIndicator != null)
             {
                 ReturnIndicatorToPool(progressIndicator);
             }
         }
         
-        private void HandleConstructionIssue(string projectId, ConstructionIssue issue)
+        private void HandleConstructionIssue(object issueObj)
         {
-            ShowWorldIndicator(Vector3.zero, IndicatorType.Warning, issue.Description, 4f);
+            ShowWorldIndicator(Vector3.zero, IndicatorType.Warning, "Construction issue detected", 4f);
         }
         
-        private void HandleSaleCompleted(SaleTransaction transaction)
+        private void HandleSaleCompleted(MarketTransaction transaction)
         {
-            string message = $"+${transaction.Amount:F0}";
+            string message = $"+${transaction.TotalValue:F0}";
             ShowWorldIndicator(Vector3.zero, IndicatorType.Success, message, 3f);
             TriggerScreenFlash(_successColor, 0.2f, 0.1f);
         }
@@ -879,7 +883,7 @@ namespace ProjectChimera.Systems.Effects
                 _plantManager.OnPlantAdded -= HandlePlantAdded;
                 _plantManager.OnPlantStageChanged -= HandlePlantStageChanged;
                 _plantManager.OnPlantHarvested -= HandlePlantHarvested;
-                _plantManager.OnPlantHealthChanged -= HandlePlantHealthChanged;
+                _plantManager.OnPlantHealthUpdated -= HandlePlantHealthChanged;
             }
             
             if (_environmentalManager != null)

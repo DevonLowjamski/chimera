@@ -1,8 +1,9 @@
 using UnityEngine;
 using ProjectChimera.Core;
+using ProjectChimera.Core.Interfaces;
 using System.Collections.Generic;
 
-namespace ProjectChimera.Systems.Environment
+namespace ProjectChimera.Scripts.Environment
 {
     /// <summary>
     /// Controls irrigation and nutrient delivery systems.
@@ -56,7 +57,7 @@ namespace ProjectChimera.Systems.Environment
         private float _totalEnergyUsed = 0f; // kWh
         
         // Connected Plants
-        private List<PlantInstanceComponent> _connectedPlants = new List<PlantInstanceComponent>();
+        private List<IWaterableComponent> _connectedPlants = new List<IWaterableComponent>();
         
         // Events
         public System.Action<IrrigationController> OnSystemStateChanged;
@@ -239,7 +240,7 @@ namespace ProjectChimera.Systems.Environment
             _isAutomated = enabled;
             
             OnSystemStateChanged?.Invoke(this);
-            Debug.Log($"Irrigation {SystemId} automation {(enabled ? \"enabled\" : \"disabled\")}");
+            Debug.Log($"Irrigation {SystemId} automation {(enabled ? "enabled" : "disabled")}");
         }
         
         /// <summary>
@@ -333,7 +334,7 @@ namespace ProjectChimera.Systems.Environment
             bool needsWatering = false;
             foreach (var plant in _connectedPlants)
             {
-                if (plant.PlantData?.WaterLevel < _moistureThreshold)
+                if (plant.WaterLevel < _moistureThreshold)
                 {
                     needsWatering = true;
                     break;
@@ -443,16 +444,22 @@ namespace ProjectChimera.Systems.Environment
         {
             _connectedPlants.Clear();
             
-            // Find plants within irrigation range (simplified)
-            var allPlants = FindObjectsOfType<PlantInstanceComponent>();
-            foreach (var plant in allPlants)
+            // Find all components that implement IWaterableComponent
+            var allMonoBehaviours = FindObjectsOfType<MonoBehaviour>();
+            foreach (var mb in allMonoBehaviours)
             {
-                float distance = Vector3.Distance(transform.position, plant.transform.position);
-                if (distance <= 10f) // 10 meter range
+                if (mb is IWaterableComponent waterableComponent)
                 {
-                    _connectedPlants.Add(plant);
+                    // Check if within irrigation range (10 units for example)
+                    float distance = Vector3.Distance(transform.position, waterableComponent.Transform.position);
+                    if (distance <= 10f)
+                    {
+                        _connectedPlants.Add(waterableComponent);
+                    }
                 }
             }
+            
+            Debug.Log($"Irrigation System {SystemId} connected to {_connectedPlants.Count} plants");
         }
         
         /// <summary>
@@ -460,14 +467,16 @@ namespace ProjectChimera.Systems.Environment
         /// </summary>
         private void WaterConnectedPlants(float amount)
         {
+            if (_connectedPlants.Count == 0) return;
+            
+            float waterPerPlant = amount / _connectedPlants.Count;
+            
             foreach (var plant in _connectedPlants)
             {
-                plant.WaterPlant(amount);
-                
-                // Add nutrients if enabled
-                if (_enableNutrientMixing)
-                    plant.AddNutrients(amount * 0.5f, "Nutrient Solution");
+                plant.AddWater(waterPerPlant);
             }
+            
+            Debug.Log($"Irrigation {SystemId} watered {_connectedPlants.Count} plants with {waterPerPlant:F1}L each");
         }
         
         #endregion

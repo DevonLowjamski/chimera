@@ -1,6 +1,6 @@
 {
     "name": "ProjectChimera.Environment",
-    "rootNamespace": "ProjectChimera.Systems.Environment",
+    "rootNamespace": "ProjectChimera.Environment",
     "references": [
         "ProjectChimera.Core",
         "ProjectChimera.Data",

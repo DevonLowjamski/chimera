@@ -1,9 +1,12 @@
 using UnityEngine;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Environment;
+using ProjectChimera.Data.Cultivation;
 using System.Collections.Generic;
+// Explicit alias to resolve LightSpectrum ambiguity - use class from Environment namespace
+using LightSpectrum = ProjectChimera.Data.Environment.LightSpectrum;
 
-namespace ProjectChimera.Systems.Environment
+namespace ProjectChimera.Scripts.Environment
 {
     /// <summary>
     /// Controls grow lighting systems with spectrum management and automation.
@@ -182,7 +185,7 @@ namespace ProjectChimera.Systems.Environment
                 UpdateLightingState();
                 OnLightingStateChanged?.Invoke(this);
                 
-                Debug.Log($"Lighting {SystemId} {(_enableLighting ? \"enabled\" : \"disabled\")}");
+                Debug.Log($"Lighting {SystemId} {(_enableLighting ? "enabled" : "disabled")}");
             }
         }
         
@@ -201,6 +204,14 @@ namespace ProjectChimera.Systems.Environment
                 
                 Debug.Log($"Lighting {SystemId} intensity set to {_currentIntensity:P0}");
             }
+        }
+        
+        /// <summary>
+        /// Set target light intensity (alias for SetIntensity for compatibility)
+        /// </summary>
+        public void SetTargetIntensity(float intensity)
+        {
+            SetIntensity(intensity);
         }
         
         /// <summary>
@@ -243,7 +254,7 @@ namespace ProjectChimera.Systems.Environment
             }
             
             OnLightingStateChanged?.Invoke(this);
-            Debug.log($"Lighting {SystemId} automation {(enabled ? \"enabled\" : \"disabled\")}");
+            Debug.Log($"Lighting {SystemId} automation {(enabled ? "enabled" : "disabled")}");
         }
         
         /// <summary>
@@ -291,6 +302,124 @@ namespace ProjectChimera.Systems.Environment
             Debug.Log($"Lighting {SystemId} shut down");
         }
         
+        /// <summary>
+        /// Set light schedule (alias for SetLightingSchedule for compatibility)
+        /// </summary>
+        public void SetLightSchedule(LightingSchedule schedule)
+        {
+            SetLightingSchedule(schedule);
+        }
+        
+        /// <summary>
+        /// Set light schedule from FacilityData.LightSchedule (conversion overload)
+        /// </summary>
+        public void SetLightSchedule(ProjectChimera.Data.Facilities.LightSchedule facilitySchedule)
+        {
+            if (facilitySchedule == null)
+            {
+                Debug.LogWarning($"[Chimera] LightingController '{SystemId}' received null facility schedule.");
+                return;
+            }
+            
+            // Convert FacilityData.LightSchedule to LightingSchedule
+            var lightingSchedule = new LightingSchedule
+            {
+                Name = facilitySchedule.ScheduleName ?? "Converted Schedule",
+                ScheduleEntries = new List<LightingScheduleEntry>()
+            };
+            
+            // Convert simple facility schedule to detailed schedule entries
+            // The facility schedule has simple on/off times, so create one entry
+            lightingSchedule.ScheduleEntries.Add(new LightingScheduleEntry
+            {
+                StartTime = facilitySchedule.LightStartTime,
+                EndTime = facilitySchedule.LightStartTime.Add(System.TimeSpan.FromHours(facilitySchedule.LightPeriodHours)),
+                Intensity = 1f,
+                Spectrum = _currentSpectrum
+            });
+            
+            SetLightingSchedule(lightingSchedule);
+        }
+        
+        /// <summary>
+        /// Update system - called by GrowRoomController
+        /// </summary>
+        public void UpdateSystem()
+        {
+            if (!_isOperational) return;
+            
+            // Update schedule if automation is enabled
+            if (_isAutomated && _enableSchedule)
+            {
+                UpdateLightingSchedule();
+            }
+            
+            // Update lighting metrics
+            UpdateLightingMetrics();
+            
+            // Update visual effects
+            UpdateVisualEffects();
+            
+            // Update lighting state
+            UpdateLightingState();
+        }
+        
+        /// <summary>
+        /// Check if lights should be on based on schedule
+        /// </summary>
+        public bool ShouldLightBeOn(ProjectChimera.Data.Facilities.LightSchedule schedule)
+        {
+            if (schedule == null || !schedule.IsActive) return false;
+            
+            var currentTime = System.DateTime.Now.TimeOfDay;
+            return currentTime >= schedule.OnTime && currentTime <= schedule.OffTime;
+        }
+        
+        /// <summary>
+        /// Check if lights are currently on
+        /// </summary>
+        public bool IsLightOn => _enableLighting && _isOperational;
+        
+        /// <summary>
+        /// Turn on lights
+        /// </summary>
+        public void TurnOnLights()
+        {
+            SetLightingEnabled(true);
+        }
+        
+        /// <summary>
+        /// Turn off lights
+        /// </summary>
+        public void TurnOffLights()
+        {
+            SetLightingEnabled(false);
+        }
+        
+        /// <summary>
+        /// Make preemptive intensity adjustment
+        /// </summary>
+        public void MakePreemptiveIntensityAdjustment(float targetIntensity)
+        {
+            SetIntensity(Mathf.Clamp01(targetIntensity));
+        }
+        
+        /// <summary>
+        /// Set power efficiency mode
+        /// </summary>
+        public void SetPowerEfficiencyMode(bool enabled)
+        {
+            if (enabled)
+            {
+                // Reduce intensity slightly for power savings
+                _currentIntensity = Mathf.Max(0.7f, _currentIntensity * 0.9f);
+            }
+            else
+            {
+                _currentIntensity = 1.0f; // Full intensity
+            }
+        }
+        
         #endregion
         
         #region Schedule Management
@@ -309,7 +438,7 @@ namespace ProjectChimera.Systems.Environment
                 
                 SetLightingEnabled(_isLightPeriod);
                 
-                Debug.Log($"Lighting {SystemId} schedule: {(_isLightPeriod ? \"Light\" : \"Dark\")} period started");
+                Debug.Log($"Lighting {SystemId} schedule: {(_isLightPeriod ? "Light" : "Dark")} period started");
             }
             
             // Adjust intensity based on schedule
@@ -517,7 +646,13 @@ namespace ProjectChimera.Systems.Environment
             color += new Color(0.4f, 0.2f, 0.8f) * _currentSpectrum.UVA; // UV-A
             color += Color.white * _currentSpectrum.WhiteBalance;
             
-            return color.normalized;
+            // Normalize color manually since Color doesn't have normalized property
+            float maxComponent = Mathf.Max(color.r, color.g, color.b, color.a);
+            if (maxComponent > 1f)
+            {
+                return new Color(color.r / maxComponent, color.g / maxComponent, color.b / maxComponent, color.a / maxComponent);
+            }
+            return color;
         }
         
         private Color GetDefaultSpectrumColor()

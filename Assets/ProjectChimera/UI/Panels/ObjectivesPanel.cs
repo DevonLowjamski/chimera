@@ -635,7 +635,7 @@ namespace ProjectChimera.UI.Panels
             var emptyDescription = new Label("New objectives will appear as you progress in the game");
             emptyDescription.style.fontSize = 14;
             // emptyDescription.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
-            emptyDescription.style.textAlign = TextAnchor.MiddleCenter;
+            emptyDescription.style.unityTextAlign = TextAnchor.MiddleCenter;
             
             emptyState.Add(emptyIcon);
             emptyState.Add(emptyText);
@@ -665,7 +665,7 @@ namespace ProjectChimera.UI.Panels
             var emptyDescription = new Label("Daily challenges refresh automatically at midnight");
             emptyDescription.style.fontSize = 14;
             // emptyDescription.style.color = _uiManager.DesignSystem.ColorPalette.TextSecondary;
-            emptyDescription.style.textAlign = TextAnchor.MiddleCenter;
+            emptyDescription.style.unityTextAlign = TextAnchor.MiddleCenter;
             
             emptyState.Add(emptyIcon);
             emptyState.Add(emptyText);
@@ -680,6 +680,10 @@ namespace ProjectChimera.UI.Panels
             
             // var activeCount = _objectiveManager.ActiveObjectiveCount;
             // var completedCount = _objectiveManager.TotalObjectivesCompleted;
+            
+            // Placeholder data for compilation
+            var activeCount = _lastObjectiveData.Count;
+            var completedCount = 0; // Would come from objective manager
             
             _progressSummaryLabel.text = $"{activeCount} active • {completedCount} completed overall";
             
