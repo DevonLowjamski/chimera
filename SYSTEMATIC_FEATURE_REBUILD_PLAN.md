@@ -23,6 +23,7 @@ This document establishes the systematic approach for rebuilding the features re
 
 ### Pre-Development Validation (EVERY Feature Addition)
 - [ ] **Type Existence Verification**: Locate and verify ALL referenced types in source files
+- [ ] **Abstract Method Verification**: Check ALL abstract methods in base classes BEFORE implementing derived classes
 - [ ] **Namespace Qualification**: Use fully qualified names for potentially ambiguous types
 - [ ] **Assembly Reference Check**: Verify all assembly dependencies exist and are properly configured
 - [ ] **Dependency Direction Validation**: Ensure dependencies flow from higher to lower level assemblies

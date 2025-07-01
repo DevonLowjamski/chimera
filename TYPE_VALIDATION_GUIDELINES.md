@@ -45,6 +45,28 @@ grep -A 20 "enum TypeName" path/to/file.cs | grep -E "^\s*[A-Za-z]" | sed 's/,$/
 grep -A 50 "class TypeName" path/to/file.cs | grep -E "public.*{|public.*;"
 ```
 
+### Step 4: Abstract Method Verification (CRITICAL)
+**BEFORE implementing any derived class, verify ALL abstract methods:**
+
+```bash
+# Find abstract methods in base class
+grep -n "abstract.*void\|abstract.*string\|abstract.*bool" path/to/BaseClass.cs
+
+# Find protected abstract methods  
+grep -n "protected abstract" path/to/BaseClass.cs
+
+# Example for ChimeraManager:
+grep -n "protected abstract" Assets/ProjectChimera/Core/ChimeraManager.cs
+```
+
+**MANDATORY CHECKLIST for Derived Classes:**
+- [ ] **OnManagerInitialize()**: Must be implemented in all ChimeraManager derivatives
+- [ ] **OnManagerShutdown()**: Must be implemented in all ChimeraManager derivatives  
+- [ ] All other abstract methods from base classes
+- [ ] Interface methods if implementing interfaces
+
+**CS0534 Error Prevention**: Always check base class abstract requirements BEFORE writing derived class.
+
 ## 📋 Type Category Validation Checklists
 
 ### ✅ Enum Validation Checklist
