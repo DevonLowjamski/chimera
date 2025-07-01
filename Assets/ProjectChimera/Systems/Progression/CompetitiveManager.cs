@@ -56,8 +56,10 @@ namespace ProjectChimera.Systems.Progression
             
             // Get references to verified existing managers
             progressionManager = GameManager.Instance?.GetManager<ProgressionManager>();
-            experienceManager = GameManager.Instance?.GetManager<ExperienceManager>();
             milestoneSystem = GameManager.Instance?.GetManager<MilestoneProgressionSystem>();
+            
+            // Note: ExperienceManager doesn't inherit from ChimeraManager, so we find it via FindObjectOfType
+            experienceManager = FindObjectOfType<ExperienceManager>();
             
             // Initialize competitive system
             InitializeCompetitiveSystem();

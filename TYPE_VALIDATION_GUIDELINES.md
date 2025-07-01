@@ -67,6 +67,27 @@ grep -n "protected abstract" Assets/ProjectChimera/Core/ChimeraManager.cs
 
 **CS0534 Error Prevention**: Always check base class abstract requirements BEFORE writing derived class.
 
+### Step 5: Manager Inheritance Verification (CRITICAL)
+**BEFORE using GameManager.GetManager<T>(), verify inheritance chain:**
+
+```bash
+# Check if target class inherits from ChimeraManager
+grep -n "class.*Manager.*: ChimeraManager" path/to/ManagerFile.cs
+
+# Example verification:
+grep -n "class ExperienceManager" Assets/ProjectChimera/Systems/Progression/ExperienceManager.cs
+```
+
+**MANDATORY CHECKLIST for Manager References:**
+- [ ] **ChimeraManager Inheritance**: Target class MUST inherit from ChimeraManager for GetManager<T>()
+- [ ] **Alternative Access**: Use FindObjectOfType<T>() for non-ChimeraManager classes
+- [ ] **Null Checking**: Always check if manager reference is null
+
+**CS0311 Error Prevention**: 
+- `GameManager.GetManager<T>()` requires `T : ChimeraManager`
+- Use `FindObjectOfType<T>()` for non-ChimeraManager classes
+- **NEVER assume** a Manager class inherits from ChimeraManager without verification
+
 ## 📋 Type Category Validation Checklists
 
 ### ✅ Enum Validation Checklist
