@@ -1,11 +1,7 @@
 using UnityEngine;
 using ProjectChimera.Core;
+using ProjectChimera.Data;
 using ProjectChimera.Data.Save;
-using ProjectChimera.Systems.Cultivation;
-using ProjectChimera.Systems.Economy;
-using EnvironmentSystems = ProjectChimera.Systems.Environment;
-using ProjectChimera.Systems.Progression;
-using ProjectChimera.Systems.Events;
 using System.Collections.Generic;
 using System.IO;
 using System;
@@ -49,13 +45,13 @@ namespace ProjectChimera.Systems.Save
         [SerializeField] private SimpleGameEventSO _onSaveError;
         [SerializeField] private SimpleGameEventSO _onLoadError;
         
-        // System references
-        private PlantManager _plantManager;
-        private MarketManager _marketManager;
-        private EnvironmentSystems.EnvironmentalManager _environmentalManager;
-        private ProgressionManager _progressionManager;
-        private ObjectiveManager _objectiveManager;
-        private RandomEventManager _eventManager;
+        // System references - Now using data-driven approach instead of direct manager references
+        // private PlantManager _plantManager;
+        // private MarketManager _marketManager;
+        // private EnvironmentalManager _environmentalManager;
+        // private ProgressionManager _progressionManager;
+        // private ObjectiveManager _objectiveManager;
+        // private RandomEventManager _eventManager;
         
         // Save system state
         private List<SaveSlotData> _availableSaveSlots = new List<SaveSlotData>();
@@ -294,8 +290,8 @@ namespace ProjectChimera.Systems.Save
                     Description = description,
                     LastSaveTime = DateTime.Now,
                     PlayTime = GetCurrentPlayTime(),
-                    PlayerLevel = _progressionManager?.PlayerLevel ?? 1,
-                    TotalPlants = _plantManager?.ActivePlantCount ?? 0,
+                    PlayerLevel = GameManager.Instance?.GetManager<ProjectChimera.Systems.Progression.CleanProgressionManager>()?.GetCurrentPlayerLevel() ?? 1,
+                    TotalPlants = 0, // PlantManager disabled, would get from plant manager
                     Currency = 25000f, // Would get from economy system
                     IsAutoSave = false
                 };
@@ -402,12 +398,12 @@ namespace ProjectChimera.Systems.Save
             var gameManager = GameManager.Instance;
             if (gameManager != null)
             {
-                _plantManager = gameManager.GetManager<PlantManager>();
-                _marketManager = gameManager.GetManager<MarketManager>();
-                _environmentalManager = gameManager.GetManager<EnvironmentSystems.EnvironmentalManager>();
-                _progressionManager = gameManager.GetManager<ProgressionManager>();
-                _objectiveManager = gameManager.GetManager<ObjectiveManager>();
-                _eventManager = gameManager.GetManager<RandomEventManager>();
+                // _plantManager = gameManager.GetManager<PlantManager>();
+                // _marketManager = gameManager.GetManager<MarketManager>();
+                // _environmentalManager = gameManager.GetManager<EnvironmentSystems.EnvironmentalManager>();
+                // _progressionManager = gameManager.GetManager<ProgressionManager>();
+                // _objectiveManager = gameManager.GetManager<ObjectiveManager>();
+                // _eventManager = gameManager.GetManager<RandomEventManager>();
             }
         }
         
@@ -529,15 +525,18 @@ namespace ProjectChimera.Systems.Save
         
         private PlayerSaveData GatherPlayerData()
         {
+            var progressionManager = GameManager.Instance?.GetManager<ProjectChimera.Systems.Progression.CleanProgressionManager>();
+            // var eventManager = GameManager.Instance?.GetManager<RandomEventManager>(); // Disabled
+            
             return new PlayerSaveData
             {
                 PlayerId = "player_001", // Would use actual player ID
                 PlayerName = "Player", // Would get from player profile
-                Level = _progressionManager?.PlayerLevel ?? 1,
-                Experience = _progressionManager?.CurrentExperience ?? 0f,
-                SkillPoints = _progressionManager?.AvailableSkillPoints ?? 0,
+                Level = progressionManager?.GetCurrentPlayerLevel() ?? 1,
+                Experience = progressionManager?.GetTotalExperience() ?? 0f,
+                SkillPoints = 0, // CleanProgressionManager doesn't have SkillPoints yet
                 Currency = 25000f, // Would get from economy system
-                Reputation = _eventManager?.PlayerReputationScore ?? 50f,
+                Reputation = 50f, // eventManager disabled, using default
                 TotalPlayTime = GetCurrentPlayTime(),
                 CreationDate = DateTime.Now, // Would store actual creation date
                 LastPlayDate = DateTime.Now
@@ -554,18 +553,19 @@ namespace ProjectChimera.Systems.Save
                 PlantStatistics = new PlantStatisticsSaveData()
             };
             
-            // Would gather actual cultivation data from PlantManager
-            if (_plantManager != null)
-            {
-                var stats = _plantManager.GetStatistics();
-                cultivationData.PlantStatistics = new PlantStatisticsSaveData
-                {
-                    TotalPlantsGrown = stats.TotalPlants,
-                    TotalHarvests = 0, // Would track this
-                    AverageYield = 0f, // Would calculate from history
-                    BestQuality = 0f   // Would track this
-                };
-            }
+            // Would gather actual cultivation data from PlantManager (disabled)
+            // var plantManager = GameManager.Instance?.GetManager<PlantManager>();
+            // if (plantManager != null)
+            // {
+            //     var stats = plantManager.GetStatistics();
+            //     cultivationData.PlantStatistics = new PlantStatisticsSaveData
+            //     {
+            //         TotalPlantsGrown = stats.TotalPlants,
+            //         TotalHarvests = 0, // Would track this
+            //         AverageYield = 0f, // Would calculate from history
+            //         BestQuality = 0f   // Would track this
+            //     };
+            // }
             
             return cultivationData;
         }
@@ -605,11 +605,12 @@ namespace ProjectChimera.Systems.Save
             };
             
             // Would gather actual progression data
-            if (_progressionManager != null)
+            var progressionManager = GameManager.Instance?.GetManager<ProjectChimera.Systems.Progression.CleanProgressionManager>();
+            if (progressionManager != null)
             {
-                progressionData.PlayerLevel = _progressionManager.PlayerLevel;
-                progressionData.CurrentExperience = _progressionManager.CurrentExperience;
-                progressionData.AvailableSkillPoints = _progressionManager.AvailableSkillPoints;
+                progressionData.PlayerLevel = progressionManager.GetCurrentPlayerLevel();
+                progressionData.CurrentExperience = progressionManager.GetTotalExperience();
+                progressionData.AvailableSkillPoints = 0; // CleanProgressionManager doesn't have this property yet
             }
             
             return progressionData;
@@ -626,10 +627,11 @@ namespace ProjectChimera.Systems.Save
             };
             
             // Would gather actual objective data
-            if (_objectiveManager != null)
-            {
-                objectiveData.TotalObjectivesCompleted = _objectiveManager.TotalObjectivesCompleted;
-            }
+            // var objectiveManager = GameManager.Instance?.GetManager<ObjectiveManager>(); // Disabled
+            // if (objectiveManager != null)
+            // {
+            //     objectiveData.TotalObjectivesCompleted = objectiveManager.TotalObjectivesCompleted;
+            // }
             
             return objectiveData;
         }
@@ -645,11 +647,12 @@ namespace ProjectChimera.Systems.Save
             };
             
             // Would gather actual event data
-            if (_eventManager != null)
-            {
-                eventData.EventStatistics.TotalEventsTriggered = _eventManager.TotalEventsTriggered;
-                eventData.EventStatistics.PlayerReputation = _eventManager.PlayerReputationScore;
-            }
+            // var eventManager = GameManager.Instance?.GetManager<RandomEventManager>(); // Disabled
+            // if (eventManager != null)
+            // {
+            //     eventData.EventStatistics.TotalEventsTriggered = eventManager.TotalEventsTriggered;
+            //     eventData.EventStatistics.PlayerReputation = eventManager.PlayerReputationScore;
+            // }
             
             return eventData;
         }

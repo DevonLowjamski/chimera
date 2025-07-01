@@ -4,6 +4,7 @@ using System.Linq;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Progression;
 using ProjectChimera.Data.Equipment;
+using ProjectChimera.Data.Events;
 
 namespace ProjectChimera.Systems.Progression
 {
@@ -961,7 +962,7 @@ namespace ProjectChimera.Systems.Progression
             var discovery = new PotentialDiscovery
             {
                 DiscoveryName = $"Research Breakthrough in {project.ResearchProject.ResearchCategory}",
-                DiscoveryType = DiscoveryType.Scientific_Discovery,
+                DiscoveryType = ProjectChimera.Data.Progression.DiscoveryType.Scientific_Discovery,
                 DiscoveryProbability = 0.8f, // Already rolled for this
                 CommercialValue = Random.Range(50000f, 500000f),
                 NoveltyLevel = (NoveltyLevel)Random.Range(0, System.Enum.GetValues(typeof(NoveltyLevel)).Length),

@@ -4,11 +4,11 @@
     "references": [
         "ProjectChimera.Core",
         "ProjectChimera.Data",
-        "ProjectChimera.Environment",
+        "ProjectChimera.Systems.Environment",
         "ProjectChimera.Systems.Cultivation",
+        "ProjectChimera.Systems.Construction",
         "ProjectChimera.Systems.Economy",
-        "ProjectChimera.Construction",
-        "ProjectChimera.Genetics",
+        "ProjectChimera.Scripts",
         "Unity.TextMeshPro"
     ],
     "includePlatforms": [],

@@ -4,8 +4,10 @@
     "references": [
         "ProjectChimera.Core",
         "ProjectChimera.Data",
+        "ProjectChimera.Events",
         "Unity.TextMeshPro",
-        "Cinemachine"
+        "Cinemachine",
+        "Unity.RenderPipelines.Universal.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

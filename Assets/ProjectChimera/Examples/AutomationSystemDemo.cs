@@ -9,6 +9,10 @@ using ProjectChimera.Systems.Economy;
 using ProjectChimera.Data.Automation;
 using ProjectChimera.Data.Environment;
 
+// Type aliases to resolve ActionType ambiguity
+using AutomationActionType = ProjectChimera.Data.Automation.ActionType;
+using CoreActionType = ProjectChimera.Core.ActionType;
+
 namespace ProjectChimera.Examples
 {
     /// <summary>
@@ -36,7 +40,7 @@ namespace ProjectChimera.Examples
         private AutomationManager _automationManager;
         private EnvironmentSystems.HVACManager _hvacManager;
         private EnvironmentSystems.LightingManager _lightingManager;
-        private InvestmentManager _investmentManager;
+        // InvestmentManager removed - simplified economy system
         
         // Demo data
         private List<string> _createdRules = new List<string>();
@@ -80,7 +84,7 @@ namespace ProjectChimera.Examples
                 _automationManager = gameManager.GetManager<AutomationManager>();
                 _hvacManager = gameManager.GetManager<EnvironmentSystems.HVACManager>();
                 _lightingManager = gameManager.GetManager<EnvironmentSystems.LightingManager>();
-                _investmentManager = gameManager.GetManager<InvestmentManager>();
+                // Investment manager integration removed
                 
                 LogDemo("✅ System references initialized");
             }
@@ -126,14 +130,7 @@ namespace ProjectChimera.Examples
                 LogDemo("✅ LightingManager available");
             }
             
-            if (_investmentManager == null)
-            {
-                LogDemo("⚠️ InvestmentManager not available (optional for demo)");
-            }
-            else
-            {
-                LogDemo("✅ InvestmentManager available");
-            }
+            // Investment manager integration removed - simplified economy system
             
             return allAvailable;
         }
@@ -398,7 +395,7 @@ namespace ProjectChimera.Examples
                 new AutomationAction
                 {
                     ActionId = Guid.NewGuid().ToString(),
-                    ActionType = ActionType.SetTemperature,
+                    ActionType = AutomationActionType.SetTemperature,
                     TargetZoneId = zone,
                     Parameters = new Dictionary<string, object> { { "temperature", _targetTemperature } },
                     LogAction = true
@@ -406,7 +403,7 @@ namespace ProjectChimera.Examples
                 new AutomationAction
                 {
                     ActionId = Guid.NewGuid().ToString(),
-                    ActionType = ActionType.LogEvent,
+                    ActionType = AutomationActionType.LogEvent,
                     Parameters = new Dictionary<string, object> 
                     { 
                         { "message", $"Temperature optimization activated in {zone}" }
@@ -433,7 +430,7 @@ namespace ProjectChimera.Examples
                 new AutomationAction
                 {
                     ActionId = Guid.NewGuid().ToString(),
-                    ActionType = ActionType.SetHumidity,
+                    ActionType = AutomationActionType.SetHumidity,
                     TargetZoneId = zone,
                     Parameters = new Dictionary<string, object> { { "humidity", _targetHumidity } }
                 }
@@ -458,14 +455,14 @@ namespace ProjectChimera.Examples
                 new AutomationAction
                 {
                     ActionId = Guid.NewGuid().ToString(),
-                    ActionType = ActionType.SetHumidity,
+                    ActionType = AutomationActionType.SetHumidity,
                     TargetZoneId = zone,
                     Parameters = new Dictionary<string, object> { { "humidity", _targetHumidity + 5f } }
                 },
                 new AutomationAction
                 {
                     ActionId = Guid.NewGuid().ToString(),
-                    ActionType = ActionType.SendAlert,
+                    ActionType = AutomationActionType.SendAlert,
                     Parameters = new Dictionary<string, object> 
                     { 
                         { "severity", AlertSeverity.Info },
@@ -496,13 +493,13 @@ namespace ProjectChimera.Examples
                     new AutomationAction
                     {
                         ActionId = Guid.NewGuid().ToString(),
-                        ActionType = ActionType.EmergencyShutdown,
+                        ActionType = AutomationActionType.EmergencyShutdown,
                         Parameters = new Dictionary<string, object> { { "reason", "Critical temperature exceeded 40°C" } }
                     },
                     new AutomationAction
                     {
                         ActionId = Guid.NewGuid().ToString(),
-                        ActionType = ActionType.SendAlert,
+                        ActionType = AutomationActionType.SendAlert,
                         Parameters = new Dictionary<string, object> 
                         { 
                             { "severity", AlertSeverity.Emergency },
@@ -533,7 +530,7 @@ namespace ProjectChimera.Examples
                     new AutomationAction
                     {
                         ActionId = Guid.NewGuid().ToString(),
-                        ActionType = ActionType.SendAlert,
+                        ActionType = AutomationActionType.SendAlert,
                         Parameters = new Dictionary<string, object> 
                         { 
                             { "severity", AlertSeverity.Critical },
@@ -568,13 +565,13 @@ namespace ProjectChimera.Examples
                     new AutomationAction
                     {
                         ActionId = Guid.NewGuid().ToString(),
-                        ActionType = ActionType.SetLightIntensity,
+                        ActionType = AutomationActionType.SetLightIntensity,
                         Parameters = new Dictionary<string, object> { { "intensity", 0.7f } }
                     },
                     new AutomationAction
                     {
                         ActionId = Guid.NewGuid().ToString(),
-                        ActionType = ActionType.LogEvent,
+                        ActionType = AutomationActionType.LogEvent,
                         Parameters = new Dictionary<string, object> 
                         { 
                             { "message", "Energy optimization mode activated for off-peak hours" }
@@ -608,7 +605,7 @@ namespace ProjectChimera.Examples
                     new AutomationAction
                     {
                         ActionId = Guid.NewGuid().ToString(),
-                        ActionType = ActionType.LogEvent,
+                        ActionType = AutomationActionType.LogEvent,
                         Parameters = new Dictionary<string, object> 
                         { 
                             { "message", "Daily sensor calibration check initiated" }
@@ -700,38 +697,15 @@ namespace ProjectChimera.Examples
             LogDemo("📋 Phase 5: Economic Integration");
             LogDemo("===============================");
             
-            if (_investmentManager != null)
-            {
-                DemonstrateAutomationROI();
-                DemonstrateEnergyManagementSavings();
-                DemonstrateMaintenanceCostOptimization();
-            }
-            else
-            {
-                LogDemo("⚠️ Investment Manager not available - skipping economic integration demo");
-            }
+            // Investment manager integration removed - simplified economy system
+            DemonstrateEnergyManagementSavings();
+            DemonstrateMaintenanceCostOptimization();
             
             LogDemo("✅ Phase 5 Complete: Economic integration demonstrated");
             LogDemo("");
         }
         
-        private void DemonstrateAutomationROI()
-        {
-            LogDemo("💰 Automation ROI Analysis:");
-            
-            // Check for automation investment opportunities
-            var opportunities = _investmentManager.GetSuitableInvestmentOpportunities();
-            var automationOpportunities = opportunities.Where(o => 
-                o.InvestmentType == ProjectChimera.Data.Economy.InvestmentType.Technology_Upgrade ||
-                o.InvestmentType == ProjectChimera.Data.Economy.InvestmentType.Cultivation_Equipment).ToList();
-            
-            LogDemo($"  💡 {automationOpportunities.Count} automation investment opportunities available");
-            
-            foreach (var opportunity in automationOpportunities.Take(2))
-            {
-                LogDemo($"    📈 {opportunity.OpportunityName}: {opportunity.ExpectedReturn:P1} expected return");
-            }
-        }
+        // DemonstrateAutomationROI method removed - investment manager no longer available
         
         private void DemonstrateEnergyManagementSavings()
         {
@@ -834,7 +808,7 @@ namespace ProjectChimera.Examples
             LogDemo("🔗 INTEGRATION STATUS:");
             LogDemo("  ✅ HVAC system integration: Operational");
             LogDemo("  ✅ Lighting system integration: Operational");
-            LogDemo($"  {(_investmentManager != null ? "✅" : "⚠️")} Economic system integration: {(_investmentManager != null ? "Operational" : "Not Available")}");
+            LogDemo("  ✅ Economic system integration: Simplified (Advanced features removed)");
             LogDemo("  ✅ Monitoring and analytics: Operational");
             LogDemo("  ✅ Predictive features: Operational");
             LogDemo("");

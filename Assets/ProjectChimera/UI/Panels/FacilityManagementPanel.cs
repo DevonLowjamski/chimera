@@ -947,9 +947,9 @@ namespace ProjectChimera.UI.Panels
             UpdateEnvironmentalData();
         }
         
-        protected override void OnDestroy()
+        protected virtual void OnDestroy()
         {
-            base.OnDestroy();
+            // Clean up facility management panel
             CancelInvoke(nameof(UpdateEnvironmentalData));
         }
     }

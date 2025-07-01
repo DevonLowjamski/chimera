@@ -1,64 +1,17 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ProjectChimera.Core;
+using ProjectChimera.Core.Events;
 
 namespace ProjectChimera.Data.Community
 {
-    // Enhanced Leaderboard System
-    [System.Serializable]
-    public enum LeaderboardType
-    {
-        TotalYield,
-        THCPotency,
-        CBDContent,
-        TerpeneProfile,
-        FacilityEfficiency,
-        BreedingInnovation,
-        EconomicSuccess,
-        SustainabilityScore,
-        SpeedRun,
-        QualityScore,
-        CommunityContribution,
-        ResearchPoints,
-        Global,
-        Regional,
-        Friends,
-        Guild,
-        Seasonal
-    }
+    // NOTE: LeaderboardCategory, TimePeriod, and ScoreOrder are now defined in ProjectChimera.Core
+    // and should be used from there to avoid type conflicts.
 
     [System.Serializable]
-    public enum LeaderboardCategory
-    {
-        Cultivation,
-        Genetics,
-        Economics,
-        Efficiency,
-        Innovation,
-        Community,
-        Competition
-    }
-
-    [System.Serializable]
-    public enum TimePeriod
-    {
-        AllTime,
-        Monthly,
-        Weekly,
-        Daily,
-        Seasonal
-    }
-
-    [System.Serializable]
-    public enum ScoreOrder
-    {
-        Descending,
-        Ascending
-    }
-
-    [System.Serializable]
-    public enum ChallengeType
+    public enum ChallengeTimingType
     {
         Daily,
         Weekly,
@@ -69,7 +22,8 @@ namespace ProjectChimera.Data.Community
         Speedrun,
         Quality,
         Innovation,
-        Collaboration
+        Collaboration,
+        Announcements
     }
 
     [System.Serializable]
@@ -138,6 +92,24 @@ namespace ProjectChimera.Data.Community
         UpVote,
         DownVote
     }
+    
+    [System.Serializable]
+    public class Vote
+    {
+        public string VoteId;
+        public string UserId;
+        public VoteType Type;
+        public DateTime VoteDate;
+        public string TargetId; // Post ID, Topic ID, etc.
+        
+        public Vote(string userId, VoteType type)
+        {
+            VoteId = System.Guid.NewGuid().ToString();
+            UserId = userId;
+            Type = type;
+            VoteDate = DateTime.Now;
+        }
+    }
 
     [System.Serializable]
     public enum AttachmentType
@@ -159,17 +131,9 @@ namespace ProjectChimera.Data.Community
         Mentorship,
         Bug_Reports,
         Feedback,
-        Moderation_Help
-    }
-
-    [System.Serializable]
-    public enum PlayerStatus
-    {
-        Online,
-        Away,
-        Busy,
-        Invisible,
-        Offline
+        Moderation_Help,
+        Forum_Activity,
+        Achievement
     }
 
     [System.Serializable]
@@ -181,61 +145,23 @@ namespace ProjectChimera.Data.Community
     }
 
     [System.Serializable]
-    public class PlayerProfile
+    public enum EventStatus
     {
-        [Header("Player Identity")]
-        public string PlayerID;
-        public string DisplayName;
-        public string ProfileImageURL;
-        public DateTime JoinDate;
-        public DateTime LastActive;
-        public PlayerStatus Status = PlayerStatus.Offline;
-        
-        [Header("Player Progression")]
-        public int Level = 1;
-        public int Experience = 0;
-        
-        [Header("Reputation System")]
-        public float ReputationScore;
-        public int ReputationPoints;
-        public ReputationTier CurrentTier;
-        public int TotalVotes;
-        public int PositiveVotes;
-        public float TrustScore;
-        
-        [Header("Achievements & Statistics")]
-        public int TotalHarvests;
-        public float BestYield;
-        public float BestTHC;
-        public float BestCBD;
-        public int StrainsCreated;
-        public int TradesCompleted;
-        public float TradeSuccessRate;
-        
-        [Header("Community Engagement")]
-        public int ForumPosts;
-        public int HelpfulVotes;
-        public int ChallengesCompleted;
-        public int ChallengesWon;
-        public List<string> Badges = new List<string>();
-        public List<string> Achievements = new List<string>();
-        
-        [Header("Specializations")]
-        public List<string> Specialties = new List<string>();
-        public Dictionary<string, float> SkillRatings = new Dictionary<string, float>();
-        
-        public bool IsVerified;
-        public bool IsModerator;
-        public string Location; // Optional, general region
-        public string Bio;
-        
-        // Compatibility property for CommunityManager
-        public string PlayerId => PlayerID;
+        NotStarted,
+        Active,
+        Paused,
+        Completed,
+        Finished, // Alias for Completed to match CommunityManager usage
+        Ended,
+        Cancelled
     }
+
+    // Note: PlayerProfile, PlayerStatus, and LeaderboardType are now defined in SharedDataStructures.cs
 
     [System.Serializable]
     public class LeaderboardEntry
     {
+        [Header("Entry Details")]
         public string PlayerID;
         public string DisplayName;
         public float Score;
@@ -245,6 +171,7 @@ namespace ProjectChimera.Data.Community
         public bool IsVerified;
         public int VoteCount;
         public string ProofImageURL;
+        public string ModerationNotes;
     }
 
     [System.Serializable]
@@ -259,13 +186,11 @@ namespace ProjectChimera.Data.Community
         public DateTime EndDate;
         public bool IsActive;
         public int MaxEntries;
-        
-        [Header("Entries & Rankings")]
         public List<LeaderboardEntry> Entries = new List<LeaderboardEntry>();
         public Dictionary<string, object> Rewards = new Dictionary<string, object>();
         
         [Header("Requirements")]
-        public int MinimumLevel;
+        public int MinimumPlayerLevel;
         public List<string> RequiredAchievements = new List<string>();
         public bool RequiresVerification;
     }
@@ -277,13 +202,13 @@ namespace ProjectChimera.Data.Community
         public string ChallengeID;
         public string Name;
         public string Description;
-        public ChallengeType Type;
+        public ChallengeTimingType Type;
         public DateTime StartDate;
         public DateTime EndDate;
         public bool IsActive;
         
         [Header("Requirements & Rules")]
-        public Dictionary<string, object> Parameters = new Dictionary<string, object>();
+        public int MinimumPlayerLevel;
         public List<string> Requirements = new List<string>();
         public string Rules;
         
@@ -312,26 +237,41 @@ namespace ProjectChimera.Data.Community
         public DateTime LastModified;
         
         [Header("Engagement")]
-        public int Views;
+        public int UpVotes;
         public int Likes;
         public int Replies;
         public List<string> Tags = new List<string>();
         public ForumCategory Category;
+        public List<Vote> Votes = new List<Vote>();
         
         [Header("Media & Attachments")]
         public List<string> ImageURLs = new List<string>();
         public List<string> AttachmentURLs = new List<string>();
         
         [Header("Moderation")]
-        public bool IsLocked;
+        public bool IsApproved;
         public bool IsPinned;
         public bool IsDeleted;
         public string ModerationNotes;
         
         [Header("Helpfulness")]
-        public int HelpfulVotes;
         public bool IsMarkedSolution;
         public float QualityScore;
+        
+        // Methods
+        public void AddVote(Vote vote)
+        {
+            // Remove existing vote from this user if any
+            Votes.RemoveAll(v => v.UserId == vote.UserId);
+            
+            // Add new vote
+            vote.TargetId = PostID;
+            Votes.Add(vote);
+            
+            // Update vote counts
+            UpVotes = Votes.Count(v => v.Type == VoteType.UpVote);
+            var downVotes = Votes.Count(v => v.Type == VoteType.DownVote);
+        }
     }
 
     [System.Serializable]
@@ -344,13 +284,14 @@ namespace ProjectChimera.Data.Community
         public List<string> PostIDs = new List<string>();
         
         [Header("Activity")]
-        public DateTime LastActivity;
+        public DateTime CreatedDate;
         public int TotalViews;
         public int TotalReplies;
+        public DateTime LastReplyDate;
         public string LastReplyAuthor;
         
         [Header("Status")]
-        public bool IsLocked;
+        public bool IsActive;
         public bool IsPinned;
         public bool IsSticky;
         public bool HasSolution;
@@ -373,7 +314,7 @@ namespace ProjectChimera.Data.Community
         public Dictionary<string, object> Rewards = new Dictionary<string, object>();
         
         [Header("Progress Tracking")]
-        public float OverallProgress;
+        public Dictionary<string, float> ParticipantProgress = new Dictionary<string, float>();
         public Dictionary<string, float> IndividualProgress = new Dictionary<string, float>();
         public bool IsCompleted;
     }
@@ -389,14 +330,31 @@ namespace ProjectChimera.Data.Community
         public string Category;
         
         [Header("Requirements")]
-        public Dictionary<string, object> UnlockCriteria = new Dictionary<string, object>();
+        public List<string> Requirements = new List<string>();
         public bool IsHidden; // Secret badges
         public int Rarity; // 1-5 stars
+        public int ReputationValue; // Reputation points awarded for earning this badge
         
         [Header("Statistics")]
         public int TotalAwarded;
         public DateTime FirstAwarded;
         public List<string> HolderIDs = new List<string>();
+        
+        // Constructor for easy Badge creation
+        public Badge(string id, string name, string description, int reputationValue, string iconUrl = "")
+        {
+            BadgeID = id;
+            Name = name;
+            Description = description;
+            ReputationValue = reputationValue;
+            IconURL = iconUrl;
+            Requirements = new List<string>();
+            HolderIDs = new List<string>();
+            TotalAwarded = 0;
+        }
+        
+        // Property alias for compatibility
+        public string Id => BadgeID;
     }
 
     [System.Serializable]
@@ -420,7 +378,7 @@ namespace ProjectChimera.Data.Community
         public List<string> NegativeFeedback = new List<string>();
         
         [Header("Recent Activity")]
-        public DateTime LastTrade;
+        public DateTime LastTradeDate;
         public List<string> RecentTradeIDs = new List<string>();
         public float RecentPerformance; // Last 30 days
     }
@@ -429,13 +387,17 @@ namespace ProjectChimera.Data.Community
     public class CommunityMetrics
     {
         [Header("Overall Statistics")]
-        public int TotalActiveUsers;
+        public int TotalPlayers;
+        public int ActivePlayers;
+        public int TotalPosts;
+        public int TotalTopics;
         public int TotalForumPosts;
         public int TotalChallengesCompleted;
         public int TotalTradesCompleted;
+        public DateTime LastUpdated;
         
         [Header("Engagement Metrics")]
-        public float AverageDailyActiveUsers;
+        public int ActivePlayersDaily;
         public float AverageSessionLength;
         public float CommunityHealthScore;
         
@@ -445,12 +407,12 @@ namespace ProjectChimera.Data.Community
         public Dictionary<string, float> LeaderboardDistribution = new Dictionary<string, float>();
         
         [Header("Growth Metrics")]
-        public int NewUsersThisMonth;
+        public int NewPlayersThisWeek;
         public float RetentionRate;
         public float EngagementGrowth;
     }
 
-    // Enhanced Forum System Data Structures
+    // ENHANCED FORUM SYSTEM CLASSES
     [System.Serializable]
     public class EnhancedForumTopic
     {
@@ -474,6 +436,33 @@ namespace ProjectChimera.Data.Community
         
         [Header("Posts")]
         public List<EnhancedForumPost> Posts = new List<EnhancedForumPost>();
+        
+        // Constructor for CommunityManager
+        public EnhancedForumTopic(string title, string authorId, ForumCategory category, TopicType type)
+        {
+            TopicId = System.Guid.NewGuid().ToString();
+            Title = title;
+            AuthorId = authorId;
+            CreatedDate = DateTime.Now;
+            LastReplyDate = DateTime.Now;
+            Status = TopicStatus.Open;
+            Type = type;
+            ViewCount = 0;
+            ReplyCount = 0;
+            IsSticky = false;
+            IsLocked = false;
+            Tags = new List<string>();
+            Posts = new List<EnhancedForumPost>();
+            Rating = new TopicRating();
+        }
+        
+        // Missing methods for CommunityManager
+        public void AddReply(EnhancedForumPost post)
+        {
+            Posts.Add(post);
+            ReplyCount = Posts.Count;
+            LastReplyDate = DateTime.Now;
+        }
     }
 
     [System.Serializable]
@@ -500,6 +489,52 @@ namespace ProjectChimera.Data.Community
         public PostStatus Status;
         public bool IsDeleted;
         public string DeleteReason;
+        
+        // Constructor for CommunityManager
+        public EnhancedForumPost(string topicId, string authorId, string content)
+        {
+            PostId = System.Guid.NewGuid().ToString();
+            TopicId = topicId;
+            AuthorId = authorId;
+            Content = content;
+            PostDate = DateTime.Now;
+            LastEditDate = DateTime.Now;
+            Status = PostStatus.Published;
+            IsDeleted = false;
+            Attachments = new List<ForumAttachment>();
+            Voting = new PostVoting();
+            Replies = new List<ForumReply>();
+        }
+        
+        // Missing methods for CommunityManager
+        public void AddVote(Vote vote)
+        {
+            if (Voting == null) Voting = new PostVoting();
+            
+            // Remove existing vote from this user if any
+            var existingVote = Voting.VotedUserIds.FirstOrDefault(id => id == vote.UserId);
+            if (existingVote != null)
+            {
+                Voting.VotedUserIds.Remove(existingVote);
+                // Adjust vote counts based on previous vote
+                if (Voting.UserVoteType == VoteType.UpVote)
+                    Voting.UpVotes--;
+                else if (Voting.UserVoteType == VoteType.DownVote)
+                    Voting.DownVotes--;
+            }
+            
+            // Add new vote
+            Voting.VotedUserIds.Add(vote.UserId);
+            Voting.UserVoteType = vote.Type;
+            Voting.HasUserVoted = true;
+            
+            if (vote.Type == VoteType.UpVote)
+                Voting.UpVotes++;
+            else if (vote.Type == VoteType.DownVote)
+                Voting.DownVotes++;
+                
+            Voting.NetScore = Voting.UpVotes - Voting.DownVotes;
+        }
     }
 
     [System.Serializable]
@@ -548,41 +583,173 @@ namespace ProjectChimera.Data.Community
         public int UserRating;
     }
 
-    // Enhanced Leaderboard System
+    // ENHANCED LEADERBOARD SYSTEM CLASSES
     [System.Serializable]
-    public class EnhancedLeaderboard
+    public class LeaderboardSettings : ILeaderboardSettings
+    {
+        [SerializeField] private ProjectChimera.Core.ScoreOrder _sortOrder;
+        [SerializeField] private float _minimumScore;
+        [SerializeField] private bool _requireVerification;
+
+        // Constructor for CommunityManager
+        public LeaderboardSettings(string name, string description, LeaderboardCategory category, ProjectChimera.Core.ScoreOrder sortOrder, float minimumScore, bool requireVerification)
+        {
+            _sortOrder = sortOrder;
+            _minimumScore = minimumScore;
+            _requireVerification = requireVerification;
+        }
+
+        public ProjectChimera.Core.ScoreOrder SortOrder => _sortOrder;
+        public float MinimumScore => _minimumScore;
+        public bool RequireVerification => _requireVerification;
+    }
+
+    [System.Serializable]
+    public class EnhancedLeaderboard : ILeaderboard
     {
         [Header("Leaderboard Configuration")]
-        public string LeaderboardId;
-        public string Name;
-        public string Description;
-        public LeaderboardType Type;
-        public LeaderboardCategory Category;
-        public TimePeriod Period;
-        public DateTime LastUpdated;
-        public bool IsActive;
-        public int MaxEntries;
+        [SerializeField] private string _leaderboardId;
+        [SerializeField] private string _name;
+        [SerializeField] private string _description;
+        [SerializeField] private ProjectChimera.Core.LeaderboardType _type;
+        [SerializeField] private ProjectChimera.Core.LeaderboardCategory _category;
+        [SerializeField] private ProjectChimera.Core.TimePeriod _period;
+        [SerializeField] private bool _isActive;
+        [SerializeField] private int _maxEntries;
+        [SerializeField] private LeaderboardSettings _settings;
+
+        [Header("State")]
+        [SerializeField] private List<EnhancedLeaderboardEntry> _entries = new List<EnhancedLeaderboardEntry>();
+        [SerializeField] private DateTime _lastUpdated;
         
-        [Header("Entries and Settings")]
-        public List<EnhancedLeaderboardEntry> Entries = new List<EnhancedLeaderboardEntry>();
-        public LeaderboardSettings Settings;
+        // Constructor for CommunityManager
+        public EnhancedLeaderboard(string leaderboardId, ProjectChimera.Core.LeaderboardType type, LeaderboardSettings settings)
+        {
+            _leaderboardId = leaderboardId;
+            _name = type.ToString().Replace("_", " ");
+            _description = $"Tracks the top players for {_name}.";
+            _type = type;
+            _category = ProjectChimera.Core.LeaderboardCategory.General;
+            _period = ProjectChimera.Core.TimePeriod.All_Time;
+            _isActive = true;
+            _maxEntries = 1000;
+            _settings = settings;
+            _entries = new List<EnhancedLeaderboardEntry>();
+            _lastUpdated = DateTime.Now;
+        }
+        
+        // Interface Implementation
+        public string Id => _leaderboardId;
+        public string DisplayName => _name;
+        public string LeaderboardDescription => _description;
+        public ProjectChimera.Core.LeaderboardType LeaderboardType => _type;
+        public ProjectChimera.Core.LeaderboardCategory LeaderboardCategory => _category;
+        public ProjectChimera.Core.TimePeriod TimePeriod => _period;
+        public DateTime LastUpdateTime => _lastUpdated;
+        public bool Active => _isActive;
+        public int MaximumEntries => _maxEntries;
+        public ILeaderboardSettings Settings => _settings;
+        public IReadOnlyList<ILeaderboardEntry> LeaderboardEntries => _entries;
+
+        // Public Methods
+        public EnhancedLeaderboardEntry GetPlayerEntry(string playerId)
+        {
+            return _entries.FirstOrDefault(e => e.PlayerId == playerId);
+        }
+
+        public List<EnhancedLeaderboardEntry> GetTopEntries(int count = 10)
+        {
+            return _entries.Take(count).ToList();
+        }
+
+        public void AddOrUpdateEntry(EnhancedLeaderboardEntry newEntry)
+        {
+            var existingEntry = _entries.FirstOrDefault(e => e.PlayerId == newEntry.PlayerId);
+            if (existingEntry != null)
+            {
+                bool isBetter = _settings.SortOrder == ProjectChimera.Core.ScoreOrder.Descending
+                    ? newEntry.EntryScore > existingEntry.EntryScore
+                    : newEntry.EntryScore < existingEntry.EntryScore;
+
+                if (isBetter)
+                {
+                    _entries.Remove(existingEntry);
+                    _entries.Add(newEntry);
+                }
+            }
+            else
+            {
+                _entries.Add(newEntry);
+            }
+            SortAndTrimEntries();
+        }
+        
+        private void SortAndTrimEntries()
+        {
+            if (_settings.SortOrder == ProjectChimera.Core.ScoreOrder.Descending)
+            {
+                _entries = _entries.OrderByDescending(e => e.EntryScore).ToList();
+            }
+            else
+            {
+                _entries = _entries.OrderBy(e => e.EntryScore).ToList();
+            }
+
+            // Update ranks
+            for (int i = 0; i < _entries.Count; i++)
+            {
+                _entries[i].Rank = i + 1;
+            }
+
+            // Trim to max entries
+            if (_entries.Count > _maxEntries)
+            {
+                _entries = _entries.Take(_maxEntries).ToList();
+            }
+
+            _lastUpdated = DateTime.Now;
+        }
+        
+        // Missing method for CommunityManager
+        public void UpdateRanks()
+        {
+            SortAndTrimEntries();
+        }
     }
 
     [System.Serializable]
-    public class EnhancedLeaderboardEntry
+    public class EnhancedLeaderboardEntry : ILeaderboardEntry
     {
-        public int Rank;
-        public string PlayerId;
-        public string PlayerName;
-        public float Score;
-        public string FormattedScore;
-        public DateTime SubmissionDate;
-        public LeaderboardEntryData AdditionalData;
-        public int Change; // Position change from last period
-        public bool IsCurrentPlayer;
-        public bool IsVerified;
+        [SerializeField] private string _entryId;
+        [SerializeField] private string _playerId;
+        [SerializeField] private string _playerName;
+        [SerializeField] private float _score;
+        [SerializeField] private int _rank;
+        [SerializeField] private DateTime _submissionDate;
+        
+        public EnhancedLeaderboardEntry(string playerId, string playerName, float score, DateTime submissionDate)
+        {
+            _entryId = Guid.NewGuid().ToString();
+            _playerId = playerId;
+            _playerName = playerName;
+            _score = score;
+            _submissionDate = submissionDate;
+            _rank = -1; // Initial rank
+        }
+        
+        // Interface Implementation
+        public string Id => _entryId;
+        public string PlayerId => _playerId;
+        public string DisplayName => _playerName;
+        public float EntryScore => _score;
+        public int EntryRank => _rank;
+        public DateTime LastUpdateTime => _submissionDate;
+        
+        // Public properties for implementation logic
+        public int Rank { get => _rank; set => _rank = value; }
+        public string FormattedScore { get; set; }
     }
-
+    
     [System.Serializable]
     public class LeaderboardEntryData
     {
@@ -592,19 +759,7 @@ namespace ProjectChimera.Data.Community
         public List<string> Tags = new List<string>();
     }
 
-    [System.Serializable]
-    public class LeaderboardSettings
-    {
-        public bool AllowTies;
-        public ScoreOrder SortOrder;
-        public int MinimumScore;
-        public bool RequireVerification;
-        public TimeSpan UpdateInterval;
-        public bool ShowPlayerRank;
-        public bool ShowScoreHistory;
-    }
-
-    // Enhanced Reputation System
+    // REPUTATION SYSTEM CLASSES
     [System.Serializable]
     public class ReputationSystem
     {
@@ -615,6 +770,103 @@ namespace ProjectChimera.Data.Community
         public ReputationHistory History;
         public List<ReputationBonus> ActiveBonuses = new List<ReputationBonus>();
         public DateTime LastUpdated;
+        
+        // Property for CommunityManager
+        public int ReputationLevel => Level?.Level ?? 1;
+        
+        // Constructor for CommunityManager
+        public ReputationSystem(string playerId)
+        {
+            PlayerId = playerId;
+            TotalReputation = 0;
+            Level = new ReputationLevel { Level = 1, Name = "Novice", RequiredReputation = 0 };
+            Sources = new List<ReputationSource>();
+            History = new ReputationHistory();
+            ActiveBonuses = new List<ReputationBonus>();
+            LastUpdated = DateTime.Now;
+        }
+
+        // Missing methods for CommunityManager
+        public void AddReputation(ReputationType type, int points, string reason = "")
+        {
+            var source = new ReputationSource
+            {
+                Type = type,
+                Points = points,
+                EarnedDate = DateTime.Now,
+                Description = reason,
+                SourceId = System.Guid.NewGuid().ToString()
+            };
+            
+            Sources.Add(source);
+            TotalReputation += points;
+            
+            if (History == null) History = new ReputationHistory();
+            var change = new ReputationChange
+            {
+                Date = DateTime.Now,
+                Type = type,
+                PointsChanged = points,
+                NewTotal = TotalReputation,
+                Reason = reason,
+                SourceId = source.SourceId
+            };
+            History.Changes.Add(change);
+            
+            if (!History.TotalByType.ContainsKey(type))
+                History.TotalByType[type] = 0;
+            History.TotalByType[type] += points;
+            
+            LastUpdated = DateTime.Now;
+        }
+
+        public int GetTotalReputation()
+        {
+            return TotalReputation;
+        }
+        
+        public void UpdateReputationLevel()
+        {
+            int newLevel = 1;
+            if (TotalReputation >= 1000) newLevel = 6;
+            else if (TotalReputation >= 500) newLevel = 5;
+            else if (TotalReputation >= 250) newLevel = 4;
+            else if (TotalReputation >= 100) newLevel = 3;
+            else if (TotalReputation >= 50) newLevel = 2;
+            
+            if (Level == null) Level = new ReputationLevel();
+            Level.Level = newLevel;
+            Level.Name = GetReputationLevelName(newLevel);
+            Level.RequiredReputation = GetRequiredReputationForLevel(newLevel);
+        }
+        
+        private string GetReputationLevelName(int level)
+        {
+            switch (level)
+            {
+                case 1: return "Novice";
+                case 2: return "Apprentice";
+                case 3: return "Cultivator";
+                case 4: return "Expert";
+                case 5: return "Master";
+                case 6: return "Legend";
+                default: return "Novice";
+            }
+        }
+        
+        private int GetRequiredReputationForLevel(int level)
+        {
+            switch (level)
+            {
+                case 1: return 0;
+                case 2: return 50;
+                case 3: return 100;
+                case 4: return 250;
+                case 5: return 500;
+                case 6: return 1000;
+                default: return 0;
+            }
+        }
     }
 
     [System.Serializable]
@@ -681,113 +933,178 @@ namespace ProjectChimera.Data.Community
         public bool IsActive;
     }
 
-    // Community Events System
+    // ENHANCED COMMUNITY EVENT SYSTEM CLASSES
     [System.Serializable]
-    public class EnhancedCommunityEvent
+    public class EnhancedCommunityEvent : ICommunityEvent
     {
-        [Header("Event Information")]
-        public string EventId;
-        public string Name;
-        public string Description;
-        public string EventType;
-        public DateTime StartDate;
-        public DateTime EndDate;
-        public string Status;
+        [SerializeField] private string _eventId;
+        [SerializeField] private string _name;
+        [SerializeField] private string _description;
+        [SerializeField] private DateTime _startDate;
+        [SerializeField] private DateTime _endDate;
+        [SerializeField] private string _status;
+        [SerializeField] private List<EventMilestone> _milestones = new List<EventMilestone>();
+        [SerializeField] private List<EventParticipant> _participants = new List<EventParticipant>();
+        [SerializeField] private EventRewards _rewards;
+        [SerializeField] private EventRequirements _requirements;
+        [SerializeField] private EnhancedLeaderboard _leaderboard;
         
-        [Header("Participation")]
-        public List<EventParticipant> Participants = new List<EventParticipant>();
-        public EventRewards Rewards;
-        public EventRequirements Requirements;
-        public string BannerImagePath;
+        // Constructor for CommunityManager
+        public EnhancedCommunityEvent(string eventId, string name, string description, string eventType, DateTime startDate, DateTime endDate)
+        {
+            _eventId = eventId;
+            _name = name;
+            _description = description;
+            _startDate = startDate;
+            _endDate = endDate;
+            _status = EventStatus.NotStarted.ToString();
+            _milestones = new List<EventMilestone>();
+            _participants = new List<EventParticipant>();
+            _rewards = new EventRewards();
+            _requirements = new EventRequirements();
+            
+            // Create event leaderboard
+            var settings = new LeaderboardSettings(name, description, LeaderboardCategory.Events, ProjectChimera.Core.ScoreOrder.Descending, 0, false);
+            _leaderboard = new EnhancedLeaderboard($"event_{eventId}", ProjectChimera.Core.LeaderboardType.Event_Score, settings);
+        }
+
+        // Interface Implementation
+        public string Id => _eventId;
+        public string DisplayName => _name;
+        public string EventDescription => _description;
+        public DateTime StartDate => _startDate;
+        public DateTime EndDate => _endDate;
+        public string Status => _status;
+        public IReadOnlyList<IEventMilestone> Milestones => _milestones;
+        public IReadOnlyList<IEventParticipant> Participants => _participants;
+        public IEventRewards Rewards => _rewards;
+        public IEventRequirements Requirements => _requirements;
         
-        [Header("Progress and Leaderboard")]
-        public List<EventMilestone> Milestones = new List<EventMilestone>();
-        public EventLeaderboard Leaderboard;
-        public float OverallProgress;
+        // Additional property for CommunityManager
+        public EnhancedLeaderboard Leaderboard => _leaderboard;
+
+        public bool HasParticipant(string playerId)
+        {
+            return _participants.Any(p => p.PlayerId == playerId);
+        }
+
+        public void AddParticipant(EventParticipant participant)
+        {
+            if (!HasParticipant(participant.PlayerId))
+            {
+                _participants.Add(participant);
+            }
+        }
+        
+        // Missing properties and methods for CommunityManager
+        public string Name => _name;
+        
+        public void UpdateStatus(DateTime currentTime)
+        {
+            if (currentTime < _startDate)
+            {
+                _status = "Upcoming";
+            }
+            else if (currentTime >= _startDate && currentTime <= _endDate)
+            {
+                _status = "Active";
+            }
+            else if (currentTime > _endDate)
+            {
+                _status = "Completed";
+            }
+        }
     }
 
     [System.Serializable]
-    public class EventParticipant
+    public class EventParticipant : IEventParticipant
     {
-        public string PlayerId;
-        public string PlayerName;
-        public DateTime JoinDate;
-        public EventParticipationData Data;
-        public List<EventReward> EarnedRewards = new List<EventReward>();
-        public bool IsActive;
+        [SerializeField] private string _participantId;
+        [SerializeField] private string _playerName;
+        [SerializeField] private DateTime _joinDate;
+        [SerializeField] private bool _isActive;
+        [SerializeField] private EventParticipationData _data;
+
+        public EventParticipant(string participantId, string playerName, string eventId)
+        {
+            _participantId = participantId;
+            _playerName = playerName;
+            _joinDate = DateTime.Now;
+            _isActive = true;
+            _data = new EventParticipationData { EventId = eventId };
+        }
+        
+        public string Id => _participantId;
+        public string PlayerId => _participantId;
+        public string DisplayName => _playerName;
+        public DateTime ParticipationDate => _joinDate;
+        public IEventParticipationData ParticipationData => _data;
+        public bool Active => _isActive;
+        
+        // Missing method for CommunityManager
+        public void UpdateScore(string scoreCategory, float score)
+        {
+            if (_data.ScoresByCategory == null)
+                _data.ScoresByCategory = new Dictionary<string, float>();
+                
+            _data.ScoresByCategory[scoreCategory] = score;
+            _data.Score = _data.ScoresByCategory.Values.Sum();
+        }
     }
 
     [System.Serializable]
-    public class EventParticipationData
+    public class EventParticipationData : IEventParticipationData
     {
-        public Dictionary<string, float> Scores = new Dictionary<string, float>();
-        public Dictionary<string, object> CustomData = new Dictionary<string, object>();
-        public int Rank;
-        public float TotalScore;
-        public List<string> CompletedChallenges = new List<string>();
+        public string EventId { get; set; }
+        public float Progress { get; set; }
+        public float Score { get; set; }
+        public List<string> Achievements { get; set; } = new List<string>();
+        public List<string> CompletedMilestones { get; set; } = new List<string>();
+        public Dictionary<string, float> ScoresByCategory { get; set; } = new Dictionary<string, float>();
     }
 
     [System.Serializable]
-    public class EventRewards
+    public class EventRewards : IEventRewards
     {
-        public List<EventReward> Rewards = new List<EventReward>();
-        public EventReward GrandPrize;
-        public List<EventReward> ParticipationRewards = new List<EventReward>();
-        public EventReward DailyRewards;
+        [SerializeField] private List<EventReward> _rewards;
+        public IReadOnlyList<IEventReward> Rewards => _rewards;
     }
 
     [System.Serializable]
-    public class EventReward
+    public class EventReward : IEventReward
     {
-        public string RewardId;
-        public string Name;
-        public string Description;
-        public string Type;
-        public object RewardData;
-        public string IconPath;
-        public string Rarity;
-        public bool IsExclusive;
+        [SerializeField] private string _rewardId;
+        [SerializeField] private string _name;
+        [SerializeField] private string _description;
+        
+        public string Id => _rewardId;
+        public string DisplayName => _name;
+        public string RewardDescription => _description;
     }
 
     [System.Serializable]
-    public class EventRequirements
+    public class EventRequirements : IEventRequirements
     {
-        public int MinimumLevel;
-        public int MinimumReputation;
-        public List<string> RequiredAchievements = new List<string>();
-        public List<string> RequiredBadges = new List<string>();
-        public bool RequiresPremium;
-        public DateTime RegistrationDeadline;
-    }
+        [SerializeField] private int _minimumLevel;
+        [SerializeField] private int _minimumReputation;
 
-    [System.Serializable]
-    public class EventMilestone
-    {
-        public string MilestoneId;
-        public string Name;
-        public string Description;
-        public int RequiredScore;
-        public EventReward Reward;
-        public bool IsReached;
-        public DateTime ReachedDate;
+        public int MinimumLevel => _minimumLevel;
+        public int MinimumReputation => _minimumReputation;
     }
-
+    
     [System.Serializable]
-    public class EventLeaderboard
+    public class EventMilestone : IEventMilestone
     {
-        public string LeaderboardId;
-        public List<EventParticipant> Rankings = new List<EventParticipant>();
-        public DateTime LastUpdated;
-        public LeaderboardDisplaySettings DisplaySettings;
-    }
+        [SerializeField] private string _milestoneId;
+        [SerializeField] private string _name;
+        [SerializeField] private string _description;
+        [SerializeField] private float _requiredProgress;
+        [SerializeField] private EventReward _reward;
 
-    [System.Serializable]
-    public class LeaderboardDisplaySettings
-    {
-        public bool ShowRealTime;
-        public bool ShowHistory;
-        public bool ShowPlayerComparison;
-        public int MaxDisplayedRanks;
-        public bool HighlightPlayerRank;
+        public string Id => _milestoneId;
+        public string DisplayName => _name;
+        public string MilestoneDescription => _description;
+        public float RequiredProgress => _requiredProgress;
+        public IEventReward Reward => _reward;
     }
 }

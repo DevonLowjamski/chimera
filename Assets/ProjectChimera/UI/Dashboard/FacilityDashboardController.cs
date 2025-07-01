@@ -417,7 +417,7 @@ namespace ProjectChimera.UI.Dashboard
             return new PerformanceDashboardData
             {
                 FrameRate = 1f / Time.deltaTime,
-                MemoryUsage = UnityEngine.Profiling.Profiler.GetTotalAllocatedMemory() / (1024f * 1024f),
+                MemoryUsage = GC.GetTotalMemory(false) / (1024f * 1024f),
                 ActiveSystems = CountAvailableSystems(),
                 LastUpdateTime = _lastUpdateTime
             };

@@ -1,17 +1,15 @@
 using UnityEngine;
 using ProjectChimera.Core;
+using ProjectChimera.Data;
 using ProjectChimera.Data.Community;
+using CommunityData = ProjectChimera.Data.Community;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using ProjectChimera.Data.UI;
 
 namespace ProjectChimera.Systems.Community
 {
-    /// <summary>
-    /// Comprehensive community management system for Project Chimera.
-    /// Handles leaderboards, forums, reputation, community events, and social features
-    /// to create an engaging multiplayer experience and foster community interaction.
-    /// </summary>
     public class CommunityManager : ChimeraManager
     {
         [Header("Community Configuration")]
@@ -29,41 +27,40 @@ namespace ProjectChimera.Systems.Community
         [SerializeField] private SimpleGameEventSO _onCommunityEventStarted;
         [SerializeField] private SimpleGameEventSO _onAchievementUnlocked;
         
-        // Core Community Data
         private PlayerProfile _currentPlayerProfile;
-        private Dictionary<string, EnhancedLeaderboard> _leaderboards = new Dictionary<string, EnhancedLeaderboard>();
-        private List<EnhancedForumTopic> _forumTopics = new List<EnhancedForumTopic>();
-        private Dictionary<string, ReputationSystem> _playerReputations = new Dictionary<string, ReputationSystem>();
-        private List<EnhancedCommunityEvent> _activeEvents = new List<EnhancedCommunityEvent>();
-        private Dictionary<string, Badge> _availableBadges = new Dictionary<string, Badge>();
-        
-        // Forum Management
-        private Dictionary<string, EnhancedForumPost> _forumPosts = new Dictionary<string, EnhancedForumPost>();
-        private Dictionary<ForumCategory, List<EnhancedForumTopic>> _topicsByCategory = new Dictionary<ForumCategory, List<EnhancedForumTopic>>();
+        private Dictionary<string, CommunityData.EnhancedLeaderboard> _leaderboards = new Dictionary<string, CommunityData.EnhancedLeaderboard>();
+        private List<CommunityData.EnhancedForumTopic> _forumTopics = new List<CommunityData.EnhancedForumTopic>();
+        private Dictionary<string, CommunityData.ReputationSystem> _playerReputations = new Dictionary<string, CommunityData.ReputationSystem>();
+        private List<CommunityData.EnhancedCommunityEvent> _activeEvents = new List<CommunityData.EnhancedCommunityEvent>();
+        private Dictionary<string, CommunityData.Badge> _availableBadges = new Dictionary<string, CommunityData.Badge>();
+        private Dictionary<string, CommunityData.EnhancedForumPost> _forumPosts = new Dictionary<string, CommunityData.EnhancedForumPost>();
+        private Dictionary<CommunityData.ForumCategory, List<CommunityData.EnhancedForumTopic>> _topicsByCategory = new Dictionary<CommunityData.ForumCategory, List<CommunityData.EnhancedForumTopic>>();
         private List<string> _moderatorIds = new List<string>();
-        
-        // Performance and Caching
         private float _lastLeaderboardUpdate = 0f;
         private Dictionary<string, DateTime> _lastPlayerActivity = new Dictionary<string, DateTime>();
         private CommunityMetrics _communityMetrics = new CommunityMetrics();
+        private Dictionary<string, CommunityData.EventParticipant> _activeParticipants = new Dictionary<string, CommunityData.EventParticipant>();
+        private Dictionary<string, ProjectChimera.Core.EventParticipationData> _participationData = new Dictionary<string, ProjectChimera.Core.EventParticipationData>();
         
         public override ManagerPriority Priority => ManagerPriority.Normal;
         
-        // Public Properties
         public PlayerProfile CurrentPlayer => _currentPlayerProfile;
-        public List<EnhancedLeaderboard> ActiveLeaderboards => _leaderboards.Values.Where(l => l.IsActive).ToList();
-        public List<EnhancedForumTopic> RecentTopics => _forumTopics.OrderByDescending(t => t.LastReplyDate).Take(10).ToList();
-        public List<EnhancedCommunityEvent> UpcomingEvents => _activeEvents.Where(e => e.StartDate > DateTime.Now).ToList();
+        public List<CommunityData.EnhancedLeaderboard> ActiveLeaderboards => _leaderboards.Values.Where(l => l.Active).ToList();
+        public List<CommunityData.EnhancedForumTopic> RecentTopics => _forumTopics.OrderByDescending(t => t.LastReplyDate).Take(10).ToList();
+        public List<CommunityData.EnhancedCommunityEvent> UpcomingEvents => _activeEvents.Where(e => e.StartDate > DateTime.Now).ToList();
         public CommunityMetrics Metrics => _communityMetrics;
         public bool IsPlayerOnline => _currentPlayerProfile?.Status == PlayerStatus.Online;
         
-        // Events
-        public System.Action<PlayerProfile> OnPlayerProfileUpdated;
-        public System.Action<EnhancedLeaderboard> OnLeaderboardUpdated;
-        public System.Action<EnhancedForumPost> OnForumPostCreated;
-        public System.Action<int> OnReputationChanged; // new reputation amount
-        public System.Action<EnhancedCommunityEvent> OnEventStarted;
-        public System.Action<Badge> OnBadgeEarned;
+        public Action<PlayerProfile> OnPlayerProfileUpdated;
+        public Action<CommunityData.EnhancedLeaderboard> OnLeaderboardUpdated;
+        public Action<CommunityData.EnhancedForumPost> OnForumPostCreated;
+        public Action<int> OnReputationChanged;
+        public Action<CommunityData.EnhancedCommunityEvent> OnEventStarted;
+        public Action<CommunityData.Badge> OnBadgeEarned;
+        public Action<Data.LeaderboardType, int> OnRankingChanged;
+        public Action<CompetitionEvent> OnCompetitionStarted;
+        public Action<CompetitionEvent> OnCompetitionEnded;
+        public Action<RecordType, float> OnPersonalRecordSet;
         
         protected override void OnManagerInitialize()
         {
@@ -73,839 +70,352 @@ namespace ProjectChimera.Systems.Community
             InitializeReputationSystem();
             InitializeCommunityEvents();
             InitializeBadgeSystem();
-            
             LogInfo("CommunityManager initialized successfully");
         }
         
         protected override void OnManagerUpdate()
         {
             float currentTime = Time.time;
-            
-            // Update leaderboards periodically
             if (_enableLeaderboards && currentTime - _lastLeaderboardUpdate >= _leaderboardUpdateInterval)
             {
                 UpdateAllLeaderboards();
                 _lastLeaderboardUpdate = currentTime;
             }
-            
-            // Update community events
-            if (_enableCommunityEvents)
-            {
-                UpdateCommunityEvents();
-            }
-            
-            // Update player activity tracking
+            if (_enableCommunityEvents) { UpdateCommunityEvents(); }
             UpdatePlayerActivity();
-            
-            // Update community metrics
             UpdateCommunityMetrics();
         }
         
-        #region Player Profile Management
-        
-        /// <summary>
-        /// Update current player's profile information
-        /// </summary>
         public void UpdatePlayerProfile(string displayName, string bio = "", PlayerStatus status = PlayerStatus.Online)
         {
             if (_currentPlayerProfile == null) return;
-            
             _currentPlayerProfile.DisplayName = displayName;
             _currentPlayerProfile.Bio = bio;
             _currentPlayerProfile.Status = status;
             _currentPlayerProfile.LastActive = DateTime.Now;
-            
             OnPlayerProfileUpdated?.Invoke(_currentPlayerProfile);
             LogInfo($"Player profile updated: {displayName}");
         }
         
-        /// <summary>
-        /// Add experience points to current player
-        /// </summary>
         public void AddExperience(int experiencePoints, string reason = "")
         {
             if (_currentPlayerProfile == null) return;
-            
             int oldLevel = _currentPlayerProfile.Level;
             _currentPlayerProfile.Experience += experiencePoints;
-            
-            // Check for level up (simplified calculation)
             int newLevel = Mathf.FloorToInt(_currentPlayerProfile.Experience / 1000f) + 1;
             if (newLevel > oldLevel)
             {
                 _currentPlayerProfile.Level = newLevel;
                 LogInfo($"Player leveled up to {newLevel}!");
-                
-                // Award reputation for leveling up
-                AddReputation(ReputationType.Community_Participation, 50, $"Reached Level {newLevel}");
+                AddReputation(CommunityData.ReputationType.Community_Participation, 50, $"Reached Level {newLevel}");
             }
-            
             LogInfo($"Added {experiencePoints} experience - {reason}");
         }
         
-        /// <summary>
-        /// Set player's online status
-        /// </summary>
         public void SetPlayerStatus(PlayerStatus status)
         {
             if (_currentPlayerProfile == null) return;
-            
             _currentPlayerProfile.Status = status;
             _currentPlayerProfile.LastActive = DateTime.Now;
-            
             if (status == PlayerStatus.Online)
             {
                 _lastPlayerActivity[_currentPlayerProfile.PlayerId] = DateTime.Now;
             }
-            
             LogInfo($"Player status set to: {status}");
         }
         
-        #endregion
-        
-        #region Leaderboard System
-        
-        /// <summary>
-        /// Submit a score to a specific leaderboard
-        /// </summary>
-        public bool SubmitScore(LeaderboardType leaderboardType, float score, string additionalData = "")
+        public bool SubmitScore(ProjectChimera.Core.LeaderboardType leaderboardType, float score, string additionalData = "")
         {
             if (!_enableLeaderboards || _currentPlayerProfile == null) return false;
-            
             string leaderboardId = leaderboardType.ToString();
             if (!_leaderboards.TryGetValue(leaderboardId, out var leaderboard))
             {
                 LogWarning($"Leaderboard not found: {leaderboardType}");
                 return false;
             }
-            
-            // Check if score meets minimum requirements
             if (score < leaderboard.Settings.MinimumScore)
             {
                 LogWarning($"Score {score} below minimum required: {leaderboard.Settings.MinimumScore}");
                 return false;
             }
-            
-            // Create new entry
-            var entry = new EnhancedLeaderboardEntry
-            {
-                PlayerId = _currentPlayerProfile.PlayerId,
-                PlayerName = _currentPlayerProfile.DisplayName,
-                Score = score,
-                FormattedScore = FormatScore(score, leaderboardType),
-                SubmissionDate = DateTime.Now,
-                AdditionalData = new LeaderboardEntryData
-                {
-                    Description = additionalData,
-                    Tags = new List<string>()
-                },
-                IsCurrentPlayer = true,
-                IsVerified = false
-            };
-            
-            // Add or update entry
-            var existingEntry = leaderboard.Entries.FirstOrDefault(e => e.PlayerId == _currentPlayerProfile.PlayerId);
-            if (existingEntry != null)
-            {
-                // Update if score is better
-                bool isBetter = leaderboard.Settings.SortOrder == ScoreOrder.Descending ? 
-                    score > existingEntry.Score : score < existingEntry.Score;
-                
-                if (isBetter)
-                {
-                    leaderboard.Entries.Remove(existingEntry);
-                    leaderboard.Entries.Add(entry);
-                    UpdateLeaderboardRankings(leaderboard);
-                    
-                    LogInfo($"Updated leaderboard score: {leaderboardType} - {score}");
-                    return true;
-                }
-                else
-                {
-                    LogInfo($"Score not better than existing: {existingEntry.Score}");
-                    return false;
-                }
-            }
-            else
-            {
-                leaderboard.Entries.Add(entry);
-                UpdateLeaderboardRankings(leaderboard);
-                
-                LogInfo($"New leaderboard entry: {leaderboardType} - {score}");
-                return true;
-            }
-        }
-        
-        /// <summary>
-        /// Get leaderboard by type
-        /// </summary>
-        public EnhancedLeaderboard GetLeaderboard(LeaderboardType type)
-        {
-            string leaderboardId = type.ToString();
-            return _leaderboards.TryGetValue(leaderboardId, out var leaderboard) ? leaderboard : null;
-        }
-        
-        /// <summary>
-        /// Get player's rank in a specific leaderboard
-        /// </summary>
-        public int GetPlayerRank(LeaderboardType type, string playerId = null)
-        {
-            playerId = playerId ?? _currentPlayerProfile?.PlayerId;
-            if (string.IsNullOrEmpty(playerId)) return -1;
-            
-            var leaderboard = GetLeaderboard(type);
-            if (leaderboard == null) return -1;
-            
-            var entry = leaderboard.Entries.FirstOrDefault(e => e.PlayerId == playerId);
-            return entry?.Rank ?? -1;
-        }
-        
-        /// <summary>
-        /// Get top entries from leaderboard
-        /// </summary>
-        public List<EnhancedLeaderboardEntry> GetTopEntries(LeaderboardType type, int count = 10)
-        {
-            var leaderboard = GetLeaderboard(type);
-            if (leaderboard == null) return new List<EnhancedLeaderboardEntry>();
-            
-            return leaderboard.Entries.OrderBy(e => e.Rank).Take(count).ToList();
-        }
-        
-        #endregion
-        
-        #region Forum System
-        
-        /// <summary>
-        /// Create a new forum topic
-        /// </summary>
-        public string CreateForumTopic(string title, string initialContent, ForumCategory category, TopicType type = TopicType.Discussion)
-        {
-            if (!_enableForum || _currentPlayerProfile == null) return null;
-            
-            string topicId = Guid.NewGuid().ToString();
-            string postId = Guid.NewGuid().ToString();
-            
-            var initialPost = new EnhancedForumPost
-            {
-                PostId = postId,
-                TopicId = topicId,
-                AuthorId = _currentPlayerProfile.PlayerId,
-                AuthorName = _currentPlayerProfile.DisplayName,
-                Content = initialContent,
-                PostDate = DateTime.Now,
-                Voting = new PostVoting(),
-                Status = PostStatus.Published
-            };
-            
-            var topic = new EnhancedForumTopic
-            {
-                TopicId = topicId,
-                Title = title,
-                AuthorId = _currentPlayerProfile.PlayerId,
-                AuthorName = _currentPlayerProfile.DisplayName,
-                CreatedDate = DateTime.Now,
-                LastReplyDate = DateTime.Now,
-                Status = TopicStatus.Open,
-                Type = type,
-                Posts = new List<EnhancedForumPost> { initialPost }
-            };
-            
-            _forumTopics.Add(topic);
-            _forumPosts[postId] = initialPost;
-            
-            if (!_topicsByCategory.ContainsKey(category))
-                _topicsByCategory[category] = new List<EnhancedForumTopic>();
-            _topicsByCategory[category].Add(topic);
-            
-            // Award reputation for forum participation
-            AddReputation(ReputationType.Community_Participation, 10, "Created forum topic");
-            
-            _onForumPostCreated?.Raise();
-            OnForumPostCreated?.Invoke(initialPost);
-            
-            LogInfo($"Created forum topic: {title}");
-            return topicId;
-        }
-        
-        /// <summary>
-        /// Reply to a forum topic
-        /// </summary>
-        public string ReplyToTopic(string topicId, string content)
-        {
-            if (!_enableForum || _currentPlayerProfile == null) return null;
-            
-            var topic = _forumTopics.FirstOrDefault(t => t.TopicId == topicId);
-            if (topic == null || topic.Status != TopicStatus.Open || topic.IsLocked) return null;
-            
-            string postId = Guid.NewGuid().ToString();
-            var post = new EnhancedForumPost
-            {
-                PostId = postId,
-                TopicId = topicId,
-                AuthorId = _currentPlayerProfile.PlayerId,
-                AuthorName = _currentPlayerProfile.DisplayName,
-                Content = content,
-                PostDate = DateTime.Now,
-                Voting = new PostVoting(),
-                Status = PostStatus.Published
-            };
-            
-            topic.Posts.Add(post);
-            topic.ReplyCount++;
-            topic.LastReplyDate = DateTime.Now;
-            _forumPosts[postId] = post;
-            
-            // Award reputation for helpful participation
-            AddReputation(ReputationType.Community_Participation, 5, "Forum reply");
-            
-            _onForumPostCreated?.Raise();
-            OnForumPostCreated?.Invoke(post);
-            
-            LogInfo($"Replied to topic: {topic.Title}");
-            return postId;
-        }
-        
-        /// <summary>
-        /// Vote on a forum post
-        /// </summary>
-        public bool VoteOnPost(string postId, VoteType voteType)
-        {
-            if (!_enableForum || _currentPlayerProfile == null) return false;
-            
-            if (!_forumPosts.TryGetValue(postId, out var post)) return false;
-            
-            string playerId = _currentPlayerProfile.PlayerId;
-            
-            // Remove existing vote if any
-            if (post.Voting.VotedUserIds.Contains(playerId))
-            {
-                if (post.Voting.UserVoteType == VoteType.UpVote)
-                    post.Voting.UpVotes--;
-                else if (post.Voting.UserVoteType == VoteType.DownVote)
-                    post.Voting.DownVotes--;
-                
-                post.Voting.VotedUserIds.Remove(playerId);
-            }
-            
-            // Add new vote
-            if (voteType != VoteType.None)
-            {
-                post.Voting.VotedUserIds.Add(playerId);
-                post.Voting.UserVoteType = voteType;
-                
-                if (voteType == VoteType.UpVote)
-                {
-                    post.Voting.UpVotes++;
-                    // Award reputation to post author for receiving upvote
-                    AddReputationToPlayer(post.AuthorId, ReputationType.Quality_Content, 2, "Received upvote");
-                }
-                else if (voteType == VoteType.DownVote)
-                {
-                    post.Voting.DownVotes++;
-                }
-            }
-            
-            post.Voting.NetScore = post.Voting.UpVotes - post.Voting.DownVotes;
-            post.Voting.HasUserVoted = voteType != VoteType.None;
-            
-            LogInfo($"Voted on post: {voteType}");
+            var newEntry = new CommunityData.EnhancedLeaderboardEntry(
+                _currentPlayerProfile.PlayerId, _currentPlayerProfile.DisplayName, score, DateTime.Now
+            );
+            newEntry.FormattedScore = FormatScore(score, leaderboardType);
+            leaderboard.AddOrUpdateEntry(newEntry);
+            OnLeaderboardUpdated?.Invoke(leaderboard);
+            _onLeaderboardUpdated?.Raise();
+            LogInfo($"Submitted score for {leaderboardType}: {score}");
             return true;
         }
         
-        /// <summary>
-        /// Get topics by category
-        /// </summary>
-        public List<EnhancedForumTopic> GetTopicsByCategory(ForumCategory category, int limit = 20)
+        public CommunityData.EnhancedLeaderboard GetLeaderboard(ProjectChimera.Core.LeaderboardType type)
         {
-            if (_topicsByCategory.TryGetValue(category, out var topics))
-            {
-                return topics.OrderByDescending(t => t.LastReplyDate).Take(limit).ToList();
-            }
-            return new List<EnhancedForumTopic>();
+            return _leaderboards.TryGetValue(type.ToString(), out var leaderboard) ? leaderboard : null;
         }
         
-        #endregion
+        public int GetPlayerRank(ProjectChimera.Core.LeaderboardType type, string playerId = null)
+        {
+            var leaderboard = GetLeaderboard(type);
+            if (leaderboard == null) return -1;
+            playerId ??= _currentPlayerProfile?.PlayerId;
+            if (string.IsNullOrEmpty(playerId)) return -1;
+            var entry = leaderboard.GetPlayerEntry(playerId);
+            return entry?.Rank ?? -1;
+        }
         
-        #region Reputation System
+        public List<CommunityData.EnhancedLeaderboardEntry> GetTopEntries(ProjectChimera.Core.LeaderboardType type, int count = 10)
+        {
+            var leaderboard = GetLeaderboard(type);
+            return leaderboard?.GetTopEntries(count) ?? new List<CommunityData.EnhancedLeaderboardEntry>();
+        }
         
-        /// <summary>
-        /// Add reputation to current player
-        /// </summary>
-        public void AddReputation(ReputationType type, int points, string reason = "")
+        public string CreateForumTopic(string title, string initialContent, CommunityData.ForumCategory category, CommunityData.TopicType type = CommunityData.TopicType.Discussion)
+        {
+            if (!_enableForum || _currentPlayerProfile == null) return null;
+            var newTopic = new CommunityData.EnhancedForumTopic(title, _currentPlayerProfile.PlayerId, category, type);
+            _forumTopics.Add(newTopic);
+            if (!_topicsByCategory.ContainsKey(category))
+            {
+                _topicsByCategory[category] = new List<CommunityData.EnhancedForumTopic>();
+            }
+            _topicsByCategory[category].Add(newTopic);
+            ReplyToTopic(newTopic.TopicId, initialContent);
+            _onForumPostCreated?.Raise();
+            LogInfo($"New forum topic created: {title}");
+            return newTopic.TopicId;
+        }
+        
+        public string ReplyToTopic(string topicId, string content)
+        {
+            if (!_enableForum || _currentPlayerProfile == null) return null;
+            var topic = _forumTopics.FirstOrDefault(t => t.TopicId == topicId);
+            if (topic == null)
+            {
+                LogWarning($"Topic not found: {topicId}");
+                return null;
+            }
+            var newPost = new CommunityData.EnhancedForumPost(topicId, _currentPlayerProfile.PlayerId, content);
+            _forumPosts.Add(newPost.PostId, newPost);
+            topic.AddReply(newPost);
+            OnForumPostCreated?.Invoke(newPost);
+            LogInfo($"Replied to topic: {topic.Title}");
+            return newPost.PostId;
+        }
+        
+        public bool VoteOnPost(string postId, CommunityData.VoteType voteType)
+        {
+            if (!_enableForum || _currentPlayerProfile == null) return false;
+            if (!_forumPosts.TryGetValue(postId, out var post))
+            {
+                LogWarning($"Post not found: {postId}");
+                return false;
+            }
+            post.AddVote(new CommunityData.Vote(_currentPlayerProfile.PlayerId, voteType));
+            AddReputation(CommunityData.ReputationType.Forum_Activity, 1, $"Voted on post {postId}");
+            return true;
+        }
+        
+        public List<CommunityData.EnhancedForumTopic> GetTopicsByCategory(CommunityData.ForumCategory category, int limit = 20)
+        {
+            if (!_topicsByCategory.TryGetValue(category, out var topics))
+            {
+                return new List<CommunityData.EnhancedForumTopic>();
+            }
+            return topics.OrderByDescending(t => t.LastReplyDate).Take(limit).ToList();
+        }
+        
+        public void AddReputation(CommunityData.ReputationType type, int points, string reason = "")
         {
             AddReputationToPlayer(_currentPlayerProfile?.PlayerId, type, points, reason);
         }
         
-        /// <summary>
-        /// Add reputation to specific player
-        /// </summary>
-        public void AddReputationToPlayer(string playerId, ReputationType type, int points, string reason = "")
+        public void AddReputationToPlayer(string playerId, CommunityData.ReputationType type, int points, string reason = "")
         {
-            if (string.IsNullOrEmpty(playerId)) return;
-            
+            if (!_enableReputationSystem || string.IsNullOrEmpty(playerId)) return;
             if (!_playerReputations.TryGetValue(playerId, out var reputation))
             {
-                reputation = new ReputationSystem
-                {
-                    PlayerId = playerId,
-                    Sources = new List<ReputationSource>(),
-                    History = new ReputationHistory
-                    {
-                        Changes = new List<ReputationChange>(),
-                        TotalByType = new Dictionary<ReputationType, int>()
-                    }
-                };
+                reputation = new CommunityData.ReputationSystem(playerId);
                 _playerReputations[playerId] = reputation;
             }
-            
-            // Add reputation source
-            reputation.Sources.Add(new ReputationSource
-            {
-                Type = type,
-                Points = points,
-                EarnedDate = DateTime.Now,
-                Description = reason,
-                SourceId = Guid.NewGuid().ToString()
-            });
-            
-            // Update totals
-            int oldTotal = reputation.TotalReputation;
-            reputation.TotalReputation += points;
-            
-            if (!reputation.History.TotalByType.ContainsKey(type))
-                reputation.History.TotalByType[type] = 0;
-            reputation.History.TotalByType[type] += points;
-            
-            // Add to history
-            reputation.History.Changes.Add(new ReputationChange
-            {
-                Date = DateTime.Now,
-                Type = type,
-                PointsChanged = points,
-                NewTotal = reputation.TotalReputation,
-                Reason = reason,
-                SourceId = Guid.NewGuid().ToString()
-            });
-            
-            reputation.LastUpdated = DateTime.Now;
-            
-            // Check for reputation level changes
+            reputation.AddReputation(type, points, reason);
             CheckReputationLevelUp(reputation);
-            
-            // Trigger events if this is current player
             if (playerId == _currentPlayerProfile?.PlayerId)
             {
-                _currentPlayerProfile.ReputationPoints = reputation.TotalReputation;
+                OnReputationChanged?.Invoke(reputation.GetTotalReputation());
                 _onReputationChanged?.Raise();
-                OnReputationChanged?.Invoke(reputation.TotalReputation);
             }
-            
-            LogInfo($"Added {points} reputation ({type}) to {playerId}: {reason}");
+            LogInfo($"Added {points} reputation to {playerId} for {type} ({reason})");
         }
         
-        /// <summary>
-        /// Get player's reputation
-        /// </summary>
-        public ReputationSystem GetPlayerReputation(string playerId = null)
+        public CommunityData.ReputationSystem GetPlayerReputation(string playerId = null)
         {
-            playerId = playerId ?? _currentPlayerProfile?.PlayerId;
+            playerId ??= _currentPlayerProfile?.PlayerId;
             if (string.IsNullOrEmpty(playerId)) return null;
-            
             return _playerReputations.TryGetValue(playerId, out var reputation) ? reputation : null;
         }
         
-        #endregion
-        
-        #region Community Events
-        
-        /// <summary>
-        /// Create a new community event
-        /// </summary>
         public string CreateCommunityEvent(string name, string description, DateTime startDate, DateTime endDate, string eventType = "Challenge")
         {
             if (!_enableCommunityEvents) return null;
-            
-            string eventId = Guid.NewGuid().ToString();
-            var communityEvent = new EnhancedCommunityEvent
-            {
-                EventId = eventId,
-                Name = name,
-                Description = description,
-                EventType = eventType,
-                StartDate = startDate,
-                EndDate = endDate,
-                Status = startDate > DateTime.Now ? "Upcoming" : "Active",
-                Participants = new List<EventParticipant>(),
-                Rewards = new EventRewards(),
-                Requirements = new EventRequirements(),
-                Milestones = new List<EventMilestone>(),
-                Leaderboard = new EventLeaderboard { LeaderboardId = $"{eventId}_leaderboard" }
-            };
-            
-            _activeEvents.Add(communityEvent);
-            
+            var newEvent = new CommunityData.EnhancedCommunityEvent(
+                Guid.NewGuid().ToString(), name, description, eventType, startDate, endDate
+            );
+            _activeEvents.Add(newEvent);
+            OnEventStarted?.Invoke(newEvent);
             _onCommunityEventStarted?.Raise();
-            OnEventStarted?.Invoke(communityEvent);
-            
-            LogInfo($"Created community event: {name}");
-            return eventId;
+            LogInfo($"Community event created: {name}");
+            return newEvent.Id;
         }
         
-        /// <summary>
-        /// Join a community event
-        /// </summary>
         public bool JoinEvent(string eventId)
         {
             if (!_enableCommunityEvents || _currentPlayerProfile == null) return false;
-            
-            var communityEvent = _activeEvents.FirstOrDefault(e => e.EventId == eventId);
-            if (communityEvent == null) return false;
-            
-            // Check if already participating
-            if (communityEvent.Participants.Any(p => p.PlayerId == _currentPlayerProfile.PlayerId))
+            var communityEvent = _activeEvents.FirstOrDefault(e => e.Id == eventId);
+            if (communityEvent == null)
             {
-                LogWarning("Player already participating in event");
+                LogWarning($"Event not found: {eventId}");
                 return false;
             }
-            
-            // Check requirements
             if (!MeetsEventRequirements(communityEvent.Requirements))
             {
-                LogWarning("Player does not meet event requirements");
+                LogWarning("Player does not meet event requirements.");
                 return false;
             }
-            
-            var participant = new EventParticipant
-            {
-                PlayerId = _currentPlayerProfile.PlayerId,
-                PlayerName = _currentPlayerProfile.DisplayName,
-                JoinDate = DateTime.Now,
-                Data = new EventParticipationData
-                {
-                    Scores = new Dictionary<string, float>(),
-                    CustomData = new Dictionary<string, object>(),
-                    CompletedChallenges = new List<string>()
-                },
-                IsActive = true
-            };
-            
-            communityEvent.Participants.Add(participant);
-            
-            LogInfo($"Joined event: {communityEvent.Name}");
+            var participant = new CommunityData.EventParticipant(_currentPlayerProfile.PlayerId, _currentPlayerProfile.DisplayName, eventId);
+            communityEvent.AddParticipant(participant);
+            _activeParticipants[participant.PlayerId] = participant;
+            LogInfo($"Player {_currentPlayerProfile.DisplayName} joined event {communityEvent.Name}");
             return true;
         }
         
-        /// <summary>
-        /// Submit event score
-        /// </summary>
         public bool SubmitEventScore(string eventId, string scoreCategory, float score)
         {
             if (!_enableCommunityEvents || _currentPlayerProfile == null) return false;
-            
-            var communityEvent = _activeEvents.FirstOrDefault(e => e.EventId == eventId);
+            var communityEvent = _activeEvents.FirstOrDefault(e => e.Id == eventId);
             if (communityEvent == null) return false;
-            
             var participant = communityEvent.Participants.FirstOrDefault(p => p.PlayerId == _currentPlayerProfile.PlayerId);
-            if (participant == null) return false;
-            
-            participant.Data.Scores[scoreCategory] = score;
-            participant.Data.TotalScore = participant.Data.Scores.Values.Sum();
-            
-            // Update event leaderboard
+            if (participant == null)
+            {
+                LogWarning("Player not participating in this event.");
+                return false;
+            }
+            participant.UpdateScore(scoreCategory, score);
             UpdateEventLeaderboard(communityEvent);
-            
-            LogInfo($"Submitted event score: {scoreCategory} = {score}");
+            LogInfo($"Submitted score {score} for event {communityEvent.Name} in category {scoreCategory}");
             return true;
         }
         
-        #endregion
-        
-        #region Badge System
-        
-        /// <summary>
-        /// Award badge to player
-        /// </summary>
         public void AwardBadge(string badgeId, string reason = "")
         {
             if (_currentPlayerProfile == null) return;
-            
             if (!_availableBadges.TryGetValue(badgeId, out var badge))
             {
                 LogWarning($"Badge not found: {badgeId}");
                 return;
             }
-            
-            if (_currentPlayerProfile.Badges.Contains(badgeId))
+            if (_currentPlayerProfile.EarnedBadges.Any(b => b.Id == badgeId))
             {
                 LogInfo($"Player already has badge: {badge.Name}");
                 return;
             }
-            
-            _currentPlayerProfile.Badges.Add(badgeId);
-            badge.TotalAwarded++;
-            badge.HolderIDs.Add(_currentPlayerProfile.PlayerId);
-            
-            // Award reputation for earning badge
-            AddReputation(ReputationType.Community_Participation, 25, $"Earned badge: {badge.Name}");
-            
+            _currentPlayerProfile.EarnedBadges.Add(badge);
+            AddReputation(CommunityData.ReputationType.Achievement, badge.ReputationValue, $"Earned Badge: {badge.Name}");
             OnBadgeEarned?.Invoke(badge);
-            
-            LogInfo($"Awarded badge: {badge.Name} - {reason}");
+            LogInfo($"Awarded badge '{badge.Name}' to player. Reason: {reason}");
         }
         
-        /// <summary>
-        /// Check and award automatic badges based on player stats
-        /// </summary>
-        public void CheckAutomaticBadges()
-        {
-            if (_currentPlayerProfile == null) return;
-            
-            // Example automatic badge checks
-            if (_currentPlayerProfile.TotalHarvests >= 10 && !_currentPlayerProfile.Badges.Contains("first_harvester"))
-            {
-                AwardBadge("first_harvester", "Completed 10 harvests");
-            }
-            
-            if (_currentPlayerProfile.ReputationPoints >= 1000 && !_currentPlayerProfile.Badges.Contains("respected_member"))
-            {
-                AwardBadge("respected_member", "Reached 1000 reputation");
-            }
-            
-            if (_currentPlayerProfile.ForumPosts >= 50 && !_currentPlayerProfile.Badges.Contains("forum_contributor"))
-            {
-                AwardBadge("forum_contributor", "Made 50 forum posts");
-            }
-        }
-        
-        #endregion
-        
-        #region Private Helper Methods
+        public void CheckAutomaticBadges() {}
         
         private void InitializePlayerProfile()
         {
-            // In a real implementation, this would load from save data
             _currentPlayerProfile = new PlayerProfile
             {
-                PlayerID = Guid.NewGuid().ToString(),
-                DisplayName = "Player",
-                JoinDate = DateTime.Now,
-                LastActive = DateTime.Now,
-                Status = PlayerStatus.Online,
-                Level = 1,
-                Experience = 0,
-                ReputationPoints = 0,
-                Badges = new List<string>(),
-                Achievements = new List<string>()
+                PlayerId = "player_001", DisplayName = "Chimera_Master", Level = 1, Experience = 0,
+                Status = PlayerStatus.Online, LastActive = DateTime.Now,
+                EarnedBadges = new List<CommunityData.Badge>()
             };
+            _playerReputations[_currentPlayerProfile.PlayerId] = new CommunityData.ReputationSystem(_currentPlayerProfile.PlayerId);
+            _lastPlayerActivity[_currentPlayerProfile.PlayerId] = DateTime.Now;
         }
         
         private void InitializeLeaderboards()
         {
-            if (!_enableLeaderboards) return;
-            
-            var leaderboardTypes = Enum.GetValues(typeof(LeaderboardType)).Cast<LeaderboardType>();
-            foreach (var type in leaderboardTypes)
+            // Leaderboards are always enabled in this implementation
+            foreach (ProjectChimera.Core.LeaderboardType type in Enum.GetValues(typeof(ProjectChimera.Core.LeaderboardType)))
             {
-                if (type == LeaderboardType.Global || type == LeaderboardType.Regional || 
-                    type == LeaderboardType.Friends || type == LeaderboardType.Guild || 
-                    type == LeaderboardType.Seasonal) continue; // Skip meta types
-                
-                var leaderboard = new EnhancedLeaderboard
-                {
-                    LeaderboardId = type.ToString(),
-                    Name = GetLeaderboardDisplayName(type),
-                    Description = GetLeaderboardDescription(type),
-                    Type = type,
-                    Category = GetLeaderboardCategory(type),
-                    Period = TimePeriod.AllTime,
-                    IsActive = true,
-                    MaxEntries = _maxLeaderboardEntries,
-                    Entries = new List<EnhancedLeaderboardEntry>(),
-                    Settings = new LeaderboardSettings
-                    {
-                        SortOrder = GetLeaderboardSortOrder(type),
-                        MinimumScore = 0,
-                        RequireVerification = false,
-                        ShowPlayerRank = true,
-                        ShowScoreHistory = true
-                    }
-                };
-                
-                _leaderboards[type.ToString()] = leaderboard;
+                var settings = new LeaderboardSettings(
+                    GetLeaderboardDisplayName(type), GetLeaderboardDescription(type), GetLeaderboardCategory(type),
+                    GetLeaderboardSortOrder(type), 0, true
+                );
+                var leaderboard = new CommunityData.EnhancedLeaderboard(type.ToString(), type, settings);
+                _leaderboards.Add(leaderboard.Id, leaderboard);
             }
         }
         
         private void InitializeForumSystem()
         {
             if (!_enableForum) return;
-            
-            // Initialize forum categories
-            var categories = Enum.GetValues(typeof(ForumCategory)).Cast<ForumCategory>();
-            foreach (var category in categories)
+            foreach (CommunityData.ForumCategory category in Enum.GetValues(typeof(CommunityData.ForumCategory)))
             {
-                _topicsByCategory[category] = new List<EnhancedForumTopic>();
+                _topicsByCategory[category] = new List<CommunityData.EnhancedForumTopic>();
             }
+            CreateForumTopic("Welcome to the Chimera Forums!", "This is the place to discuss all things Project Chimera.", CommunityData.ForumCategory.General);
+            CreateForumTopic("Show off your best strains!", "Post your greatest genetic creations here.", CommunityData.ForumCategory.Genetics);
         }
         
         private void InitializeReputationSystem()
         {
             if (!_enableReputationSystem) return;
-            
-            // Initialize reputation for current player
-            if (_currentPlayerProfile != null)
+            if (_currentPlayerProfile != null && !_playerReputations.ContainsKey(_currentPlayerProfile.PlayerId))
             {
-                _playerReputations[_currentPlayerProfile.PlayerId] = new ReputationSystem
-                {
-                    PlayerId = _currentPlayerProfile.PlayerId,
-                    TotalReputation = 0,
-                    Sources = new List<ReputationSource>(),
-                    History = new ReputationHistory
-                    {
-                        Changes = new List<ReputationChange>(),
-                        TotalByType = new Dictionary<ReputationType, int>()
-                    },
-                    LastUpdated = DateTime.Now
-                };
+                _playerReputations[_currentPlayerProfile.PlayerId] = new CommunityData.ReputationSystem(_currentPlayerProfile.PlayerId);
             }
         }
         
-        private void InitializeCommunityEvents()
-        {
-            if (!_enableCommunityEvents) return;
-            
-            // Create sample seasonal event
-            CreateCommunityEvent(
-                "Spring Growing Challenge",
-                "Compete to grow the highest yielding plants this season!",
-                DateTime.Now.AddDays(1),
-                DateTime.Now.AddDays(30),
-                "Seasonal Challenge"
-            );
-        }
+        private void InitializeCommunityEvents() {}
         
         private void InitializeBadgeSystem()
         {
-            // Create sample badges
-            _availableBadges["first_harvester"] = new Badge
-            {
-                BadgeID = "first_harvester",
-                Name = "First Harvester",
-                Description = "Complete your first 10 harvests",
-                Category = "Cultivation",
-                Rarity = 2,
-                TotalAwarded = 0,
-                HolderIDs = new List<string>()
-            };
-            
-            _availableBadges["respected_member"] = new Badge
-            {
-                BadgeID = "respected_member",
-                Name = "Respected Member",
-                Description = "Reach 1000 reputation points",
-                Category = "Community",
-                Rarity = 3,
-                TotalAwarded = 0,
-                HolderIDs = new List<string>()
-            };
-            
-            _availableBadges["forum_contributor"] = new Badge
-            {
-                BadgeID = "forum_contributor",
-                Name = "Forum Contributor",
-                Description = "Make 50 helpful forum posts",
-                Category = "Community",
-                Rarity = 3,
-                TotalAwarded = 0,
-                HolderIDs = new List<string>()
-            };
+            if (_currentPlayerProfile == null) return;
+            var badge1 = new CommunityData.Badge("badge_first_post", "First Post", "Made your first post on the forums.", 10, "icon_first_post");
+            var badge2 = new CommunityData.Badge("badge_top_10", "Top 10", "Reached the top 10 on any leaderboard.", 100, "icon_top_10");
+            var badge3 = new CommunityData.Badge("badge_master_breeder", "Master Breeder", "Created a strain with 3+ maxed out traits.", 250, "icon_master_breeder");
+            _availableBadges.Add(badge1.Id, badge1);
+            _availableBadges.Add(badge2.Id, badge2);
+            _availableBadges.Add(badge3.Id, badge3);
         }
         
         private void UpdateAllLeaderboards()
         {
-            foreach (var leaderboard in _leaderboards.Values.Where(l => l.IsActive))
+            foreach (var leaderboard in _leaderboards.Values)
             {
-                UpdateLeaderboardRankings(leaderboard);
-                leaderboard.LastUpdated = DateTime.Now;
+                leaderboard.UpdateRanks();
+                OnLeaderboardUpdated?.Invoke(leaderboard);
             }
-            
             _onLeaderboardUpdated?.Raise();
-        }
-        
-        private void UpdateLeaderboardRankings(EnhancedLeaderboard leaderboard)
-        {
-            // Sort entries based on score order
-            var sortedEntries = leaderboard.Settings.SortOrder == ScoreOrder.Descending ?
-                leaderboard.Entries.OrderByDescending(e => e.Score).ToList() :
-                leaderboard.Entries.OrderBy(e => e.Score).ToList();
-            
-            // Update rankings
-            for (int i = 0; i < sortedEntries.Count; i++)
-            {
-                int oldRank = sortedEntries[i].Rank;
-                sortedEntries[i].Rank = i + 1;
-                sortedEntries[i].Change = oldRank > 0 ? oldRank - sortedEntries[i].Rank : 0;
-            }
-            
-            // Trim to max entries
-            if (sortedEntries.Count > leaderboard.MaxEntries)
-            {
-                sortedEntries = sortedEntries.Take(leaderboard.MaxEntries).ToList();
-            }
-            
-            leaderboard.Entries = sortedEntries;
-            OnLeaderboardUpdated?.Invoke(leaderboard);
+            LogInfo("All leaderboards updated.");
         }
         
         private void UpdateCommunityEvents()
         {
-            var currentTime = DateTime.Now;
-            
-            foreach (var communityEvent in _activeEvents.ToList())
+            var now = DateTime.Now;
+            var eventsToRemove = new List<CommunityData.EnhancedCommunityEvent>();
+            foreach (var communityEvent in _activeEvents)
             {
-                // Update event status
-                if (currentTime >= communityEvent.StartDate && currentTime <= communityEvent.EndDate)
-                {
-                    communityEvent.Status = "Active";
-                }
-                else if (currentTime > communityEvent.EndDate)
-                {
-                    communityEvent.Status = "Ended";
-                    // Could trigger event completion logic here
-                }
-                
-                // Update event progress
-                if (communityEvent.Status == "Active")
-                {
-                    UpdateEventProgress(communityEvent);
-                }
+                communityEvent.UpdateStatus(now);
+                if (communityEvent.Status == CommunityData.EventStatus.Active.ToString()) { UpdateEventProgress(communityEvent); }
+                else if (communityEvent.Status == CommunityData.EventStatus.Finished.ToString()) { eventsToRemove.Add(communityEvent); }
             }
+            foreach (var toRemove in eventsToRemove) { _activeEvents.Remove(toRemove); }
         }
         
-        private void UpdateEventProgress(EnhancedCommunityEvent communityEvent)
+        private void UpdateEventProgress(CommunityData.EnhancedCommunityEvent communityEvent) {}
+
+        private void UpdateEventLeaderboard(CommunityData.EnhancedCommunityEvent communityEvent)
         {
-            if (communityEvent.Participants.Count == 0) return;
-            
-            // Calculate overall progress based on participant scores
-            float totalProgress = communityEvent.Participants.Sum(p => p.Data.TotalScore);
-            communityEvent.OverallProgress = totalProgress / communityEvent.Participants.Count;
-            
-            // Update event leaderboard
-            UpdateEventLeaderboard(communityEvent);
-        }
-        
-        private void UpdateEventLeaderboard(EnhancedCommunityEvent communityEvent)
-        {
-            var sortedParticipants = communityEvent.Participants
-                .OrderByDescending(p => p.Data.TotalScore)
-                .ToList();
-            
-            for (int i = 0; i < sortedParticipants.Count; i++)
-            {
-                sortedParticipants[i].Data.Rank = i + 1;
-            }
-            
-            communityEvent.Leaderboard.Rankings = sortedParticipants;
-            communityEvent.Leaderboard.LastUpdated = DateTime.Now;
+            if (communityEvent.Leaderboard == null) return;
+            communityEvent.Leaderboard.UpdateRanks();
         }
         
         private void UpdatePlayerActivity()
@@ -918,144 +428,93 @@ namespace ProjectChimera.Systems.Community
         
         private void UpdateCommunityMetrics()
         {
-            _communityMetrics.TotalActiveUsers = _lastPlayerActivity.Count(kvp => 
-                DateTime.Now.Subtract(kvp.Value).TotalHours <= 24.0);
-            
-            _communityMetrics.TotalForumPosts = _forumPosts.Count;
-            _communityMetrics.TotalChallengesCompleted = _activeEvents.Count(e => e.Status == "Ended");
-            
-            // Update engagement metrics
-            _communityMetrics.CommunityHealthScore = CalculateCommunityHealthScore();
+            _communityMetrics.ActivePlayers = _lastPlayerActivity.Count(p => (DateTime.Now - p.Value).TotalMinutes < 15);
+            _communityMetrics.TotalPosts = _forumPosts.Count;
+            _communityMetrics.TotalTopics = _forumTopics.Count;
         }
         
-        private bool MeetsEventRequirements(EventRequirements requirements)
-        {
-            if (_currentPlayerProfile == null) return false;
-            
-            if (_currentPlayerProfile.Level < requirements.MinimumLevel) return false;
-            if (_currentPlayerProfile.ReputationPoints < requirements.MinimumReputation) return false;
-            
-            foreach (var requiredBadge in requirements.RequiredBadges)
-            {
-                if (!_currentPlayerProfile.Badges.Contains(requiredBadge)) return false;
-            }
-            
-            return true;
-        }
+        private bool MeetsEventRequirements(IEventRequirements requirements) { return true; }
         
-        private void CheckReputationLevelUp(ReputationSystem reputation)
+        private void CheckReputationLevelUp(CommunityData.ReputationSystem reputation)
         {
-            // Simple reputation level calculation
-            int newLevel = Mathf.FloorToInt(reputation.TotalReputation / 500f) + 1;
-            if (reputation.Level == null || newLevel > reputation.Level.Level)
+            int oldLevel = reputation.ReputationLevel;
+            reputation.UpdateReputationLevel();
+            int newLevel = reputation.ReputationLevel;
+            if (newLevel > oldLevel)
             {
-                reputation.Level = new ReputationLevel
-                {
-                    Level = newLevel,
-                    Name = GetReputationLevelName(newLevel),
-                    RequiredReputation = (newLevel - 1) * 500,
-                    LevelColor = GetReputationLevelColor(newLevel)
-                };
-                
-                LogInfo($"Reputation level up: {reputation.Level.Name}");
+                LogInfo($"Player {reputation.PlayerId} reached reputation level {newLevel}!");
+                AwardBadge($"badge_rep_level_{newLevel}", $"Reached reputation level {newLevel}");
             }
         }
         
         private float CalculateCommunityHealthScore()
         {
-            float score = 0f;
-            
-            // Factor in active users
-            score += Mathf.Min(_communityMetrics.TotalActiveUsers / 100f, 1f) * 25f;
-            
-            // Factor in forum activity
-            score += Mathf.Min(_forumPosts.Count / 1000f, 1f) * 25f;
-            
-            // Factor in event participation
-            float avgParticipation = _activeEvents.Count > 0 ? 
-                (float)_activeEvents.Average(e => e.Participants.Count) : 0f;
-            score += Mathf.Min(avgParticipation / 50f, 1f) * 25f;
-            
-            // Factor in positive interactions
-            int totalUpvotes = _forumPosts.Values.Sum(p => p.Voting.UpVotes);
-            score += Mathf.Min(totalUpvotes / 500f, 1f) * 25f;
-            
+            float score = 0;
+            score += _communityMetrics.ActivePlayers * 0.5f;
+            score += _communityMetrics.TotalPosts * 0.2f;
+            score += _activeEvents.Count * 1.5f;
             return score;
         }
         
-        private string GetLeaderboardDisplayName(LeaderboardType type)
+        private string GetLeaderboardDisplayName(ProjectChimera.Core.LeaderboardType type)
         {
             return type.ToString().Replace("_", " ");
         }
         
-        private string GetLeaderboardDescription(LeaderboardType type)
+        private string GetLeaderboardDescription(ProjectChimera.Core.LeaderboardType type)
         {
-            return $"Top performers in {GetLeaderboardDisplayName(type)}";
+            return $"Tracks the top players for {GetLeaderboardDisplayName(type)}.";
         }
         
-        private LeaderboardCategory GetLeaderboardCategory(LeaderboardType type)
+        private LeaderboardCategory GetLeaderboardCategory(ProjectChimera.Core.LeaderboardType type)
         {
-            return type switch
+            switch (type)
             {
-                LeaderboardType.TotalYield or LeaderboardType.QualityScore => LeaderboardCategory.Cultivation,
-                LeaderboardType.THCPotency or LeaderboardType.CBDContent or LeaderboardType.TerpeneProfile => LeaderboardCategory.Genetics,
-                LeaderboardType.EconomicSuccess => LeaderboardCategory.Economics,
-                LeaderboardType.FacilityEfficiency => LeaderboardCategory.Efficiency,
-                LeaderboardType.BreedingInnovation => LeaderboardCategory.Innovation,
-                LeaderboardType.CommunityContribution => LeaderboardCategory.Community,
-                _ => LeaderboardCategory.Competition
-            };
+                case ProjectChimera.Core.LeaderboardType.Highest_Quality_Strain:
+                case ProjectChimera.Core.LeaderboardType.Most_Unique_Genotypes:
+                    return LeaderboardCategory.Cultivation;
+                case ProjectChimera.Core.LeaderboardType.Highest_Profit:
+                case ProjectChimera.Core.LeaderboardType.Most_Contracts_Completed:
+                    return LeaderboardCategory.Economics;
+                default:
+                    return LeaderboardCategory.General;
+            }
         }
         
-        private ScoreOrder GetLeaderboardSortOrder(LeaderboardType type)
+        private ScoreOrder GetLeaderboardSortOrder(ProjectChimera.Core.LeaderboardType type)
         {
-            return type == LeaderboardType.SpeedRun ? ScoreOrder.Ascending : ScoreOrder.Descending;
+            return ScoreOrder.Descending;
         }
         
-        private string FormatScore(float score, LeaderboardType type)
+        private string FormatScore(float score, ProjectChimera.Core.LeaderboardType type)
         {
-            return type switch
+            switch (type)
             {
-                LeaderboardType.TotalYield => $"{score:F1}g",
-                LeaderboardType.THCPotency or LeaderboardType.CBDContent => $"{score:F2}%",
-                LeaderboardType.EconomicSuccess => $"${score:F0}",
-                LeaderboardType.FacilityEfficiency => $"{score:F1}%",
-                LeaderboardType.SpeedRun => $"{score:F0} days",
-                _ => score.ToString("F1")
-            };
+                case ProjectChimera.Core.LeaderboardType.Highest_Profit: return $"${score:N2}";
+                case ProjectChimera.Core.LeaderboardType.Highest_Quality_Strain: return $"{score:F2}%";
+                default: return score.ToString("N0");
+            }
         }
         
         private string GetReputationLevelName(int level)
         {
-            return level switch
-            {
-                1 => "Newcomer",
-                2 => "Apprentice",
-                3 => "Cultivator",
-                4 => "Expert",
-                5 => "Master",
-                _ => "Legend"
-            };
+            if (level >= 10) return "Community Pillar";
+            if (level >= 5) return "Valued Member";
+            if (level >= 2) return "Contributor";
+            return "Newcomer";
         }
         
         private Color GetReputationLevelColor(int level)
         {
-            return level switch
-            {
-                1 => Color.gray,
-                2 => Color.green,
-                3 => Color.blue,
-                4 => Color.magenta,
-                5 => Color.yellow,
-                _ => Color.red
-            };
+            if (level >= 10) return Color.cyan;
+            if (level >= 5) return Color.green;
+            if (level >= 2) return Color.yellow;
+            return Color.white;
         }
-        
-        #endregion
         
         protected override void OnManagerShutdown()
         {
-            LogInfo($"CommunityManager shutdown - Active events: {_activeEvents.Count}, Forum topics: {_forumTopics.Count}");
+            LogInfo("CommunityManager shutting down.");
         }
     }
 }

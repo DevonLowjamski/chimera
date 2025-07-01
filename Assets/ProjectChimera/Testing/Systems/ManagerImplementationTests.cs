@@ -12,6 +12,9 @@ using ProjectChimera.Systems.Analytics;
 using ProjectChimera.Systems.Automation;
 using ProjectChimera.Systems.Settings;
 using SettingsManager = ProjectChimera.Systems.Settings.SettingsManager;
+using SensorManager = ProjectChimera.Systems.Automation.SensorManager;
+using IoTDeviceManager = ProjectChimera.Systems.Automation.IoTDeviceManager;
+using AnalyticsManager = ProjectChimera.Systems.Analytics.AnalyticsManager;
 using ProjectChimera.UI.Core;
 
 namespace ProjectChimera.Testing.Systems
@@ -92,7 +95,7 @@ namespace ProjectChimera.Testing.Systems
 
         private void CleanupTestEnvironment()
         {
-            var testObjects = GameObject.FindObjectsOfType<GameObject>();
+            var testObjects = UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
             foreach (var obj in testObjects)
             {
                 if (obj.name.StartsWith("Test "))

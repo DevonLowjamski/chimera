@@ -1,6 +1,8 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using ProjectChimera.Core;
-using System.Collections.Generic;
+using ProjectChimera.Data.Events;  // Added to use Season enum from Events
 
 namespace ProjectChimera.Data.Environment
 {
@@ -148,7 +150,7 @@ namespace ProjectChimera.Data.Environment
             if (_weatherPatterns.Count == 0) return new WeatherModifier();
             
             // Simple random weather selection weighted by frequency
-            float randomValue = Random.value;
+            float randomValue = UnityEngine.Random.value;
             float cumulativeFrequency = 0f;
             
             foreach (var pattern in _weatherPatterns)
@@ -308,13 +310,5 @@ namespace ProjectChimera.Data.Environment
         ColdFrame,
         Hydroponic,
         Aeroponic
-    }
-    
-    public enum Season
-    {
-        Spring,
-        Summer,
-        Autumn,
-        Winter
     }
 }

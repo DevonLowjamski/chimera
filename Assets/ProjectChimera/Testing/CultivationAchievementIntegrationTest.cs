@@ -2,7 +2,6 @@ using UnityEngine;
 using ProjectChimera.Core;
 using ProjectChimera.Testing.Core;
 using ProjectChimera.Systems.Cultivation;
-using ProjectChimera.Systems.Economy;
 using ProjectChimera.Systems.Progression;
 using ProjectChimera.Data.Automation;
 using ProjectChimera.Data.Genetics;

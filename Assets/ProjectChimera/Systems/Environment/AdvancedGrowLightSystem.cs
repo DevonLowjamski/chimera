@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
+using URP = UnityEngine.Rendering.Universal;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Environment;
 using ProjectChimera.Data.Genetics;
@@ -16,9 +17,10 @@ namespace ProjectChimera.Systems.Environment
     /// Advanced grow light system with full spectrum control, automation,
     /// and plant-specific optimization for cannabis cultivation.
     /// </summary>
-    public class AdvancedGrowLightSystem : MonoBehaviour
+    public class AdvancedGrowLightSystem : ChimeraSystem
     {
         [Header("Light Configuration")]
+        [SerializeField] private Light[] _growLights;  // Added missing field
         [SerializeField] private float _maxIntensity = 1000f; // PPFD (μmol/m²/s)
         [SerializeField] private float _maxPowerConsumption = 600f; // Watts
         [SerializeField] private float _efficiency = 2.5f; // μmol/J
@@ -110,9 +112,63 @@ namespace ProjectChimera.Systems.Environment
         public LightPerformanceMetrics PerformanceMetrics => _performanceMetrics;
         // public List<InteractivePlantComponent> PlantsInRange => _plantsInRange;
         
-        private void Awake()
+        private Dictionary<Light, URP.UniversalAdditionalLightData> _lightDataMap;
+        
+        protected override void Awake()
         {
+            base.Awake();
+            InitializeLightData();
+            
             InitializeLightSystem();
+        }
+        
+        protected override void OnSystemStart()
+        {
+            if (_growLights != null && _growLights.Length > 0)
+            {
+                foreach (var light in _growLights)
+                {
+                    if (light != null)
+                    {
+                        light.enabled = true;
+                    }
+                }
+            }
+        }
+
+        protected override void OnSystemStop()
+        {
+            if (_growLights != null && _growLights.Length > 0)
+            {
+                foreach (var light in _growLights)
+                {
+                    if (light != null)
+                    {
+                        light.enabled = false;
+                    }
+                }
+            }
+        }
+        
+        private void InitializeLightData()
+        {
+            _lightDataMap = new Dictionary<Light, URP.UniversalAdditionalLightData>();
+            
+            if (_growLights != null)
+            {
+                foreach (var light in _growLights)
+                {
+                    if (light != null)
+                    {
+                        var additionalData = light.GetUniversalAdditionalLightData();
+                        if (additionalData == null)
+                        {
+                            additionalData = light.gameObject.AddComponent<URP.UniversalAdditionalLightData>();
+                        }
+                        _lightDataMap[light] = additionalData;
+                    }
+                }
+            }
         }
         
         private void Start()
@@ -208,7 +264,7 @@ namespace ProjectChimera.Systems.Environment
             var lightData = _primaryLight.GetUniversalAdditionalLightData();
             if (lightData == null)
             {
-                lightData = _primaryLight.gameObject.AddComponent<UniversalAdditionalLightData>();
+                lightData = _primaryLight.gameObject.AddComponent<URP.UniversalAdditionalLightData>();
             }
             
             // Setup supplemental lights for spectrum control
@@ -241,7 +297,7 @@ namespace ProjectChimera.Systems.Environment
                     light.enabled = false;
                     
                     // Add URP data
-                    lightGO.AddComponent<UniversalAdditionalLightData>();
+                    lightGO.AddComponent<URP.UniversalAdditionalLightData>();
                     
                     _supplementalLights[i] = light;
                 }

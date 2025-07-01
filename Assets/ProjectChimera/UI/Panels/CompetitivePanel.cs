@@ -6,6 +6,7 @@ using ProjectChimera.Core;
 using ProjectChimera.UI.Core;
 using ProjectChimera.UI.Components;
 using ProjectChimera.Data.UI;
+using ProjectChimera.Data;
 // using ProjectChimera.Systems.Progression;
 
 namespace ProjectChimera.UI.Panels
@@ -49,7 +50,7 @@ namespace ProjectChimera.UI.Panels
         // Leaderboard elements
         private VisualElement _leaderboardTypeSelector;
         private ScrollView _leaderboardList;
-        private LeaderboardType _currentLeaderboardType = LeaderboardType.Overall;
+        private ProjectChimera.Data.LeaderboardType _currentLeaderboardType = ProjectChimera.Data.LeaderboardType.Overall;
         
         // Tournament elements
         private ScrollView _tournamentsList;
@@ -310,13 +311,13 @@ namespace ProjectChimera.UI.Panels
             _leaderboardTypeSelector.style.flexDirection = FlexDirection.Row;
             _leaderboardTypeSelector.style.marginBottom = 16;
             
-            var leaderboardTypes = new[]
+            var leaderboardTypes = new (ProjectChimera.Data.LeaderboardType, string, string)[]
             {
-                (LeaderboardType.Overall, "🌟 Overall", "Combined ranking across all categories"),
-                (LeaderboardType.Cultivation, "🌱 Cultivation", "Total plants successfully grown"),
-                (LeaderboardType.Economic, "💰 Economic", "Total profit generated"),
-                (LeaderboardType.Quality, "⭐ Quality", "Highest quality achievements"),
-                (LeaderboardType.Speed, "⚡ Speed", "Fastest growth cycles")
+                (ProjectChimera.Data.LeaderboardType.Overall, "🌟 Overall", "Combined ranking across all categories"),
+                (ProjectChimera.Data.LeaderboardType.Cultivation, "🌱 Cultivation", "Total plants successfully grown"),
+                (ProjectChimera.Data.LeaderboardType.Economic, "💰 Economic", "Total profit generated"),
+                (ProjectChimera.Data.LeaderboardType.Quality, "⭐ Quality", "Highest quality achievements"),
+                (ProjectChimera.Data.LeaderboardType.Speed, "⚡ Speed", "Fastest growth cycles")
             };
             
             foreach (var (type, label, tooltip) in leaderboardTypes)
@@ -505,7 +506,7 @@ namespace ProjectChimera.UI.Panels
             }
         }
         
-        private void SelectLeaderboard(LeaderboardType type)
+        private void SelectLeaderboard(ProjectChimera.Data.LeaderboardType type)
         {
             _currentLeaderboardType = type;
             
@@ -813,7 +814,7 @@ namespace ProjectChimera.UI.Panels
         {
             // if (_competitiveManager == null) return;
             
-            // var overallRank = _competitiveManager.GetPlayerRanking(LeaderboardType.Overall);
+            // var overallRank = _competitiveManager.GetPlayerRanking(ProjectChimera.Data.LeaderboardType.Overall);
             // Placeholder until competitive manager is implemented
             var overallRank = _lastKnownRank > 0 ? _lastKnownRank : 0;
             
@@ -919,7 +920,7 @@ namespace ProjectChimera.UI.Panels
         }
         
         // Event handlers
-        private void OnRankingChanged(LeaderboardType leaderboardType, int newRank)
+        private void OnRankingChanged(ProjectChimera.Data.LeaderboardType leaderboardType, int newRank)
         {
             if (_showAnimations && newRank < _lastKnownRank && _lastKnownRank > 0)
             {
@@ -1030,9 +1031,9 @@ namespace ProjectChimera.UI.Panels
             Debug.Log($"Competitive Notification: {message}");
         }
         
-        protected override void OnDestroy()
+        protected virtual void OnDestroy()
         {
-            base.OnDestroy();
+            // Clean up competitive panel
             
             // Unsubscribe from events
             // if (_competitiveManager != null)

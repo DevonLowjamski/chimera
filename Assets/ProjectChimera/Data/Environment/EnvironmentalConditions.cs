@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using ProjectChimera.Data.Events;  // Added to access Season enum
 
 namespace ProjectChimera.Data.Environment
 {
@@ -151,6 +152,29 @@ namespace ProjectChimera.Data.Environment
             return potential;
         }
         
+        /// <summary>
+        /// Gets the value of a specific environmental factor
+        /// </summary>
+        public float GetValue(EnvironmentalFactor factor)
+        {
+            return factor switch
+            {
+                EnvironmentalFactor.Temperature => Temperature,
+                EnvironmentalFactor.Humidity => Humidity,
+                EnvironmentalFactor.LightIntensity => LightIntensity,
+                EnvironmentalFactor.CO2Level => CO2Level,
+                EnvironmentalFactor.AirFlow => AirFlow,
+                EnvironmentalFactor.VaporPressureDeficit => VaporPressureDeficit,
+                EnvironmentalFactor.DailyLightIntegral => DailyLightIntegral,
+                EnvironmentalFactor.BarometricPressure => BarometricPressure,
+                EnvironmentalFactor.AirQuality => AirQualityIndex,
+                EnvironmentalFactor.RootZoneTemperature => RootZoneTemperature,
+                EnvironmentalFactor.CanopyTemperature => CanopyTemperature,
+                EnvironmentalFactor.UVIndex => UVIndex,
+                _ => 0f
+            };
+        }
+        
         private float CalculateParameterStress(float value, Vector2 optimalRange)
         {
             if (value >= optimalRange.x && value <= optimalRange.y)
@@ -285,4 +309,45 @@ namespace ProjectChimera.Data.Environment
         Other
     }
     
+    /// <summary>
+    /// Season types for environmental simulation and cultivation timing.
+    /// Compatible with existing Systems layer code while maintaining Data layer consistency.
+    /// </summary>
+    public enum SeasonType
+    {
+        Spring,
+        Summer,
+        Fall,
+        Winter
+    }
+    
+    /// <summary>
+    /// Environmental factors that can be measured and controlled in cultivation environments.
+    /// Comprehensive list supporting all environmental monitoring and control systems.
+    /// </summary>
+    public enum EnvironmentalFactor
+    {
+        Temperature,
+        Humidity,
+        LightIntensity,
+        Light = LightIntensity,  // Alias for compatibility
+        CO2Level,
+        CO2 = CO2Level,          // Alias for compatibility
+        AirFlow,
+        VaporPressureDeficit,
+        DailyLightIntegral,
+        BarometricPressure,
+        AirQuality,
+        RootZoneTemperature,
+        CanopyTemperature,
+        UVIndex,
+        pH,
+        ElectricalConductivity,
+        WaterLevel,
+        Pressure,
+        AirPressure,
+        LightDuration,
+        MoistureLevel,
+        OxygenLevel
+    }
 }

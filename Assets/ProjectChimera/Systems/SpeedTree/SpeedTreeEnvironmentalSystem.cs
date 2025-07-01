@@ -73,7 +73,7 @@ namespace ProjectChimera.Systems.SpeedTree
         private AdvancedSpeedTreeManager _speedTreeManager;
         private EnvironmentalManager _environmentalManager;
         private CannabisGeneticsEngine _geneticsEngine;
-        private ComprehensiveProgressionManager _progressionManager;
+        // private ComprehensiveProgressionManager _progressionManager; // Disabled - using CleanProgressionManager instead
         
         // Performance Monitoring
         private EnvironmentalSystemMetrics _metrics;
@@ -228,7 +228,7 @@ namespace ProjectChimera.Systems.SpeedTree
                 _speedTreeManager = GameManager.Instance.GetManager<AdvancedSpeedTreeManager>();
                 _environmentalManager = GameManager.Instance.GetManager<EnvironmentalManager>();
                 _geneticsEngine = GameManager.Instance.GetManager<CannabisGeneticsEngine>();
-                _progressionManager = GameManager.Instance.GetManager<ComprehensiveProgressionManager>();
+                // _progressionManager = GameManager.Instance.GetManager<ComprehensiveProgressionManager>(); // Disabled
             }
             
             ConnectSystemEvents();
@@ -556,10 +556,10 @@ namespace ProjectChimera.Systems.SpeedTree
                     OnPlantAdapted?.Invoke(adaptationData.InstanceId, adaptation);
                     
                     // Log adaptation for research progress
-                    if (_progressionManager != null)
-                    {
-                        _progressionManager.GainExperience("environmental_adaptation", 25f, "Plant Adaptation");
-                    }
+                    // if (_progressionManager != null)
+                    // {
+                    //     _progressionManager.GainExperience("environmental_adaptation", 25f, "Plant Adaptation");
+                    // }
                     
                     LogInfo($"Plant {adaptationData.InstanceId} adapted to environmental conditions");
                 }

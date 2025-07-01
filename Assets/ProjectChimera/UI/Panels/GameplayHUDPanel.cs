@@ -671,9 +671,9 @@ namespace ProjectChimera.UI.Panels
             // _uiManager.ShowPanel("inventory-panel");
         }
         
-        protected override void OnDestroy()
+        protected virtual void OnDestroy()
         {
-            base.OnDestroy();
+            // Clean up gameplay HUD panel
             
             // Clean up updates
             CancelInvoke(nameof(UpdateHUDData));

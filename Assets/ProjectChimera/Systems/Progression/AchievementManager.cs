@@ -1,6 +1,7 @@
 using UnityEngine;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Progression;
+using ProjectChimera.Data.Events;
 using System.Collections.Generic;
 using System.Linq;
 using System;

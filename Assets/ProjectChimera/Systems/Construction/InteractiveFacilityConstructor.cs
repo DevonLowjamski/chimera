@@ -15,6 +15,8 @@ using DataIssueSeverity = ProjectChimera.Data.Construction.IssueSeverity;
 using DataIssueCategory = ProjectChimera.Data.Construction.IssueCategory;
 using RoomStatus = ProjectChimera.Data.Construction.RoomStatus;
 using DataIssueStatus = ProjectChimera.Data.Construction.IssueStatus;
+using ConstructionPhase = ProjectChimera.Data.Construction.ConstructionPhase;
+using ConstructionEvent = ProjectChimera.Data.Construction.ConstructionEvent;
 
 namespace ProjectChimera.Systems.Construction
 {
@@ -274,8 +276,8 @@ namespace ProjectChimera.Systems.Construction
                 Status = ProjectStatus.Planning,
                 CreatedDate = System.DateTime.Now,
                 EstimatedCost = CalculateProjectCost(template),
-                EstimatedDuration = CalculateProjectDuration(template),
-                RequiredPermits = DetermineRequiredPermits(template)
+                EstimatedDuration = Mathf.RoundToInt(CalculateProjectDuration(template) / 24f), // Convert hours to days
+                RequiredPermits = DetermineRequiredPermits(template).Select(p => p.ToString()).ToList()
             };
             
             // Validate building site
@@ -916,7 +918,7 @@ namespace ProjectChimera.Systems.Construction
             // Cannabis-specific permits
             permits.Add(PermitType.Cannabis_Cultivation);
             
-            if (template.Rooms.Any(r => r.RoomType == "ProcessingRoom"))
+            if (template.RoomTemplates.Any(r => r.RoomType == "ProcessingRoom"))
             {
                 permits.Add(PermitType.Cannabis_Processing);
             }
@@ -971,7 +973,7 @@ namespace ProjectChimera.Systems.Construction
                                 project.ApprovedPermitTypes.Add(application.PermitType);
                                 
                                 // Check if all permits are approved
-                                if (project.RequiredPermits.All(p => project.ApprovedPermitTypes.Contains(p)))
+                                if (project.RequiredPermits.All(p => project.ApprovedPermitTypes.Contains(Enum.Parse<PermitType>(p))))
                                 {
                                     project.PermitsApproved = true;
                                 }

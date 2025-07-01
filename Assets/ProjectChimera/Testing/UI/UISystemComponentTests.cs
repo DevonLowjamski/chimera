@@ -87,7 +87,7 @@ namespace ProjectChimera.Testing.UI
 
         private void CleanupUITestEnvironment()
         {
-            var testObjects = GameObject.FindObjectsOfType<GameObject>();
+            var testObjects = UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
             foreach (var obj in testObjects)
             {
                 if (obj.name.StartsWith("Test "))

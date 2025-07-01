@@ -16,7 +16,7 @@ using TMPro;
 using PlantInstance = ProjectChimera.Systems.Cultivation.PlantInstance;
 using HarvestResult = ProjectChimera.Data.Facilities.HarvestResult;
 using InteractivePlantComponent = ProjectChimera.Systems.Cultivation.InteractivePlantComponent;
-using PlayerProfile = ProjectChimera.Data.Community.PlayerProfile;
+using PlayerProfile = ProjectChimera.Data.PlayerProfile;
 using GrowRoomController = ProjectChimera.Scripts.Facilities.GrowRoomController;
 
 namespace ProjectChimera.UI

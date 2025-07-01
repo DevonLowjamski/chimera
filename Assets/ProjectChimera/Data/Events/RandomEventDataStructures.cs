@@ -23,7 +23,7 @@ namespace ProjectChimera.Data.Events
         public string Description;
         
         [Header("Event Classification")]
-        public EventCategory Category;
+        public RandomEventCategory Category;
         public EventSeverity Severity;
         public float Probability = 0.1f;
         
@@ -51,7 +51,7 @@ namespace ProjectChimera.Data.Events
         public string EventId;
         public string Title;
         public string Description;
-        public EventCategory Category;
+        public RandomEventCategory Category;
         public EventSeverity Severity;
         
         [Header("Timing")]
@@ -132,7 +132,7 @@ namespace ProjectChimera.Data.Events
         public string EventId;
         public string Title;
         public string Description;
-        public EventCategory Category;
+        public RandomEventCategory Category;
         public EventSeverity Severity;
         public TimeSpan TimeRemaining;
         public List<string> Choices;
@@ -194,7 +194,7 @@ namespace ProjectChimera.Data.Events
     /// <summary>
     /// Categories of random events
     /// </summary>
-    public enum EventCategory
+    public enum RandomEventCategory
     {
         Cultivation,    // Plant growing, health, genetics
         Market,         // Economic, trading, prices
@@ -279,6 +279,19 @@ namespace ProjectChimera.Data.Events
         // Meta
         EventFrequency,
         DifficultyModifier
+    }
+    
+    /// <summary>
+    /// Severity levels for consequences
+    /// </summary>
+    public enum ConsequenceSeverity
+    {
+        Trivial,        // Very minor impact
+        Minor,          // Small impact
+        Moderate,       // Medium impact
+        Major,          // Significant impact
+        Severe,         // High impact
+        Critical        // Extreme impact
     }
     
     /// <summary>

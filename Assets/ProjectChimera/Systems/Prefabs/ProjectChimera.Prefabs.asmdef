@@ -4,10 +4,9 @@
     "references": [
         "ProjectChimera.Core",
         "ProjectChimera.Data",
-        "ProjectChimera.Environment",
         "ProjectChimera.Systems.Cultivation",
-        "ProjectChimera.Construction",
-        "ProjectChimera.Genetics",
+        "ProjectChimera.Systems.Environment",
+        "ProjectChimera.UI",
         "Unity.TextMeshPro"
     ],
     "includePlatforms": [],

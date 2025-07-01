@@ -445,7 +445,7 @@ namespace ProjectChimera.Scripts.Environment
             _connectedPlants.Clear();
             
             // Find all components that implement IWaterableComponent
-            var allMonoBehaviours = FindObjectsOfType<MonoBehaviour>();
+            var allMonoBehaviours = UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
             foreach (var mb in allMonoBehaviours)
             {
                 if (mb is IWaterableComponent waterableComponent)

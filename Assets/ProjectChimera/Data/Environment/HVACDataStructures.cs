@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,30 @@ namespace ProjectChimera.Data.Environment
     /// Comprehensive data structures for HVAC system management in Project Chimera.
     /// Includes zone management, equipment control, automation, and energy optimization.
     /// </summary>
+
+    // Enums for atmospheric breakthrough types and impacts
+    public enum BreakthroughType
+    {
+        TechnicalInnovation,
+        ProcessOptimization,
+        EnergyEfficiency,
+        ClimateControl,
+        AutomationAdvancement,
+        SustainabilityImprovement,
+        CostReduction,
+        PerformanceEnhancement,
+        SafetyImprovement,
+        QualityOptimization
+    }
+
+    public enum BreakthroughImpact
+    {
+        Low,
+        Medium,
+        High,
+        Revolutionary,
+        IndustryChanging
+    }
 
     [System.Serializable]
     public class HVACSystemSettings
@@ -408,7 +433,6 @@ namespace ProjectChimera.Data.Environment
         public List<string> OptimizationOpportunities = new List<string>();
     }
 
-    [System.Serializable]
     public class EnvironmentalPrediction
     {
         public float PredictionTime; // Minutes ahead
@@ -657,5 +681,865 @@ namespace ProjectChimera.Data.Environment
         Heat_Recovery
     }
 
+    // Additional Missing Classes for Environmental Gaming Systems
+    
+    [System.Serializable]
+    public class HVACCertificationSystem
+    {
+        private Dictionary<string, List<HVACCertificationEnrollment>> _playerEnrollments = new Dictionary<string, List<HVACCertificationEnrollment>>();
+        private List<HVACCertification> _availableCertifications = new List<HVACCertification>();
+        
+        public void Initialize(bool enableCertification)
+        {
+            if (!enableCertification) return;
+            
+            // Initialize certification programs
+            InitializeCertificationPrograms();
+        }
+        
+        public bool EnrollPlayer(string playerId, HVACCertificationLevel level)
+        {
+            if (!_playerEnrollments.ContainsKey(playerId))
+            {
+                _playerEnrollments[playerId] = new List<HVACCertificationEnrollment>();
+            }
+            
+            var enrollment = new HVACCertificationEnrollment
+            {
+                EnrollmentId = System.Guid.NewGuid().ToString(),
+                Level = level,
+                EnrolledAt = System.DateTime.Now,
+                ExpectedCompletion = System.DateTime.Now.AddDays(30),
+                Progress = 0f,
+                Status = CertificationStatus.InProgress,
+                PlayerId = playerId,
+                CompletedModules = new List<string>(),
+                CurrentScore = 0f
+            };
+            
+            _playerEnrollments[playerId].Add(enrollment);
+            return true;
+        }
+        
+        public void UpdateProgress(string playerId, ProfessionalActivity activity)
+        {
+            if (!_playerEnrollments.TryGetValue(playerId, out var enrollments)) return;
+            
+            foreach (var enrollment in enrollments.Where(e => e.Status == CertificationStatus.InProgress))
+            {
+                // Update progress based on activity
+                float progressIncrease = CalculateProgressIncrease(enrollment, activity);
+                enrollment.Progress = Mathf.Clamp01(enrollment.Progress + progressIncrease);
+                
+                // Check for completion
+                if (enrollment.Progress >= 1f)
+                {
+                    enrollment.Status = CertificationStatus.Completed;
+                }
+            }
+        }
+        
+        public List<HVACCertification> CheckCompletedCertifications(string playerId)
+        {
+            var completedCertifications = new List<HVACCertification>();
+            
+            if (!_playerEnrollments.TryGetValue(playerId, out var enrollments)) return completedCertifications;
+            
+            foreach (var enrollment in enrollments.Where(e => e.Status == CertificationStatus.Completed))
+            {
+                var certification = new HVACCertification
+                {
+                    CertificationId = enrollment.EnrollmentId,
+                    Level = enrollment.Level,
+                    PlayerId = playerId,
+                    CompletionDate = System.DateTime.Now,
+                    Score = enrollment.CurrentScore,
+                    IsValid = true
+                };
+                
+                completedCertifications.Add(certification);
+            }
+            
+            return completedCertifications;
+        }
+        
+        public void UpdateCertificationProgress()
+        {
+            // Update all active certifications
+            foreach (var playerEnrollments in _playerEnrollments.Values)
+            {
+                foreach (var enrollment in playerEnrollments.Where(e => e.Status == CertificationStatus.InProgress))
+                {
+                    // Time-based progress updates
+                    var daysSinceEnrollment = (System.DateTime.Now - enrollment.EnrolledAt).Days;
+                    var expectedDays = (enrollment.ExpectedCompletion - enrollment.EnrolledAt).Days;
+                    
+                    if (daysSinceEnrollment > expectedDays && enrollment.Progress < 1f)
+                    {
+                        // Mark as overdue or extend deadline
+                        enrollment.ExpectedCompletion = enrollment.ExpectedCompletion.AddDays(7);
+                    }
+                }
+            }
+        }
+        
+        private void InitializeCertificationPrograms()
+        {
+            // Initialize available HVAC certifications
+            _availableCertifications.Add(new HVACCertification
+            {
+                CertificationId = "hvac_foundation",
+                Level = HVACCertificationLevel.Foundation,
+                Title = "HVAC Foundation Certification",
+                Description = "Basic HVAC principles and operations"
+            });
+        }
+        
+        private float CalculateProgressIncrease(HVACCertificationEnrollment enrollment, ProfessionalActivity activity)
+        {
+            // Calculate progress based on activity type and level
+            return 0.1f; // Base progress increase
+        }
+    }
+    
+    [System.Serializable]
+    public class IndustryIntegrationProgram
+    {
+        private Dictionary<string, List<IndustryConnection>> _playerConnections = new Dictionary<string, List<IndustryConnection>>();
+        private List<IndustryProfessional> _availableProfessionals = new List<IndustryProfessional>();
+        
+        public void Initialize(bool enableIntegration)
+        {
+            if (!enableIntegration) return;
+            
+            LoadIndustryProfessionals();
+        }
+        
+        public IndustryConnectionResult ConnectToProfessionals(string playerId, ProfessionalInterests interests)
+        {
+            var matchingProfessionals = FindMatchingProfessionals(interests);
+            var connections = new List<IndustryConnection>();
+            
+            foreach (var professional in matchingProfessionals.Take(5)) // Limit to 5 connections
+            {
+                var connection = new IndustryConnection
+                {
+                    ConnectionId = System.Guid.NewGuid().ToString(),
+                    PlayerId = playerId,
+                    ProfessionalId = professional.ProfessionalId,
+                    ConnectionDate = System.DateTime.Now,
+                    Status = ConnectionStatus.Pending
+                };
+                
+                connections.Add(connection);
+            }
+            
+            if (!_playerConnections.ContainsKey(playerId))
+            {
+                _playerConnections[playerId] = new List<IndustryConnection>();
+            }
+            
+            _playerConnections[playerId].AddRange(connections);
+            
+            return new IndustryConnectionResult
+            {
+                Success = connections.Count > 0,
+                NewConnections = connections,
+                TotalConnections = _playerConnections[playerId].Count
+            };
+        }
+        
+        private List<IndustryProfessional> FindMatchingProfessionals(ProfessionalInterests interests)
+        {
+            return _availableProfessionals.Where(p => 
+                interests.Industries.Contains(p.Industry) || 
+                interests.SkillAreas.Any(skill => p.Expertise.Contains(skill))
+            ).ToList();
+        }
+        
+        private void LoadIndustryProfessionals()
+        {
+            // Load available industry professionals
+            _availableProfessionals.Add(new IndustryProfessional
+            {
+                ProfessionalId = "hvac_expert_001",
+                Name = "Dr. Sarah Johnson",
+                Industry = "HVAC Engineering",
+                Expertise = new List<string> { "Climate Control", "Energy Efficiency", "System Design" }
+            });
+        }
+    }
+    
+    [System.Serializable]
+    public class ProfessionalNetworkingPlatform
+    {
+        private Dictionary<string, List<NetworkingConnection>> _networkConnections = new Dictionary<string, List<NetworkingConnection>>();
+        
+        public void Initialize(bool enableNetworking)
+        {
+            if (!enableNetworking) return;
+            
+            SetupNetworkingPlatform();
+        }
+        
+        private void SetupNetworkingPlatform()
+        {
+            // Initialize networking platform
+        }
+    }
+    
+    [System.Serializable]
+    public class CareerPathwayManager
+    {
+        private Dictionary<string, CareerPathway> _playerPathways = new Dictionary<string, CareerPathway>();
+        
+        public void Initialize(bool enableCareerPathways)
+        {
+            if (!enableCareerPathways) return;
+            
+            InitializeCareerPathways();
+        }
+        
+        private void InitializeCareerPathways()
+        {
+            // Initialize career pathway options
+        }
+    }
+    
+    [System.Serializable]
+    public class PredictiveEnvironmentalIntelligence
+    {
+        private Dictionary<string, List<EnvironmentalPrediction>> _predictions = new Dictionary<string, List<EnvironmentalPrediction>>();
+        
+        public void Initialize()
+        {
+            // Initialize predictive intelligence system
+        }
+        
+        public void Initialize(bool enablePredictiveIntelligence)
+        {
+            Initialize(); // Call base initialization
+            // Additional predictive intelligence features could be enabled here
+        }
+        
+        public EnvironmentalPrediction GeneratePrediction(EnvironmentalZone zone, PredictionTimeframe timeframe)
+        {
+            return new EnvironmentalPrediction
+            {
+                PredictionTime = (float)timeframe,
+                RequiresAction = UnityEngine.Random.value > 0.7f,
+                RecommendedActions = new List<string> { "Monitor temperature", "Adjust humidity" },
+                ConfidenceLevel = UnityEngine.Random.Range(0.7f, 0.95f),
+                PredictedConditions = zone.CurrentConditions
+            };
+        }
+        
+        public void UpdatePredictions()
+        {
+            // Update all active predictions
+        }
+        
+        public void Shutdown()
+        {
+            // Cleanup predictive intelligence system
+        }
+    }
+    
+    [System.Serializable]
+    public class ClimateOptimizationAI
+    {
+        public void Initialize()
+        {
+            // Initialize climate optimization AI
+        }
+        
+        public void Initialize(bool enableOptimizationAI)
+        {
+            Initialize(); // Call base initialization
+            // Additional optimization AI features could be enabled here
+        }
+        
+        public List<OptimizationRecommendation> GenerateRecommendations(EnvironmentalZone zone)
+        {
+            var recommendations = new List<OptimizationRecommendation>();
+            
+            // Generate optimization recommendations based on zone conditions
+            recommendations.Add(new OptimizationRecommendation
+            {
+                RecommendationId = System.Guid.NewGuid().ToString(),
+                Title = "Temperature Optimization",
+                Description = "Optimize temperature control for energy efficiency",
+                Priority = RecommendationPriority.Medium,
+                EstimatedSavings = 15.5f
+            });
+            
+            return recommendations;
+        }
+        
+        public EnvironmentalOptimizationResult OptimizeZone(EnvironmentalZone zone, OptimizationObjectives objectives)
+        {
+            return new EnvironmentalOptimizationResult
+            {
+                ZoneId = zone.ZoneId,
+                OptimizationScore = UnityEngine.Random.Range(0.7f, 0.95f),
+                EnergyEfficiencyGain = UnityEngine.Random.Range(10f, 30f),
+                Recommendations = GenerateRecommendations(zone),
+                OptimizationDate = System.DateTime.Now
+            };
+        }
+    }
+    
+    [System.Serializable]
+    public class EnvironmentalKnowledgeNetwork
+    {
+        private List<EnvironmentalKnowledge> _sharedKnowledge = new List<EnvironmentalKnowledge>();
+        
+        public void Initialize(bool enableKnowledgeSharing)
+        {
+            if (!enableKnowledgeSharing) return;
+            
+            SetupKnowledgeNetwork();
+        }
+        
+        public string ShareKnowledge(EnvironmentalKnowledge knowledge)
+        {
+            knowledge.KnowledgeId = System.Guid.NewGuid().ToString();
+            knowledge.SharedDate = System.DateTime.Now;
+            
+            _sharedKnowledge.Add(knowledge);
+            
+            return knowledge.KnowledgeId;
+        }
+        
+        private void SetupKnowledgeNetwork()
+        {
+            // Initialize knowledge sharing network
+        }
+    }
+    
+    [System.Serializable]
+    public class GlobalEnvironmentalCompetitions
+    {
+        private Dictionary<string, EnvironmentalCompetition> _activeCompetitions = new Dictionary<string, EnvironmentalCompetition>();
+        private Dictionary<string, List<string>> _competitionParticipants = new Dictionary<string, List<string>>();
+        
+        public void Initialize(bool enableCompetitions)
+        {
+            if (!enableCompetitions) return;
+            
+            LoadActiveCompetitions();
+        }
+        
+        public bool JoinCompetition(string competitionId, string playerId)
+        {
+            if (!_activeCompetitions.ContainsKey(competitionId)) return false;
+            
+            if (!_competitionParticipants.ContainsKey(competitionId))
+            {
+                _competitionParticipants[competitionId] = new List<string>();
+            }
+            
+            if (!_competitionParticipants[competitionId].Contains(playerId))
+            {
+                _competitionParticipants[competitionId].Add(playerId);
+                return true;
+            }
+            
+            return false;
+        }
+        
+        private void LoadActiveCompetitions()
+        {
+            // Load active global competitions
+            _activeCompetitions["global_efficiency_challenge"] = new EnvironmentalCompetition
+            {
+                CompetitionId = "global_efficiency_challenge",
+                Title = "Global Energy Efficiency Challenge",
+                Description = "Compete to achieve the highest energy efficiency ratings",
+                StartDate = System.DateTime.Now,
+                EndDate = System.DateTime.Now.AddDays(30)
+            };
+        }
+    }
+    
+    [System.Serializable]
+    public class CollaborativeResearchPlatform
+    {
+        private Dictionary<string, CollaborativeSession> _activeSessions = new Dictionary<string, CollaborativeSession>();
+        
+        public void Initialize(bool enableCollaborativeResearch)
+        {
+            if (!enableCollaborativeResearch) return;
+            
+            SetupResearchPlatform();
+        }
+        
+        public CollaborativeSession CreateCollaborativeSession(CollaborativeEnvironmentalConfig config)
+        {
+            var session = new CollaborativeSession
+            {
+                SessionId = System.Guid.NewGuid().ToString(),
+                SessionName = config.SessionName,
+                Description = config.Description,
+                MaxParticipants = config.MaxParticipants,
+                StartTime = System.DateTime.Now,
+                Status = SessionStatus.Planning,
+                Participants = new List<string>(),
+                ResearchGoals = config.ResearchGoals
+            };
+            
+            return session;
+        }
+        
+        public void UpdateCollaborativeSession(CollaborativeSession session)
+        {
+            // Update session progress and status
+            if (session.Status == SessionStatus.Active)
+            {
+                // Check for session completion conditions
+                CheckSessionProgress(session);
+            }
+        }
+        
+        private void SetupResearchPlatform()
+        {
+            // Initialize collaborative research platform
+        }
+        
+        private void CheckSessionProgress(CollaborativeSession session)
+        {
+            // Check if session goals are met
+        }
+    }
+    
+    [System.Serializable]
+    public class EnvironmentalInnovationHub
+    {
+        private List<EnvironmentalInnovation> _innovations = new List<EnvironmentalInnovation>();
+        
+        public void Initialize(bool enableInnovation)
+        {
+            if (!enableInnovation) return;
+            
+            // Initialize innovation hub
+            _innovations.Clear();
+        }
+        
+        public EnvironmentalInnovation CheckForInnovation(EnvironmentalZone zone)
+        {
+            // Check if zone conditions lead to innovation opportunities
+            if (UnityEngine.Random.value > 0.95f) // 5% chance of innovation
+            {
+                return new EnvironmentalInnovation
+                {
+                    InnovationId = System.Guid.NewGuid().ToString(),
+                    Title = "Energy Efficiency Innovation",
+                    Description = "New approach to energy optimization discovered",
+                    DiscoveryDate = System.DateTime.Now,
+                    ZoneId = zone.ZoneId,
+                    InnovationType = InnovationType.TechnologyIntegration
+                };
+            }
+            
+            return null;
+        }
+        
+        // Method that was referenced in AtmosphericPhysicsDataStructures.cs but missing here
+        public EnvironmentalBreakthrough AnalyzeForBreakthrough(EnvironmentalZone zone)
+        {
+            // Analyze zone for potential breakthrough opportunities
+            if (UnityEngine.Random.value > 0.98f) // 2% chance of breakthrough
+            {
+                return new EnvironmentalBreakthrough
+                {
+                    BreakthroughId = System.Guid.NewGuid().ToString(),
+                    Title = "Environmental Breakthrough",
+                    Description = "Significant advancement in environmental control discovered",
+                    DiscoveryDate = System.DateTime.Now,
+                    PlayerId = "system",
+                    ImpactScore = UnityEngine.Random.Range(0.7f, 1.0f),
+                    Applications = new List<string> { "Energy Optimization", "Climate Control" }
+                };
+            }
+            
+            return null;
+        }
+        
+        // Overload method that accepts both zone and optimization result
+        public EnvironmentalBreakthrough AnalyzeForBreakthrough(EnvironmentalZone zone, EnvironmentalOptimizationResult result)
+        {
+            // Analyze optimization result for breakthrough potential
+            if (result != null && result.IsValid && result.ImprovementScore > 0.8f)
+            {
+                return new EnvironmentalBreakthrough
+                {
+                    BreakthroughId = System.Guid.NewGuid().ToString(),
+                    Title = "Optimization Breakthrough",
+                    Description = $"Significant improvement achieved in zone {zone.ZoneId}",
+                    DiscoveryDate = System.DateTime.Now,
+                    PlayerId = "current_player",
+                    ImpactScore = result.ImprovementScore,
+                    Applications = new List<string> { "Energy Optimization", "Climate Control" },
+                    AchievedAt = System.DateTime.Now,
+                    InnovationScore = result.ImprovementScore * 100f,
+                    Type = "EnergyEfficiency", // String assignment is correct since Type is defined as string
+                    Impact = "Significant", // String assignment is correct since Impact is defined as string
+                    IsIndustryRelevant = true
+                };
+            }
+            return null;
+        }
+    }
+    
+    // Supporting Data Structures
+    
+    [System.Serializable]
+    public class HVACCertification
+    {
+        public string CertificationId;
+        public HVACCertificationLevel Level;
+        public string PlayerId;
+        public string Title;
+        public string Description;
+        public System.DateTime CompletionDate;
+        public float Score;
+        public bool IsValid;
+    }
+    
+    [System.Serializable]
+    public class ProfessionalActivity
+    {
+        public string ActivityId;
+        public string ActivityName;
+        public ProfessionalActivityType ActivityType;
+        public System.DateTime CompletedDate;
+        public float DurationHours;
+        public List<string> SkillsApplied = new List<string>();
+    }
+    
+    public enum ProfessionalActivityType
+    {
+        Training,
+        ProjectWork,
+        Certification,
+        Networking,
+        Research,
+        Innovation
+    }
+    
+    [System.Serializable]
+    public class ProfessionalInterests
+    {
+        public List<string> Industries = new List<string>();
+        public List<string> SkillAreas = new List<string>();
+        public List<string> CareerGoals = new List<string>();
+        public ExperienceLevel PreferredLevel;
+    }
+    
+    public enum ExperienceLevel
+    {
+        Entry,
+        Intermediate,
+        Senior,
+        Expert,
+        Executive
+    }
+    
+    [System.Serializable]
+    public class IndustryConnectionResult
+    {
+        public bool Success;
+        public List<IndustryConnection> NewConnections = new List<IndustryConnection>();
+        public int TotalConnections;
+        public string Message;
+    }
+    
+    [System.Serializable]
+    public class IndustryConnection
+    {
+        public string ConnectionId;
+        public string PlayerId;
+        public string ProfessionalId;
+        public System.DateTime ConnectionDate;
+        public ConnectionStatus Status;
+    }
+    
+    public enum ConnectionStatus
+    {
+        Pending,
+        Accepted,
+        Declined,
+        Active,
+        Inactive
+    }
+    
+    [System.Serializable]
+    public class IndustryProfessional
+    {
+        public string ProfessionalId;
+        public string Name;
+        public string Industry;
+        public List<string> Expertise = new List<string>();
+        public ExperienceLevel Level;
+        public bool IsAvailable;
+    }
+    
+    [System.Serializable]
+    public class NetworkingConnection
+    {
+        public string ConnectionId;
+        public string PlayerId;
+        public string ConnectedPlayerId;
+        public System.DateTime ConnectionDate;
+        public ConnectionType Type;
+    }
+    
+    public enum ConnectionType
+    {
+        Peer,
+        Mentor,
+        Mentee,
+        Colleague,
+        Professional
+    }
+    
+    [System.Serializable]
+    public class CareerPathway
+    {
+        public string PathwayId;
+        public string Title;
+        public List<string> RequiredSkills = new List<string>();
+        public List<string> OptionalSkills = new List<string>();
+        public List<HVACCertificationLevel> RequiredCertifications = new List<HVACCertificationLevel>();
+        public int EstimatedDurationMonths;
+    }
+    
+    public enum PredictionTimeframe
+    {
+        NextHour,
+        Next4Hours,
+        Next12Hours,
+        NextDay,
+        NextWeek
+    }
+    
+    [System.Serializable]
+    public class OptimizationRecommendation
+    {
+        public string RecommendationId;
+        public string Title;
+        public string Description;
+        public RecommendationPriority Priority;
+        public float EstimatedSavings;
+        public System.TimeSpan ImplementationTime;
+        public float ImplementationCost;
+    }
+    
+    public enum RecommendationPriority
+    {
+        Low,
+        Medium,
+        High,
+        Critical
+    }
+    
+    [System.Serializable]
+    public class OptimizationObjectives
+    {
+        public bool MinimizeEnergyConsumption;
+        public bool MaximizeComfort;
+        public bool OptimizeAirQuality;
+        public bool ReduceOperatingCosts;
+        public float EnergyEfficiencyTarget;
+        public float ComfortTargetScore;
+    }
+    
+    [System.Serializable]
+    public class EnvironmentalOptimizationResult
+    {
+        public string ZoneId;
+        public float OptimizationScore;
+        public float EnergyEfficiencyGain;
+        public List<OptimizationRecommendation> Recommendations = new List<OptimizationRecommendation>();
+        public System.DateTime OptimizationDate;
+        public string Summary;
+        
+        // Properties that were referenced in the AtmosphericPhysicsDataStructures.cs but missing here
+        public bool IsValid = true;
+        public float ImprovementScore = 0f;
+    }
+    
+    [System.Serializable]
+    public class EnvironmentalKnowledge
+    {
+        public string KnowledgeId;
+        public string Title;
+        public string Description;
+        public string Content;
+        public string AuthorId;
+        public System.DateTime SharedDate;
+        public List<string> Tags = new List<string>();
+        public int LikesCount;
+        public int ViewsCount;
+    }
+    
+    [System.Serializable]
+    public class EnvironmentalCompetition
+    {
+        public string CompetitionId;
+        public string Title;
+        public string Description;
+        public System.DateTime StartDate;
+        public System.DateTime EndDate;
+        public CompetitionType Type;
+        public List<string> Rules = new List<string>();
+        public List<CompetitionReward> Rewards = new List<CompetitionReward>();
+    }
+    
+    public enum CompetitionType
+    {
+        EnergyEfficiency,
+        InnovationChallenge,
+        OptimizationRace,
+        CollaborativeProject,
+        KnowledgeSharing
+    }
+    
+    [System.Serializable]
+    public class CompetitionReward
+    {
+        public string RewardId;
+        public string Title;
+        public string Description;
+        public RewardType Type;
+        public float Value;
+    }
+    
+    public enum RewardType
+    {
+        Points,
+        Badge,
+        Certification,
+        Recognition,
+        PrizeMoney
+    }
+    
+    [System.Serializable]
+    public class CollaborativeEnvironmentalConfig
+    {
+        public string SessionName;
+        public string Description;
+        public int MaxParticipants;
+        public List<string> ResearchGoals = new List<string>();
+        public CollaborationType Type;
+        public System.TimeSpan Duration;
+    }
+    
+    public enum CollaborationType
+    {
+        Research,
+        Innovation,
+        ProblemSolving,
+        KnowledgeSharing,
+        CompetitiveChallenge
+    }
+    
+    [System.Serializable]
+    public class CollaborativeSession
+    {
+        public string SessionId;
+        public string SessionName;
+        public string ProjectName; // Added missing ProjectName property
+        public CollaborativeSessionType Type; // Added missing Type property
+        public string Description;
+        public int MaxParticipants;
+        public System.DateTime StartTime;
+        public SessionStatus Status;
+        public List<string> Participants = new List<string>();
+        public List<string> ResearchGoals = new List<string>();
+        public float ProgressPercentage;
+    }
 
+    // Missing environmental gaming types that were in deleted gaming data structure files
+    [System.Serializable]
+    public class EnvironmentalGamingMetrics
+    {
+        public int OptimizationsCompleted;
+        public float EfficiencyGained;
+        public int BreakthroughsAchieved;
+        public DateTime LastUpdated;
+        public float AveragePerformanceScore;
+        public int TotalExperiments;
+        
+        // Missing properties referenced in EnhancedEnvironmentalGamingManager.cs
+        public int ActiveChallenges;
+        public int ActiveCollaborations;
+        public int TotalPlayers;
+        public int TotalInnovations;
+        public int TotalBreakthroughs;
+        
+        // Missing method referenced in EnhancedEnvironmentalGamingManager.cs line 303
+        public void UpdateScore(string processorId, float score)
+        {
+            AveragePerformanceScore = (AveragePerformanceScore + score) / 2f;
+            LastUpdated = DateTime.Now;
+        }
+    }
+
+    [System.Serializable]
+    public class PlayerEnvironmentalProfile
+    {
+        public string PlayerId;
+        public float EnvironmentalScore;
+        public List<string> Achievements = new List<string>();
+        public DateTime ProfileCreated;
+        public int OptimizationLevel;
+        public float SustainabilityRating;
+        
+        // Missing properties referenced in EnhancedEnvironmentalGamingManager.cs
+        public string PlayerName;
+        public EnvironmentalSkillLevel SkillLevel;
+        public float ExperiencePoints;
+        public List<string> CompletedChallenges = new List<string>();
+        public List<string> ActiveCertifications = new List<string>();
+        public List<string> Innovations = new List<string>();
+    }
+
+    [System.Serializable]
+    public class EnvironmentalBreakthrough
+    {
+        public string BreakthroughId;
+        public string Title;
+        public string Description;
+        public DateTime DiscoveryDate;
+        public string PlayerId;
+        public float ImpactScore;
+        public List<string> Applications = new List<string>();
+        
+        // Properties that were referenced in the EnhancedEnvironmentalGamingManager.cs
+        public DateTime AchievedAt { get { return DiscoveryDate; } set { DiscoveryDate = value; } }
+        public float InnovationScore { get { return ImpactScore; } set { ImpactScore = value; } }
+        
+        // Type and Impact properties that can handle both string and enum assignments
+        private string _type = "Environmental";
+        private string _impact = "Positive";
+        
+        public string Type 
+        { 
+            get { return _type; } 
+            set { _type = value; } 
+        }
+        
+        public string Impact 
+        { 
+            get { return _impact; } 
+            set { _impact = value; } 
+        }
+        
+        // Helper methods to set from enums (for compatibility with AtmosphericBreakthrough)
+        public void SetType(BreakthroughType type) { _type = type.ToString(); }
+        public void SetImpact(BreakthroughImpact impact) { _impact = impact.ToString(); }
+        
+        public bool IsIndustryRelevant = true;
+    }
 }

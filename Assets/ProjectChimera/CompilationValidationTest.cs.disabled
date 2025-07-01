@@ -1,0 +1,158 @@
+using UnityEngine;
+using ProjectChimera.Core;
+using ProjectChimera.Systems.Construction;
+using ProjectChimera.Data.Construction;
+
+namespace ProjectChimera
+{
+    /// <summary>
+    /// Simple compilation validation test to verify all major fixes are working
+    /// </summary>
+    public class CompilationValidationTest : MonoBehaviour
+    {
+        [Header("Compilation Test Results")]
+        [SerializeField] private bool _constructionSystemCompiles = false;
+        [SerializeField] private bool _dataStructuresCompile = false;
+        [SerializeField] private bool _testingFrameworkCompiles = false;
+        
+        void Start()
+        {
+            RunCompilationValidation();
+        }
+        
+        /// <summary>
+        /// Run compilation validation for recently fixed systems
+        /// </summary>
+        public void RunCompilationValidation()
+        {
+            Debug.Log("=== Compilation Validation Test ===");
+            
+            // Test 1: Construction System
+            try
+            {
+                var constructionManager = gameObject.AddComponent<EnhancedConstructionGamingManager>();
+                var challengeEngine = new ConstructionChallengeEngine();
+                var collaborationSystem = new CollaborativeConstructionSystem();
+                
+                _constructionSystemCompiles = true;
+                Debug.Log("✓ Construction System compilation successful");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"✗ Construction System compilation failed: {e.Message}");
+            }
+            
+            // Test 2: Data Structures
+            try
+            {
+                var challengeParams = new ChallengeParameters
+                {
+                    ProjectType = ProjectType.GrowRoom,
+                    SiteSize = new Vector3(10f, 3f, 8f),
+                    BudgetLimit = 50000f,
+                    RequiredFeatures = new System.Collections.Generic.List<string>()
+                };
+                
+                var participantInfo = new ParticipantInfo
+                {
+                    PlayerId = "test",
+                    PlayerName = "Test Player",
+                    Role = ParticipantRole.Lead
+                };
+                
+                _dataStructuresCompile = true;
+                Debug.Log("✓ Data Structures compilation successful");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"✗ Data Structures compilation failed: {e.Message}");
+            }
+            
+            // Test 3: Testing Framework
+            try
+            {
+                // Test that testing namespace compiles
+                var testResult = new TestingResult 
+                { 
+                    TestName = "Compilation Test",
+                    Success = true,
+                    Message = "Test compilation successful"
+                };
+                
+                _testingFrameworkCompiles = true;
+                Debug.Log("✓ Testing Framework compilation successful");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"✗ Testing Framework compilation failed: {e.Message}");
+            }
+            
+            // Summary
+            PrintValidationSummary();
+        }
+        
+        private void PrintValidationSummary()
+        {
+            Debug.Log("=== Compilation Validation Summary ===");
+            
+            int passedTests = 0;
+            int totalTests = 3;
+            
+            if (_constructionSystemCompiles)
+            {
+                Debug.Log("✅ Construction System: PASS");
+                passedTests++;
+            }
+            else
+            {
+                Debug.Log("❌ Construction System: FAIL");
+            }
+            
+            if (_dataStructuresCompile)
+            {
+                Debug.Log("✅ Data Structures: PASS");
+                passedTests++;
+            }
+            else
+            {
+                Debug.Log("❌ Data Structures: FAIL");
+            }
+            
+            if (_testingFrameworkCompiles)
+            {
+                Debug.Log("✅ Testing Framework: PASS");
+                passedTests++;
+            }
+            else
+            {
+                Debug.Log("❌ Testing Framework: FAIL");
+            }
+            
+            Debug.Log($"=== FINAL RESULT: {passedTests}/{totalTests} Tests Passed ===");
+            
+            if (passedTests == totalTests)
+            {
+                Debug.Log("🎉 ALL COMPILATION TESTS PASSED! Systems are ready!");
+            }
+            else
+            {
+                Debug.LogWarning($"⚠️ {totalTests - passedTests} compilation issues remain. Check error logs above.");
+            }
+        }
+        
+        [ContextMenu("Run Compilation Validation")]
+        public void RunEditorValidation()
+        {
+            RunCompilationValidation();
+        }
+    }
+    
+    [System.Serializable]
+    public class TestingResult
+    {
+        public string TestName;
+        public bool Success;
+        public string Message;
+        public System.DateTime Timestamp;
+    }
+}

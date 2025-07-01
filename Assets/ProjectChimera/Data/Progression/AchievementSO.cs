@@ -33,11 +33,20 @@ namespace ProjectChimera.Data.Progression
         [SerializeField] private List<AchievementReward> _rewards = new List<AchievementReward>();
         [SerializeField] private float _experienceReward = 100f;
         [SerializeField] private int _skillPointReward = 1;
+        [SerializeField] private int _pointValue = 10; // Achievement points value
+        
+        [Header("Difficulty and Rarity")]
+        [SerializeField] private AchievementRarity _rarity = AchievementRarity.Common;
+        [SerializeField] private AchievementDifficulty _difficulty = AchievementDifficulty.Normal;
         
         [Header("Progress Tracking")]
         [SerializeField] private bool _trackProgress = true;
         [SerializeField] private float _targetValue = 1f;
         [SerializeField] private string _progressFormat = "{0}/{1}";
+        
+        [Header("Tiered Achievement System")]
+        [SerializeField] private List<AchievementTier> _tiers = new List<AchievementTier>();
+        [SerializeField] private int _currentTier = 0;
         
         [Header("Validation")]
         [SerializeField] private bool _requiresValidation = false;
@@ -60,11 +69,18 @@ namespace ProjectChimera.Data.Progression
         public List<AchievementReward> Rewards => _rewards;
         public float ExperienceReward => _experienceReward;
         public int SkillPointReward => _skillPointReward;
+        public int PointValue => _pointValue;
+        public AchievementRarity Rarity => _rarity;
+        public AchievementDifficulty Difficulty => _difficulty;
         public bool TrackProgress => _trackProgress;
         public float TargetValue => _targetValue;
         public string ProgressFormat => _progressFormat;
         public bool RequiresValidation => _requiresValidation;
         public string ValidationMethod => _validationMethod;
+        
+        // Tiered Achievement Properties for BaseAchievementTrigger compatibility
+        public int TotalTiers => _tiers?.Count ?? 1; // Total number of tiers for this achievement
+        public AchievementTierRequirements NextTierRequirements => GetNextTierRequirements(); // Requirements for next tier
         
         /// <summary>
         /// Validates if the achievement requirements are met
@@ -125,6 +141,49 @@ namespace ProjectChimera.Data.Progression
             {
                 playerData.CompletedAchievements.Add(_achievementId);
             }
+        }
+        
+        /// <summary>
+        /// Gets the requirements for the next tier of this achievement
+        /// </summary>
+        public AchievementTierRequirements GetNextTierRequirements()
+        {
+            if (_tiers == null || _tiers.Count == 0)
+            {
+                // Return default requirements for non-tiered achievements
+                return new AchievementTierRequirements
+                {
+                    NextTierLevel = 1,
+                    TierIndex = 0,
+                    TierName = "Complete",
+                    RequiredProgress = _targetValue,
+                    RequiredValue = _targetValue,
+                    CurrentValue = 0f,
+                    RemainingValue = _targetValue,
+                    ProgressPercentage = 0f
+                };
+            }
+            
+            int nextTierIndex = _currentTier;
+            if (nextTierIndex >= _tiers.Count)
+            {
+                // Already at max tier
+                return null;
+            }
+            
+            var nextTier = _tiers[nextTierIndex];
+            return new AchievementTierRequirements
+            {
+                NextTierLevel = nextTier.TierLevel,
+                TierIndex = nextTierIndex,
+                TierName = nextTier.TierName,
+                RequiredProgress = nextTier.RequiredProgress,
+                RequiredValue = nextTier.RequiredProgress,
+                CurrentValue = 0f, // Would be calculated based on current progress
+                RemainingValue = nextTier.RequiredProgress,
+                ProgressPercentage = 0f,
+                RequirementDescription = nextTier.TierDescription
+            };
         }
     }
 } 

@@ -81,8 +81,8 @@ namespace ProjectChimera.Systems.SpeedTree
         // Integration with Game Systems
         private PlantManager _plantManager;
         private EnvironmentalManager _environmentalManager;
-        private AdvancedEffectsManager _effectsManager;
-        private ComprehensiveProgressionManager _progressionManager;
+        // private AdvancedEffectsManager _effectsManager; // Disabled - system not available
+        // private ComprehensiveProgressionManager _progressionManager; // Disabled - using CleanProgressionManager instead
         
         // Wind and Animation
         private SpeedTreeWindController _windController;
@@ -337,8 +337,8 @@ namespace ProjectChimera.Systems.SpeedTree
             {
                 _plantManager = GameManager.Instance.GetManager<PlantManager>();
                 _environmentalManager = GameManager.Instance.GetManager<EnvironmentalManager>();
-                _effectsManager = GameManager.Instance.GetManager<AdvancedEffectsManager>();
-                _progressionManager = GameManager.Instance.GetManager<ComprehensiveProgressionManager>();
+                // _effectsManager = GameManager.Instance.GetManager<AdvancedEffectsManager>(); // Disabled
+                // _progressionManager = GameManager.Instance.GetManager<ComprehensiveProgressionManager>(); // Disabled
             }
             
             ConnectSystemEvents();
@@ -623,10 +623,10 @@ namespace ProjectChimera.Systems.SpeedTree
             UpdatePlantAppearanceForStage(instance, newStage);
             
             // Trigger effects
-            if (_effectsManager != null)
-            {
-                _effectsManager.PlayEffect(EffectType.PlantGrowth, instance.Position, instance.Renderer?.transform, 3f);
-            }
+            // if (_effectsManager != null)
+            // {
+            //     _effectsManager.PlayEffect(EffectType.PlantGrowth, instance.Position, instance.Renderer?.transform, 3f);
+            // }
             
             OnPlantStageChanged?.Invoke(instance, newStage);
             

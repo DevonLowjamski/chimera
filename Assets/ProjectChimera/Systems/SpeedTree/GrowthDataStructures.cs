@@ -4,8 +4,8 @@ using System;
 using System.Linq;
 using ProjectChimera.Data.Genetics;
 using ProjectChimera.Data.Environment;
-// Use canonical SeasonType from EnvironmentalManager
-using SeasonType = ProjectChimera.Systems.Environment.SeasonType;
+// Use canonical SeasonType from Data.Environment
+using SeasonType = ProjectChimera.Data.Environment.SeasonType;
 // Explicit alias for Data layer EnvironmentalConditions to resolve namespace conflicts
 using EnvironmentalConditions = ProjectChimera.Data.Environment.EnvironmentalConditions;
 using ProjectChimera.Systems.SpeedTree;

@@ -21,7 +21,7 @@ namespace ProjectChimera.Data.Economy
         
         [Header("Market Classification")]
         [SerializeField] private MarketTier _marketTier = MarketTier.Premium;
-        [SerializeField] private LegalStatus _legalStatus = LegalStatus.Legal_Regulated;
+        [SerializeField] private ProductLegalStatus _legalStatus = ProductLegalStatus.Legal_Regulated;
         [SerializeField] private List<MarketSegment> _targetMarkets = new List<MarketSegment>();
         [SerializeField] private ProductLifecycle _lifecycle = ProductLifecycle.Growth;
         
@@ -66,7 +66,7 @@ namespace ProjectChimera.Data.Economy
         public string Description => _description;
         public Sprite ProductIcon => _productIcon;
         public MarketTier MarketTier => _marketTier;
-        public LegalStatus LegalStatus => _legalStatus;
+        public ProductLegalStatus LegalStatus => _legalStatus;
         public List<MarketSegment> TargetMarkets => _targetMarkets;
         public ProductLifecycle Lifecycle => _lifecycle;
         public PricingModel PricingModel => _pricingModel;
@@ -367,7 +367,7 @@ namespace ProjectChimera.Data.Economy
         [Range(0, 50)] public int CompetitorCount = 5;
         [Range(1, 5)] public int CompetitionIntensity = 3;
         [Range(0f, 1f)] public float MarketShare = 0.1f;
-        public CompetitionType DominantCompetitionType = CompetitionType.Price;
+        public MarketCompetitionType DominantCompetitionType = MarketCompetitionType.Price;
     }
     
     [System.Serializable]
@@ -426,7 +426,7 @@ namespace ProjectChimera.Data.Economy
         Research
     }
     
-    public enum LegalStatus
+    public enum ProductLegalStatus
     {
         Illegal,
         Legal_Regulated,
@@ -508,7 +508,7 @@ namespace ProjectChimera.Data.Economy
         ISO_Certified
     }
     
-    public enum CompetitionType
+    public enum MarketCompetitionType
     {
         Price,
         Quality,

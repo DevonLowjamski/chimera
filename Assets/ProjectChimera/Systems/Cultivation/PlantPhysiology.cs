@@ -1,5 +1,6 @@
 using UnityEngine;
 using ProjectChimera.Core;
+using ProjectChimera.Data;
 using ProjectChimera.Data.Cultivation;
 using ProjectChimera.Data.Genetics;
 using ProjectChimera.Systems.Visuals;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Progression;
+using ProjectChimera.Data.Events;
 
 namespace ProjectChimera.Systems.Progression
 {
@@ -69,6 +70,23 @@ namespace ProjectChimera.Systems.Progression
             InitializePlayerProgression();
             
             Debug.Log("SkillTreeManager initialized successfully");
+        }
+        
+        /// <summary>
+        /// Initialize with external configuration (for genetics system integration)
+        /// </summary>
+        public void Initialize(object config)
+        {
+            // For genetics system integration - configuration will be handled internally
+            if (!IsInitialized)
+            {
+                OnManagerInitialize();
+            }
+            
+            if (config != null)
+            {
+                Debug.Log($"SkillTreeManager initialized with external config: {config.GetType().Name}");
+            }
         }
         
         protected override void OnManagerShutdown()

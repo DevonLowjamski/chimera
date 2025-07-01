@@ -67,7 +67,7 @@ namespace ProjectChimera.Systems.SpeedTree
         private Dictionary<int, GeneticSpeedTreeMapping> _speedTreeMappings = new Dictionary<int, GeneticSpeedTreeMapping>();
         
         // Research Integration
-        private ComprehensiveProgressionManager _progressionManager;
+        // private ComprehensiveProgressionManager _progressionManager; // Disabled - using CleanProgressionManager instead
         private HashSet<string> _unlockedGenes = new HashSet<string>();
         private HashSet<string> _discoveredTraits = new HashSet<string>();
         
@@ -731,7 +731,7 @@ namespace ProjectChimera.Systems.SpeedTree
             if (GameManager.Instance != null)
             {
                 _speedTreeManager = GameManager.Instance.GetManager<AdvancedSpeedTreeManager>();
-                _progressionManager = GameManager.Instance.GetManager<ComprehensiveProgressionManager>();
+                // _progressionManager = GameManager.Instance.GetManager<ComprehensiveProgressionManager>(); // Disabled
             }
             
             ConnectSystemEvents();
@@ -744,10 +744,10 @@ namespace ProjectChimera.Systems.SpeedTree
                 _speedTreeManager.OnPlantInstanceCreated += HandlePlantInstanceCreated;
             }
             
-            if (_progressionManager != null)
-            {
-                _progressionManager.OnResearchCompleted += HandleResearchCompleted;
-            }
+            // if (_progressionManager != null)
+            // {
+            //     _progressionManager.OnResearchCompleted += HandleResearchCompleted;
+            // }
         }
         
         private void InitializePerformanceMonitoring()

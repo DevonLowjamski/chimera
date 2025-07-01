@@ -1,5 +1,7 @@
 using UnityEngine;
+#if UNITY_PIPELINE_URP
 using UnityEngine.Rendering.Universal;
+#endif
 using ProjectChimera.Core;
 using ProjectChimera.Data.Environment;
 using ProjectChimera.Data.Genetics;

@@ -95,7 +95,7 @@ namespace ProjectChimera.Testing
         private void CleanupTestEnvironment()
         {
             // Clean up test objects
-            var testObjects = GameObject.FindObjectsOfType<GameObject>()
+            var testObjects = UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None)
                 .Where(go => go.name.Contains("Test ") || go.name.Contains("Master Test"))
                 .ToArray();
 

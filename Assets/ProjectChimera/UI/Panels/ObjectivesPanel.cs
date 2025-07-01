@@ -776,9 +776,9 @@ namespace ProjectChimera.UI.Panels
             Debug.Log($"Notification: {message}");
         }
         
-        protected override void OnDestroy()
+        protected virtual void OnDestroy()
         {
-            base.OnDestroy();
+            // Clean up objectives panel
             
             // Unsubscribe from events
             // if (_objectiveManager != null)

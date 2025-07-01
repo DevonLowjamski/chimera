@@ -11,6 +11,11 @@ namespace ProjectChimera.Core
     public abstract class GameEventSO<T> : ChimeraEventSO
     {
         /// <summary>
+        /// Event that can be subscribed to directly
+        /// </summary>
+        public System.Action<T> OnEventRaised;
+
+        /// <summary>
         /// List of listeners for this event.
         /// </summary>
         private readonly List<GameEventListener<T>> _listeners = new List<GameEventListener<T>>();
@@ -27,6 +32,9 @@ namespace ProjectChimera.Core
         public void Raise(T eventData)
         {
             LogEventRaise(eventData);
+
+            // Trigger the direct event subscription
+            OnEventRaised?.Invoke(eventData);
 
             // Iterate backwards to allow listeners to unregister during the event
             for (int i = _listeners.Count - 1; i >= 0; i--)
@@ -110,6 +118,14 @@ namespace ProjectChimera.Core
         public void Raise()
         {
             Raise(System.EventArgs.Empty);
+        }
+        
+        /// <summary>
+        /// Raises this event with optional data (for compatibility).
+        /// </summary>
+        public void RaiseEvent(object eventData = null)
+        {
+            Raise();
         }
     }
 

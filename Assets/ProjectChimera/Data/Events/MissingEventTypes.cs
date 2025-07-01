@@ -4,7 +4,7 @@ using UnityEngine;
 using ProjectChimera.Core;
 using ProjectChimera.Core.Events;
 using ProjectChimera.Data;
-using ProjectChimera.Systems.Events;
+using System.Linq;
 
 namespace ProjectChimera.Data.Events
 {
@@ -16,6 +16,15 @@ namespace ProjectChimera.Data.Events
     /// Collection of missing ScriptableObject types needed for EventDatabaseSO compilation.
     /// These are placeholder implementations that can be expanded later.
     /// </summary>
+    
+    public enum UrgencyLevel
+    {
+        Low,
+        Medium,
+        High,
+        Critical,
+        Emergency
+    }
     
     [CreateAssetMenu(fileName = "New Competition Template", menuName = "Project Chimera/Events/Competition Template", order = 108)]
     public class CompetitionTemplateSO : ChimeraDataSO
@@ -448,6 +457,7 @@ namespace ProjectChimera.Data.Events
     public class JudgingCriterion
     {
         [Header("Criterion Details")]
+        public string CriterionId;
         public string Name;
         public string Description;
         public float Weight = 1.0f;
@@ -735,5 +745,90 @@ namespace ProjectChimera.Data.Events
         Nutrient_Deficiency_Event,
         Equipment_Failure_Event,
         Market_Fluctuation_Event
+    }
+
+    // Player Agency and Cultivation Gaming Event Data
+    [System.Serializable]
+    public class PlayerChoiceEventData
+    {
+        [Header("Choice Information")]
+        public string ChoiceId;
+        public string ChoiceName;
+        public string Description;
+        public string PlayerId;
+        public DateTime ChoiceTimestamp;
+        
+        [Header("Choice Details")]
+        public string ChoiceCategory;
+        public int ChoiceValue;
+        public Dictionary<string, object> ChoiceParameters = new Dictionary<string, object>();
+        public List<string> ConsequenceIds = new List<string>();
+        
+        [Header("Context")]
+        public string PlantId;
+        public string FacilityId;
+        public string SystemContext;
+        public object ChoiceContext;
+    }
+
+    // Event Channel ScriptableObjects for different systems
+    [CreateAssetMenu(fileName = "New Consequence Event Channel", menuName = "Project Chimera/Events/Consequence Event Channel", order = 301)]
+    public class ConsequenceEventChannelSO : GameEventChannelSO
+    {
+        [Header("Consequence Event Channel Configuration")]
+        [SerializeField] private string _channelId;
+        [SerializeField] private bool _trackConsequenceHistory = true;
+        
+        public string ChannelId => _channelId;
+        public bool TrackConsequenceHistory => _trackConsequenceHistory;
+        
+        protected override void OnValidate()
+        {
+            base.OnValidate();
+            if (string.IsNullOrEmpty(_channelId))
+                _channelId = $"consequence_channel_{name.ToLower().Replace(" ", "_")}";
+        }
+    }
+
+    [CreateAssetMenu(fileName = "New Character Event Channel", menuName = "Project Chimera/Events/Character Event Channel", order = 302)]
+    public class CharacterEventChannelSO : GameEventChannelSO
+    {
+        [Header("Character Event Channel Configuration")]
+        [SerializeField] private string _channelId;
+        [SerializeField] private bool _trackCharacterInteractions = true;
+        
+        public string ChannelId => _channelId;
+        public bool TrackCharacterInteractions => _trackCharacterInteractions;
+        
+        protected override void OnValidate()
+        {
+            base.OnValidate();
+            if (string.IsNullOrEmpty(_channelId))
+                _channelId = $"character_channel_{name.ToLower().Replace(" ", "_")}";
+        }
+    }
+
+    // Character relationship and effectiveness data structures
+    [System.Serializable]
+    public class EffectivenessDataPoint
+    {
+        [Header("Effectiveness Measurement")]
+        public string DataPointId;
+        public DateTime Timestamp;
+        public float EffectivenessValue; // 0.0 to 1.0
+        public string Context;
+        public string RelatedCharacterId;
+        public Dictionary<string, object> Metadata = new Dictionary<string, object>();
+    }
+
+    [System.Serializable]
+    public class EffectivenessTrend
+    {
+        [Header("Effectiveness Trend Analysis")]
+        public string TrendId;
+        public List<EffectivenessDataPoint> DataPoints = new List<EffectivenessDataPoint>();
+        public float TrendSlope; // Positive = improving, Negative = declining
+        public DateTime AnalysisDate;
+        public string TrendCategory;
     }
 } 

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Tutorial;
+using ProjectChimera.Data.Progression;
+using ProjectChimera.Systems.Progression;
 using System;
 
 namespace ProjectChimera.Systems.Tutorial
@@ -600,8 +602,8 @@ namespace ProjectChimera.Systems.Tutorial
             if (reward.RewardType == TutorialRewardType.Experience && reward.Amount > 0)
             {
                 // Grant experience points
-                var progressionManager = GameManager.Instance.GetManager<ProjectChimera.Systems.Progression.ProgressionManager>();
-                progressionManager?.GainExperience(reward.Amount, ProjectChimera.Data.Progression.ExperienceSource.Tutorial_Completion);
+                var progressionManager = GameManager.Instance.GetManager<CleanProgressionManager>();
+                progressionManager?.AddExperience("Tutorial_Completion", reward.Amount, ProgressionCategory.General);
             }
             else if (reward.RewardType == TutorialRewardType.Currency && reward.Amount > 0)
             {
@@ -622,8 +624,8 @@ namespace ProjectChimera.Systems.Tutorial
         /// </summary>
         private int GetCurrentPlayerLevel()
         {
-            var progressionManager = GameManager.Instance?.GetManager<ProjectChimera.Systems.Progression.ProgressionManager>();
-            return progressionManager?.PlayerLevel ?? 1;
+            var progressionManager = GameManager.Instance?.GetManager<CleanProgressionManager>();
+            return 1; // CleanProgressionManager doesn't have PlayerLevel property yet, return default
         }
         
         /// <summary>

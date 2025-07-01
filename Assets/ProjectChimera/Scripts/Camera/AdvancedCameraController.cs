@@ -690,7 +690,7 @@ namespace ProjectChimera.Scripts.Camera
             float nearestDistance = float.MaxValue;
             
             // Check plants
-            var plants = FindObjectsOfType<PlantInstanceComponent>();
+            var plants = UnityEngine.Object.FindObjectsByType<PlantInstanceComponent>(FindObjectsSortMode.None);
             foreach (var plant in plants)
             {
                 float distance = Vector3.Distance(cameraPosition, plant.transform.position);
@@ -702,7 +702,7 @@ namespace ProjectChimera.Scripts.Camera
             }
             
             // Check facilities
-            var facilities = FindObjectsOfType<GrowRoomController>();
+            var facilities = UnityEngine.Object.FindObjectsByType<GrowRoomController>(FindObjectsSortMode.None);
             foreach (var facility in facilities)
             {
                 float distance = Vector3.Distance(cameraPosition, facility.transform.position);

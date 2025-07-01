@@ -261,6 +261,21 @@ namespace ProjectChimera.Core
             var type = typeof(T);
             return _managerRegistry.TryGetValue(type, out ChimeraManager manager) ? manager as T : null;
         }
+        
+        /// <summary>
+        /// Gets a manager by its type name (for avoiding circular assembly dependencies).
+        /// </summary>
+        public ChimeraManager GetManagerByName(string typeName)
+        {
+            foreach (var kvp in _managerRegistry)
+            {
+                if (kvp.Key.Name == typeName)
+                {
+                    return kvp.Value;
+                }
+            }
+            return null;
+        }
 
         /// <summary>
         /// Pauses the game and all systems.

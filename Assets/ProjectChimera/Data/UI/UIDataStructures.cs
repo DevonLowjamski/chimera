@@ -2,25 +2,12 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using ProjectChimera.Data.Genetics;
+using ProjectChimera.Data;
 
 namespace ProjectChimera.Data.UI
 {
-    // Competitive/Leaderboard types
-    public enum LeaderboardType
-    {
-        Overall,
-        Weekly,
-        Monthly,
-        Seasonal,
-        Yield,
-        Quality,
-        Efficiency,
-        Innovation,
-        Cultivation,
-        Economic,
-        Speed
-    }
-
+    // Competitive/Leaderboard types are now defined in SharedDataStructures.cs
+    
     [System.Serializable]
     public class LeaderboardDisplayData
     {

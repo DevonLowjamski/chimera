@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace ProjectChimera.Data.Facilities
 {
+    // Import shared PlayerProfile from ProjectChimera.Data
+    using ProjectChimera.Data;
+
     [System.Serializable]
     public enum FacilityRoomType
     {
@@ -122,21 +125,6 @@ namespace ProjectChimera.Data.Facilities
         public Vector2 temperatureRange;
         public Vector2 humidityRange;
     }
-
-    [System.Serializable]
-    public class PlayerProfile
-    {
-        public string playerName;
-        public int playerLevel;
-        public int Level;  // Alias for playerLevel
-        public float experience;
-        public float Experience;  // Alias for experience
-        public float ReputationPoints;
-        public List<string> achievements;
-        public Dictionary<string, object> preferences;
-        public Dictionary<string, object> PlantedData;
-    }
-
 
     [System.Serializable]
     public class HarvestResult

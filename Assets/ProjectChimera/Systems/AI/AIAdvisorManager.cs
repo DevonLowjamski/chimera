@@ -272,7 +272,7 @@ namespace ProjectChimera.Systems.AI
             return new PerformanceSnapshot
             {
                 FrameRate = 1f / Time.deltaTime,
-                MemoryUsage = UnityEngine.Profiling.Profiler.GetTotalAllocatedMemory() / (1024f * 1024f),
+                MemoryUsage = GC.GetTotalMemory(false) / (1024f * 1024f),
                 ActiveSystems = _managers?.Count ?? 0,
                 SystemResponseTime = CalculateAverageResponseTime()
             };

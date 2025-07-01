@@ -85,6 +85,20 @@ namespace ProjectChimera.Data.Economy
     }
 
     [System.Serializable]
+    public class PerformanceMetrics
+    {
+        public float TotalReturn;
+        public float AnnualizedReturn;
+        public float Volatility;
+        public float SharpeRatio;
+        public float MaxDrawdown;
+        public float Alpha;
+        public float Beta;
+        public DateTime PerformancePeriodStart;
+        public DateTime PerformancePeriodEnd;
+    }
+
+    [System.Serializable]
     public class Investment
     {
         public string InvestmentId;
@@ -353,20 +367,6 @@ namespace ProjectChimera.Data.Economy
     }
 
     [System.Serializable]
-    public class PerformanceMetrics
-    {
-        public float TotalReturn;
-        public float AnnualizedReturn;
-        public float Volatility;
-        public float SharpeRatio;
-        public float MaxDrawdown;
-        public float Alpha;
-        public float Beta;
-        public DateTime PerformancePeriodStart;
-        public DateTime PerformancePeriodEnd;
-    }
-
-    [System.Serializable]
     public class RiskAssessment
     {
         public RiskTolerance RiskTolerance;
@@ -378,6 +378,12 @@ namespace ProjectChimera.Data.Economy
         public float MarketRisk;
         public float CreditRisk;
         public DateTime LastAssessment;
+        
+        // Additional properties for Economic Gaming System compatibility
+        public string AssetId;
+        public decimal InvestmentAmount;
+        public DateTime AssessmentDate;
+        public RiskLevel RiskLevel;
     }
 
     [System.Serializable]

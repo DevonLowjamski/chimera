@@ -535,7 +535,7 @@ namespace ProjectChimera.UI.Automation
             var action = new AutomationAction
             {
                 ActionId = Guid.NewGuid().ToString(),
-                ActionType = ActionType.SetTemperature,
+                ActionType = ProjectChimera.Data.Automation.ActionType.SetTemperature,
                 TargetZoneId = "default",
                 Parameters = new Dictionary<string, object>()
             };

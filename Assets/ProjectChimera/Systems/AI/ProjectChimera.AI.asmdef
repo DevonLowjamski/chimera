@@ -4,7 +4,7 @@
     "references": [
         "ProjectChimera.Core",
         "ProjectChimera.Data",
-        "ProjectChimera.Environment"
+        "ProjectChimera.Systems.Environment"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

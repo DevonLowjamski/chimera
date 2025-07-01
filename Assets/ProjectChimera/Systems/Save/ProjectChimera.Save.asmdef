@@ -4,12 +4,11 @@
     "references": [
         "ProjectChimera.Core",
         "ProjectChimera.Data",
-        "ProjectChimera.Environment",
+        "ProjectChimera.Systems",
         "ProjectChimera.Systems.Cultivation",
+        "ProjectChimera.Systems.Environment",
         "ProjectChimera.Systems.Economy",
-        "ProjectChimera.Systems.Progression",
-        "ProjectChimera.Genetics",
-        "ProjectChimera.Events"
+        "ProjectChimera.Systems.Progression"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

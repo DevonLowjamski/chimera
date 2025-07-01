@@ -6,14 +6,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ProjectChimera.Core;
-using ProjectChimera.Testing.Core;
+// using ProjectChimera.Testing.Core; // This namespace doesn't exist - removed
 using ProjectChimera.Data.Automation;
-using ProjectChimera.Systems.Economy;
+// using ProjectChimera.Systems.Economy; // Changed to correct assembly name
 using ProjectChimera.Data.Cultivation;
 using ProjectChimera.Data.Genetics;
 using ProjectChimera.Data.UI;
 using ProjectChimera.Data.AI;
 using ProjectChimera.UI.Core;
+// Alias to resolve RecommendationPriority ambiguity
+using AIRecommendationPriority = ProjectChimera.Data.AI.RecommendationPriority;
 
 namespace ProjectChimera.Testing.Data
 {
@@ -462,7 +464,7 @@ namespace ProjectChimera.Testing.Data
                 Title = "Optimize Lighting Schedule",
                 Description = "Adjust lighting schedule for better energy efficiency",
                 Type = RecommendationType.Performance,
-                Priority = RecommendationPriority.High,
+                Priority = AIRecommendationPriority.High,
                 ConfidenceScore = 0.85f,
                 EstimatedBenefit = 15.0f,
                 CreatedAt = System.DateTime.Now,
@@ -475,7 +477,7 @@ namespace ProjectChimera.Testing.Data
             Assert.AreEqual("AI_REC_001", recommendation.RecommendationId, "Recommendation ID should be set correctly");
             Assert.AreEqual("Optimize Lighting Schedule", recommendation.Title, "Title should be set correctly");
             Assert.AreEqual(RecommendationType.Performance, recommendation.Type, "Type should be set correctly");
-            Assert.AreEqual(RecommendationPriority.High, recommendation.Priority, "Priority should be set correctly");
+            Assert.AreEqual(AIRecommendationPriority.High, recommendation.Priority, "Priority should be set correctly");
             Assert.AreEqual(0.85f, recommendation.ConfidenceScore, 0.01f, "Confidence score should be set correctly");
             Assert.AreEqual(RecommendationStatus.Active, recommendation.Status, "Status should be set correctly");
             Assert.AreEqual(2, recommendation.RelatedSystems.Count, "Related systems should be added correctly");

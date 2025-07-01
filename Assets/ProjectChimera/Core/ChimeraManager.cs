@@ -29,11 +29,16 @@ namespace ProjectChimera.Core
     /// Base class for all Project Chimera manager components.
     /// Managers coordinate major game systems and maintain singleton-like behavior.
     /// </summary>
-    public abstract class ChimeraManager : ChimeraMonoBehaviour
+    public abstract class ChimeraManager : ChimeraMonoBehaviour, IChimeraManager
     {
         [Header("Manager Properties")]
         [SerializeField] private bool _initializeOnAwake = true;
         [SerializeField] private bool _persistAcrossScenes = false;
+
+        /// <summary>
+        /// Human-readable name of this manager.
+        /// </summary>
+        public virtual string ManagerName => GetType().Name;
 
         /// <summary>
         /// Whether this manager is currently initialized and running.
@@ -92,7 +97,6 @@ namespace ProjectChimera.Core
         public virtual object TotalValue { get; protected set; } = 0f;
         public virtual object ActiveWorkers { get; protected set; } = 0;
         public virtual object ConstructionEfficiency { get; protected set; } = 1f;
-        // Virtual methods that UI systems expect (definitions moved below to avoid duplicates)
 
         protected override void Awake()
         {
@@ -107,8 +111,26 @@ namespace ProjectChimera.Core
             // Initialize immediately if configured to do so
             if (_initializeOnAwake)
             {
-                InitializeManager();
+                Initialize();
             }
+        }
+
+        /// <summary>
+        /// Initialize the manager and prepare it for use (IChimeraManager interface implementation).
+        /// Should be idempotent - calling multiple times should not cause issues.
+        /// </summary>
+        public virtual void Initialize()
+        {
+            InitializeManager();
+        }
+
+        /// <summary>
+        /// Shutdown the manager and clean up resources (IChimeraManager interface implementation).
+        /// Should be safe to call even if not initialized.
+        /// </summary>
+        public virtual void Shutdown()
+        {
+            ShutdownManager();
         }
 
         /// <summary>
@@ -163,7 +185,7 @@ namespace ProjectChimera.Core
         {
             if (IsInitialized)
             {
-                ShutdownManager();
+                Shutdown();
             }
             base.OnDestroy();
         }

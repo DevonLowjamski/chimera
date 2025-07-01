@@ -136,7 +136,7 @@ namespace ProjectChimera.Systems.Construction
                 Description = blueprint.Description,
                 BuildingType = blueprint.BuildingType,
                 QualityLevel = quality,
-                Blueprint = blueprint,
+                Blueprint = Blueprint3D.FromBuildingBlueprint(blueprint),
                 PlannedLocation = location,
                 PlannedDimensions = blueprint.Dimensions,
                 PlannedArea = blueprint.TotalArea,
@@ -146,12 +146,12 @@ namespace ProjectChimera.Systems.Construction
                 EstimatedCompletionDate = DateTime.Now.AddDays(blueprint.EstimatedDays),
                 TotalBudget = CalculateProjectBudget(blueprint, quality),
                 SpentAmount = 0f,
-                Priority = ConstructionPriority.Normal,
+                Priority = (ProjectPriority)ConstructionPriority.Normal,
                 Issues = new List<ProjectChimera.Data.Construction.ConstructionIssue>(),
                 CompletedMilestones = new List<string>(),
                 IsOnSchedule = true,
                 IsOnBudget = true,
-                QualityScores = new QualityMetrics(),
+                QualityScores = new Dictionary<string, float>(),
                 QualityInspections = new List<QualityInspection>(),
                 QualityRating = 0f
             };
@@ -160,9 +160,9 @@ namespace ProjectChimera.Systems.Construction
             project.RemainingBudget = project.TotalBudget;
             
             // Initialize requirements
-            project.Requirements = GenerateProjectRequirements(blueprint);
+            project.Requirements = GenerateProjectRequirements(blueprint).Select(r => r.RequirementId).ToList();
             project.MaterialRequirements = GenerateMaterialRequirements(blueprint);
-            project.RequiredPermits = GenerateRequiredPermits(blueprint);
+            project.RequiredPermits = GenerateRequiredPermits(blueprint).Select(p => p.PermitId).ToList();
             
             // Initialize quality metrics
             _projectQuality[projectId] = new QualityMetrics
@@ -181,7 +181,7 @@ namespace ProjectChimera.Systems.Construction
             
             _activeProjects.Add(project);
             _projectIssues[projectId] = new List<ProjectChimera.Data.Construction.ConstructionIssue>();
-            _projectPermits[projectId] = new List<ConstructionPermit>(project.RequiredPermits);
+            _projectPermits[projectId] = GenerateRequiredPermits(blueprint);
             
             _onProjectStarted?.Raise();
             OnProjectStarted?.Invoke(project);
@@ -926,7 +926,7 @@ namespace ProjectChimera.Systems.Construction
             switch (project.CurrentStage)
             {
                 case ConstructionStage.Planning:
-                    return project.RequiredPermits.Any(p => p.Status == PermitStatus.Issued);
+                    return project.Permits?.Any(p => p.Status == PermitStatus.Issued) ?? false;
                 
                 case ConstructionStage.Foundation:
                     return project.Inspections.Any(i => i.Type == InspectionType.Foundation && i.Result == InspectionResult.Passed);

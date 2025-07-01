@@ -2,10 +2,11 @@ using UnityEngine;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Genetics;
 using ProjectChimera.Data.Environment;
-using ProjectChimera.Systems.Cultivation;
+using ProjectChimera.Data.Cultivation;
+using ProjectChimera.Data.Progression;
+using ProjectChimera.Systems.SpeedTree;
 using ProjectChimera.Systems.Environment;
 using ProjectChimera.Systems.Effects;
-using ProjectChimera.Systems.Progression;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
@@ -13,8 +14,11 @@ using System;
 
 // Explicit alias for Data layer EnvironmentalConditions to resolve namespace conflicts
 using EnvironmentalConditions = ProjectChimera.Data.Environment.EnvironmentalConditions;
-// Explicit alias for EnvironmentalManager to resolve ambiguity
-using EnvironmentalManager = ProjectChimera.Systems.Environment.EnvironmentalManager;
+using SeasonType = ProjectChimera.Data.Environment.SeasonType;
+// Alias to resolve EffectType ambiguity
+using EffectsEffectType = ProjectChimera.Systems.Effects.EffectType;
+// Note: Removed references to removed Systems namespaces (Cultivation, Environment, Effects, Progression)
+// These will need to be replaced with data-driven approaches or proper Data layer references
 
 #if UNITY_SPEEDTREE
 using SpeedTree;
@@ -81,8 +85,8 @@ namespace ProjectChimera.Systems.SpeedTree
         private SpeedTreeEnvironmentalSystem _environmentalSystem;
         private CannabisGeneticsEngine _geneticsEngine;
         private EnvironmentalManager _environmentalManager;
-        private AdvancedEffectsManager _effectsManager;
-        private ComprehensiveProgressionManager _progressionManager;
+        // private AdvancedEffectsManager _effectsManager; // Disabled - system not available
+        // private ComprehensiveProgressionManager _progressionManager; // Disabled - using CleanProgressionManager instead
         
         // Performance and Optimization
         private GrowthPerformanceMetrics _performanceMetrics;
@@ -178,8 +182,8 @@ namespace ProjectChimera.Systems.SpeedTree
                 _environmentalSystem = GameManager.Instance.GetManager<SpeedTreeEnvironmentalSystem>();
                 _geneticsEngine = GameManager.Instance.GetManager<CannabisGeneticsEngine>();
                 _environmentalManager = GameManager.Instance.GetManager<EnvironmentalManager>();
-                _effectsManager = GameManager.Instance.GetManager<AdvancedEffectsManager>();
-                _progressionManager = GameManager.Instance.GetManager<ComprehensiveProgressionManager>();
+                // _effectsManager = GameManager.Instance.GetManager<AdvancedEffectsManager>(); // Disabled
+                // _progressionManager = GameManager.Instance.GetManager<ComprehensiveProgressionManager>(); // Disabled
             }
             
             ConnectSystemEvents();
@@ -657,11 +661,11 @@ namespace ProjectChimera.Systems.SpeedTree
             OnStageTransition?.Invoke(growthState.InstanceId, oldStage, newStage);
             
             // Award progression experience
-            if (_progressionManager != null)
-            {
-                var experienceGain = CalculateStageTransitionExperience(oldStage, newStage);
-                _progressionManager.GainExperience("cultivation", experienceGain, $"Stage Transition: {newStage}");
-            }
+            // if (_progressionManager != null)
+            // {
+            //     var experienceGain = CalculateStageTransitionExperience(oldStage, newStage);
+            //     _progressionManager.GainExperience("cultivation", experienceGain, $"Stage Transition: {newStage}");
+            // }
             
             LogInfo($"Plant {growthState.InstanceId} transitioned from {oldStage} to {newStage}");
         }
@@ -713,26 +717,26 @@ namespace ProjectChimera.Systems.SpeedTree
             if (instance?.Renderer == null) return;
             
             // Play visual effects
-            var effectType = GetStageTransitionEffectType(newStage);
-            _effectsManager.PlayEffect(effectType, instance.Position, instance.Renderer?.transform, 3f);
+            // var effectType = GetStageTransitionEffectType(newStage);
+            // _effectsManager.PlayEffect(effectType, instance.Position, instance.Renderer?.transform, 3f);
             
             // Play stage-specific sounds
-            var audioEffectName = GetStageTransitionAudioEffectName(newStage);
-            if (!string.IsNullOrEmpty(audioEffectName))
-            {
-                _effectsManager.PlayAudioEffect(audioEffectName, instance.Position, 0.7f);
-            }
+            // var audioEffectName = GetStageTransitionAudioEffectName(newStage);
+            // if (!string.IsNullOrEmpty(audioEffectName))
+            // {
+            //     _effectsManager.PlayAudioEffect(audioEffectName, instance.Position, 0.7f);
+            // }
         }
         
-        private EffectType GetStageTransitionEffectType(PlantGrowthStage stage)
+        private EffectsEffectType GetStageTransitionEffectType(PlantGrowthStage stage)
         {
             return stage switch
             {
-                PlantGrowthStage.Seedling => EffectType.PlantGrowth,
-                PlantGrowthStage.Vegetative => EffectType.PlantGrowth,
-                PlantGrowthStage.Flowering => EffectType.PlantFlowering,
-                PlantGrowthStage.Harvest => EffectType.PlantMaturation,
-                _ => EffectType.PlantGrowth
+                PlantGrowthStage.Seedling => EffectsEffectType.PlantGrowth,
+                PlantGrowthStage.Vegetative => EffectsEffectType.PlantGrowth,
+                PlantGrowthStage.Flowering => EffectsEffectType.PlantFlowering,
+                PlantGrowthStage.Harvest => EffectsEffectType.PlantMaturation,
+                _ => EffectsEffectType.PlantGrowth
             };
         }
         
@@ -1051,11 +1055,11 @@ namespace ProjectChimera.Systems.SpeedTree
             TriggerMilestoneEffects(growthState, milestone);
             
             // Award progression experience
-            if (_progressionManager != null)
-            {
-                var experienceGain = CalculateMilestoneExperience(milestone);
-                _progressionManager.GainExperience("cultivation", experienceGain, $"Milestone: {milestone.Name}");
-            }
+            // if (_progressionManager != null)
+            // {
+            //     var experienceGain = CalculateMilestoneExperience(milestone);
+            //     _progressionManager.GainExperience("cultivation", experienceGain, $"Milestone: {milestone.Name}");
+            // }
             
             OnGrowthMilestone?.Invoke(growthState.InstanceId, milestone);
             
@@ -1068,14 +1072,14 @@ namespace ProjectChimera.Systems.SpeedTree
             if (instance?.Renderer == null) return;
             
             // Play visual effects
-            _effectsManager.PlayEffect(EffectType.Achievement, instance.Position, instance.Renderer?.transform, 2f);
+            // _effectsManager.PlayEffect(EffectsEffectType.Achievement, instance.Position, instance.Renderer?.transform, 2f);
             
             // Play milestone sound
-            var audioEffectName = GetMilestoneAudioEffectName(milestone.Id);
-            if (!string.IsNullOrEmpty(audioEffectName))
-            {
-                _effectsManager.PlayAudioEffect(audioEffectName, instance.Position, 0.5f);
-            }
+            // var audioEffectName = GetMilestoneAudioEffectName(milestone.Id);
+            // if (!string.IsNullOrEmpty(audioEffectName))
+            // {
+            //     _effectsManager.PlayAudioEffect(audioEffectName, instance.Position, 0.5f);
+            // }
         }
         
         private float CalculateMilestoneExperience(GrowthMilestone milestone)

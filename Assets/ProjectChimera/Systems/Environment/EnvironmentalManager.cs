@@ -2,8 +2,11 @@ using UnityEngine;
 using ProjectChimera.Core;
 using ProjectChimera.Data.Environment;
 using ProjectChimera.Data.Genetics;
+using EnvironmentalConditions = ProjectChimera.Data.Environment.EnvironmentalConditions;
+using SeasonType = ProjectChimera.Data.Environment.SeasonType;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace ProjectChimera.Systems.Environment
 {
@@ -540,21 +543,15 @@ namespace ProjectChimera.Systems.Environment
         
         private void ApplyEnvironmentalDrift(CultivationEnvironment environment)
         {
-            var conditions = environment.CurrentConditions;
+            // Simplified drift simulation
+            environment.CurrentConditions.Temperature += (UnityEngine.Random.value - 0.5f) * 0.1f; // Tiny fluctuation
+            environment.CurrentConditions.Humidity += (UnityEngine.Random.value - 0.5f) * 0.2f;
+            environment.CurrentConditions.CO2Level += (UnityEngine.Random.value - 0.5f) * 5f;
             
-            // Natural environmental variations
-            conditions.Temperature += Random.Range(-0.1f, 0.1f);
-            conditions.Humidity += Random.Range(-0.5f, 0.5f);
-            conditions.LightIntensity += Random.Range(-5f, 5f);
-            conditions.CO2Level += Random.Range(-10f, 10f);
-            conditions.AirVelocity += Random.Range(-0.02f, 0.02f);
-            
-            // Clamp to reasonable ranges
-            conditions.Temperature = Mathf.Clamp(conditions.Temperature, 15f, 35f);
-            conditions.Humidity = Mathf.Clamp(conditions.Humidity, 20f, 90f);
-            conditions.LightIntensity = Mathf.Clamp(conditions.LightIntensity, 0f, 1200f);
-            conditions.CO2Level = Mathf.Clamp(conditions.CO2Level, 300f, 1800f);
-            conditions.AirVelocity = Mathf.Clamp(conditions.AirVelocity, 0f, 2f);
+            // Clamp values to realistic ranges
+            environment.CurrentConditions.Temperature = Mathf.Clamp(environment.CurrentConditions.Temperature, 10f, 40f);
+            environment.CurrentConditions.Humidity = Mathf.Clamp(environment.CurrentConditions.Humidity, 20f, 90f);
+            environment.CurrentConditions.CO2Level = Mathf.Clamp(environment.CurrentConditions.CO2Level, 300f, 2000f);
         }
         
         private void ApplyEquipmentEffects(CultivationEnvironment environment)
@@ -569,16 +566,11 @@ namespace ProjectChimera.Systems.Environment
         
         private void UpdateMicroclimateMappingData(CultivationEnvironment environment)
         {
-            var microclimate = environment.MicroclimateMappingData;
-            var conditions = environment.CurrentConditions;
-            
-            // Update microclimate variations
-            microclimate.CanopyTemperature = conditions.Temperature + Random.Range(-1f, 1f);
-            microclimate.RootZoneTemperature = conditions.Temperature + Random.Range(-2f, 0f);
-            microclimate.CanopyHumidity = conditions.Humidity + Random.Range(-3f, 3f);
-            microclimate.TemperatureVariance = Random.Range(0.5f, 2f);
-            microclimate.HumidityVariance = Random.Range(2f, 8f);
-            microclimate.LightUniformity = Random.Range(0.85f, 0.98f);
+            // Simplified microclimate update
+            environment.MicroclimateMappingData.TemperatureVariance = UnityEngine.Random.value * 2f; // up to 2°C variance
+            environment.MicroclimateMappingData.HumidityVariance = UnityEngine.Random.value * 5f;  // up to 5% variance
+            environment.MicroclimateMappingData.LightUniformity = 1.0f - (UnityEngine.Random.value * 0.1f); // 90-100% uniformity
+            environment.MicroclimateMappingData.LastUpdate = System.DateTime.Now;
         }
         
         protected override void OnManagerShutdown()
@@ -828,16 +820,5 @@ namespace ProjectChimera.Systems.Environment
         
         // Missing property for Error Wave 141 compatibility
         public Color Color => SpectrumColor;
-    }
-    
-    /// <summary>
-    /// Season types for environmental simulation.
-    /// </summary>
-    public enum SeasonType
-    {
-        Spring,
-        Summer,
-        Fall,
-        Winter
     }
 }
