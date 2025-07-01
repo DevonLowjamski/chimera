@@ -57,6 +57,27 @@ namespace ProjectChimera.Systems.Progression
             Debug.Log("✅ MilestoneProgressionSystem initialized successfully");
         }
         
+        protected override void OnManagerShutdown()
+        {
+            // Clean up milestone tracking
+            if (EnableMilestoneTracking)
+            {
+                StopMilestoneTracking();
+            }
+            
+            // Clear references to other managers
+            progressionManager = null;
+            experienceManager = null;
+            
+            // Clear all events to prevent memory leaks
+            OnMilestoneCompleted = null;
+            OnMilestoneUnlocked = null;
+            OnProgressionGateOpened = null;
+            OnMilestoneProgressUpdated = null;
+            
+            Debug.Log("✅ MilestoneProgressionSystem shutdown successfully");
+        }
+        
         private void InitializeMilestoneSystem()
         {
             // Initialize collections if empty
@@ -114,6 +135,21 @@ namespace ProjectChimera.Systems.Progression
             if (experienceManager != null)
             {
                 Debug.Log("✅ Milestone tracking started - connected to ExperienceManager");
+            }
+        }
+        
+        private void StopMilestoneTracking()
+        {
+            // Unsubscribe from events to prevent memory leaks
+            // Note: This would unsubscribe from actual events when they're implemented
+            if (progressionManager != null)
+            {
+                Debug.Log("✅ Milestone tracking stopped - disconnected from ProgressionManager");
+            }
+            
+            if (experienceManager != null)
+            {
+                Debug.Log("✅ Milestone tracking stopped - disconnected from ExperienceManager");
             }
         }
         
