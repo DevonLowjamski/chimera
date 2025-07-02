@@ -88,6 +88,75 @@ grep -n "class ExperienceManager" Assets/ProjectChimera/Systems/Progression/Expe
 - Use `FindObjectOfType<T>()` for non-ChimeraManager classes
 - **NEVER assume** a Manager class inherits from ChimeraManager without verification
 
+### Step 6: Assembly Dependency Verification (CRITICAL)
+**BEFORE referencing types from other assemblies, verify assembly references:**
+
+```bash
+# Check assembly definition file for references
+cat Assets/ProjectChimera/Systems/[AssemblyName]/ProjectChimera.[AssemblyName].asmdef
+
+# Example: Check if Genetics assembly references Progression
+cat Assets/ProjectChimera/Systems/Genetics/ProjectChimera.Genetics.asmdef | grep -A 10 "references"
+```
+
+**MANDATORY CHECKLIST for Cross-Assembly References:**
+- [ ] **Assembly Reference Exists**: Target assembly is listed in "references" array
+- [ ] **Avoid Circular Dependencies**: Assembly A → B → A creates compilation issues
+- [ ] **Use Events for Loose Coupling**: Prefer event-driven integration over direct manager references
+- [ ] **Minimize Dependencies**: Only add assembly references when absolutely necessary
+
+**CS0246 Error Prevention**:
+- **NEVER reference** types from assemblies not listed in asmdef references
+- **ALWAYS check** assembly structure before creating cross-assembly dependencies
+- **PREFER event-driven integration** to avoid assembly coupling
+- **REMOVE assembly references** rather than create complex dependency chains
+
+### Step 7: LINQ and Extension Method Verification (COMMON)
+**BEFORE using LINQ methods, verify using directives:**
+
+```bash
+# Check for LINQ usage in file
+grep -n "Count(\\|Where(\\|FirstOrDefault\\|LastOrDefault\\|Select(" path/to/file.cs
+
+# Verify System.Linq import exists
+grep -n "using System.Linq" path/to/file.cs
+```
+
+**MANDATORY CHECKLIST for LINQ Usage:**
+- [ ] **System.Linq Import**: File includes `using System.Linq;` directive
+- [ ] **Extension Method Access**: LINQ methods available on collections
+- [ ] **Method vs Property**: Use `Count()` method for filtering, `Count` property for simple count
+- [ ] **Null Safety**: Use null-conditional operators with LINQ (e.g., `?.Count()`)
+
+**CS1955/CS1061 Error Prevention**:
+- **ALWAYS include** `using System.Linq;` when using LINQ methods
+- **Count() vs Count**: Use `Count()` for filtering, `Count` for simple count
+- **Extension Methods**: LINQ methods require proper using directive
+- **Lambda Expressions**: Ensure lambda syntax is correct (e.g., `p => p.IsCompleted`)
+
+### Step 8: Event Handling Verification (CRITICAL)
+**BEFORE using events, understand access restrictions:**
+
+```bash
+# Check for event usage patterns
+grep -n "\.Invoke\\|= null\\|event.*=" path/to/file.cs
+
+# Verify proper event subscription patterns
+grep -n "+= \\|-= " path/to/file.cs
+```
+
+**MANDATORY CHECKLIST for Event Usage:**
+- [ ] **Subscribe with +=**: Only use `+=` to subscribe to events
+- [ ] **Unsubscribe with -=**: Only use `-=` to unsubscribe from events
+- [ ] **No Direct Assignment**: Never use `= null` or `= handler` on events
+- [ ] **No External Invoke**: Cannot call `event?.Invoke()` from external classes
+
+**CS0070 Error Prevention**:
+- **NEVER assign** events directly (`event = null` is invalid)
+- **NEVER invoke** events externally (`SomeClass.OnEvent?.Invoke()` is invalid)
+- **ALWAYS use** `+=` for subscription and `-=` for unsubscription
+- **INTERNAL ACCESS**: Only the declaring class can invoke events directly
+
 ## 📋 Type Category Validation Checklists
 
 ### ✅ Enum Validation Checklist

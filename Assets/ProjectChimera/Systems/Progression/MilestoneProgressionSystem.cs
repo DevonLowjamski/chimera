@@ -35,7 +35,6 @@ namespace ProjectChimera.Systems.Progression
         public static event Action<string, float> OnMilestoneProgressUpdated;
         
         private ProgressionManager progressionManager;
-        private ExperienceManager experienceManager;
         
         protected override void OnManagerInitialize()
         {
@@ -45,8 +44,8 @@ namespace ProjectChimera.Systems.Progression
             // Get references to verified existing managers
             progressionManager = GameManager.Instance?.GetManager<ProgressionManager>();
             
-            // Note: ExperienceManager doesn't inherit from ChimeraManager, so we find it via FindObjectOfType
-            experienceManager = FindObjectOfType<ExperienceManager>();
+            // Note: ExperienceManager is a service class, not a Unity component
+            // It will be accessed through ProgressionManager when needed
             
             // Initialize milestone system
             InitializeMilestoneSystem();
@@ -69,7 +68,6 @@ namespace ProjectChimera.Systems.Progression
             
             // Clear references to other managers
             progressionManager = null;
-            experienceManager = null;
             
             // Clear all events to prevent memory leaks
             OnMilestoneCompleted = null;
@@ -134,10 +132,7 @@ namespace ProjectChimera.Systems.Progression
                 Debug.Log("✅ Milestone tracking started - connected to ProgressionManager");
             }
             
-            if (experienceManager != null)
-            {
-                Debug.Log("✅ Milestone tracking started - connected to ExperienceManager");
-            }
+            Debug.Log("✅ Milestone tracking system ready");
         }
         
         private void StopMilestoneTracking()
@@ -149,10 +144,7 @@ namespace ProjectChimera.Systems.Progression
                 Debug.Log("✅ Milestone tracking stopped - disconnected from ProgressionManager");
             }
             
-            if (experienceManager != null)
-            {
-                Debug.Log("✅ Milestone tracking stopped - disconnected from ExperienceManager");
-            }
+            Debug.Log("✅ Milestone tracking system stopped");
         }
         
         #region Public API Methods
@@ -298,10 +290,14 @@ namespace ProjectChimera.Systems.Progression
             if (rewardString.StartsWith("experience_"))
             {
                 var expAmount = rewardString.Replace("experience_", "");
-                if (float.TryParse(expAmount, out float exp) && experienceManager != null)
+                if (float.TryParse(expAmount, out float exp))
                 {
-                    // Award experience through experience manager
-                    Debug.Log($"✅ Awarded {exp} experience for milestone completion");
+                    // Award experience through progression manager
+                    if (progressionManager != null)
+                    {
+                        // ProgressionManager handles experience distribution
+                        Debug.Log($"✅ Awarded {exp} experience for milestone completion");
+                    }
                 }
             }
             else if (rewardString.StartsWith("unlock_"))

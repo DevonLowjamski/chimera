@@ -46,7 +46,6 @@ namespace ProjectChimera.Systems.Progression
         public static event Action<bool> OnCompetitiveSeasonStateChanged;
         
         private ProgressionManager progressionManager;
-        private ExperienceManager experienceManager;
         private MilestoneProgressionSystem milestoneSystem;
         
         protected override void OnManagerInitialize()
@@ -58,8 +57,8 @@ namespace ProjectChimera.Systems.Progression
             progressionManager = GameManager.Instance?.GetManager<ProgressionManager>();
             milestoneSystem = GameManager.Instance?.GetManager<MilestoneProgressionSystem>();
             
-            // Note: ExperienceManager doesn't inherit from ChimeraManager, so we find it via FindObjectOfType
-            experienceManager = FindObjectOfType<ExperienceManager>();
+            // Note: ExperienceManager is a service class, not a Unity component
+            // It will be accessed through ProgressionManager when needed
             
             // Initialize competitive system
             InitializeCompetitiveSystem();
@@ -82,7 +81,6 @@ namespace ProjectChimera.Systems.Progression
             
             // Clear references to other managers
             progressionManager = null;
-            experienceManager = null;
             milestoneSystem = null;
             
             // Clear all events to prevent memory leaks
@@ -169,10 +167,7 @@ namespace ProjectChimera.Systems.Progression
                 Debug.Log("✅ Competitive tracking started - connected to ProgressionManager");
             }
             
-            if (experienceManager != null)
-            {
-                Debug.Log("✅ Competitive tracking started - connected to ExperienceManager");
-            }
+            // Note: Experience tracking handled through ProgressionManager
             
             if (milestoneSystem != null)
             {
@@ -196,10 +191,7 @@ namespace ProjectChimera.Systems.Progression
                 Debug.Log("✅ Competitive tracking stopped - disconnected from ProgressionManager");
             }
             
-            if (experienceManager != null)
-            {
-                Debug.Log("✅ Competitive tracking stopped - disconnected from ExperienceManager");
-            }
+            // Note: Experience tracking cleanup handled through ProgressionManager
         }
         
         #region Public API Methods

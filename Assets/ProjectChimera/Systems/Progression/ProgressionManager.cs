@@ -49,7 +49,7 @@ namespace ProjectChimera.Systems.Progression
         [SerializeField] private SimpleGameEventSO _onMasteryAchieved;
         
         // Player Progression Data
-        private PlayerProgressionProfile _playerProfile;
+        private LegacyPlayerProgressionProfile _playerProfile;
         private Dictionary<SkillNodeSO, PlayerSkillData> _playerSkills = new Dictionary<SkillNodeSO, PlayerSkillData>();
         private Dictionary<ResearchProjectSO, ActiveResearchProject> _activeResearch = new Dictionary<ResearchProjectSO, ActiveResearchProject>();
         private List<CompletedResearchProject> _completedResearch = new List<CompletedResearchProject>();
@@ -72,7 +72,7 @@ namespace ProjectChimera.Systems.Progression
         public int AvailableSkillPoints => _availableSkillPoints;
         public int ActiveResearchProjects => _activeResearch.Count;
         public int CompletedResearchProjects => _completedResearch.Count;
-        public PlayerProgressionProfile PlayerProfile => _playerProfile;
+        public LegacyPlayerProgressionProfile PlayerProfile => _playerProfile;
         public Dictionary<SkillNodeSO, PlayerSkillData> PlayerSkills => _playerSkills;
         
         protected override void OnManagerInitialize()
@@ -413,7 +413,7 @@ namespace ProjectChimera.Systems.Progression
         {
             if (_playerProfile == null)
             {
-                _playerProfile = new PlayerProgressionProfile
+                _playerProfile = new LegacyPlayerProgressionProfile
                 {
                     PlayerLevel = 1,
                     TotalExperience = 0f,
@@ -867,7 +867,7 @@ namespace ProjectChimera.Systems.Progression
     // Supporting data structures for progression management
     
     [System.Serializable]
-    public class PlayerProgressionProfile
+    public class LegacyPlayerProgressionProfile
     {
         public int PlayerLevel = 1;
         public float TotalExperience = 0f;
@@ -909,15 +909,7 @@ namespace ProjectChimera.Systems.Progression
         public float ActualDurationDays;
     }
     
-    [System.Serializable]
-    public class AchievementProgress
-    {
-        public string AchievementId;
-        public string AchievementName;
-        public float Progress = 0f; // 0-1
-        public bool IsUnlocked = false;
-        public DateTime UnlockDate;
-    }
+    // AchievementProgress moved to AchievementSystemManager.cs to avoid conflicts
     
     [System.Serializable]
     public class SpecializationProgress
