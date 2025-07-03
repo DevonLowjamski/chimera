@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using ProjectChimera.Data.Facilities;
 
 namespace ProjectChimera.Data.IPM
 {
@@ -119,4 +120,76 @@ namespace ProjectChimera.Data.IPM
     }
     
     #endregion
+    
+    #region Missing Types for IPM Gaming
+    
+    [System.Serializable]
+    public class PestInfestation
+    {
+        public string InfestationID;
+        public PestType PestType;
+        public InfestationSeverity Severity;
+        public Vector3 Location;
+        public float SpreadRate;
+        public float DamageRate;
+        public DateTime DetectionDate;
+        public InfestationStage Stage;
+    }
+    
+    [System.Serializable]
+    public class TreatmentOption
+    {
+        public string TreatmentID;
+        public string TreatmentName;
+        public TreatmentType TreatmentType;
+        public float Cost;
+        public float Effectiveness;
+        public float ApplicationTime;
+        public bool IsAvailable;
+    }
+    
+    public enum InfestationSeverity
+    {
+        Minimal,
+        Light,
+        Moderate,
+        Heavy,
+        Severe,
+        Critical
+    }
+    
+    public enum InfestationStage
+    {
+        Early,
+        Developing,
+        Established,
+        Spreading,
+        Advanced,
+        Critical
+    }
+    
+    public enum TreatmentType
+    {
+        Biological,
+        Chemical,
+        Physical,
+        Cultural,
+        Integrated,
+        Organic
+    }
+    
+    #endregion
+    
+    // Temporary FacilityType definition to resolve compilation
+    public enum FacilityType
+    {
+        Indoor_Grow,
+        Greenhouse,
+        Outdoor_Farm,
+        Hydroponic_Facility,
+        Vertical_Farm,
+        Research_Lab,
+        Processing_Plant,
+        Distribution_Center
+    }
 } 

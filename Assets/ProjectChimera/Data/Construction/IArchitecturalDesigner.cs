@@ -63,7 +63,7 @@ namespace ProjectChimera.Data.Construction
         public string Name;
         public string Description;
         public Vector3 PlotSize;
-        public List<DesignConstraint> Constraints = new List<DesignConstraint>();
+        public List<ArchitecturalArchitecturalDesignConstraint> Constraints = new List<ArchitecturalArchitecturalDesignConstraint>();
         public ProjectType ProjectType;
         public List<RequiredSystem> RequiredSystems = new List<RequiredSystem>();
         public float BudgetLimit;
@@ -206,7 +206,7 @@ namespace ProjectChimera.Data.Construction
     }
     
     [System.Serializable] 
-    public class DesignConstraint 
+    public class ArchitecturalArchitecturalDesignConstraint 
     { 
         public string ConstraintId;
         public string Name;

@@ -13,6 +13,67 @@ namespace ProjectChimera.Systems.Gaming.IPM
     #region Core Gaming Data Structures
 
     [Serializable]
+    public class IPMStrategyChallenge
+    {
+        public string StrategyId = Guid.NewGuid().ToString();
+        public string StrategyName = "";
+        public string Description = "";
+        public StrategyDifficulty Difficulty = StrategyDifficulty.Intermediate;
+        public FacilityScenario Scenario = new FacilityScenario();
+        public List<StrategyObjective> Objectives = new List<StrategyObjective>();
+        public List<PestInfestation> Infestations = new List<PestInfestation>();
+        public List<TreatmentOption> AvailableTreatments = new List<TreatmentOption>();
+        public EconomicConstraints Constraints = new EconomicConstraints();
+        public float TimeLimit = 300f; // 5 minutes default
+        public float CurrentScore = 0f;
+        public bool IsCompleted = false;
+        public DateTime StartTime = DateTime.Now;
+        public DateTime? EndTime = null;
+        public StrategyRewards Rewards = new StrategyRewards();
+    }
+
+    [Serializable]
+    public class FacilityScenario
+    {
+        public string ScenarioId = Guid.NewGuid().ToString();
+        public string ScenarioName = "";
+        public FacilityType FacilityType = FacilityType.Indoor_Grow;
+        public Vector3 FacilitySize = Vector3.one;
+        public Dictionary<string, float> EnvironmentalConditions = new Dictionary<string, float>();
+        public List<string> SpecialConditions = new List<string>();
+    }
+
+    [Serializable]
+    public class StrategyObjective
+    {
+        public string ObjectiveId = Guid.NewGuid().ToString();
+        public string ObjectiveName = "";
+        public string Description = "";
+        public float TargetValue = 100f;
+        public float CurrentValue = 0f;
+        public bool IsCompleted = false;
+        public float Weight = 1.0f;
+    }
+
+    [Serializable]
+    public class EconomicConstraints
+    {
+        public float Budget = 1000f;
+        public float CurrentSpending = 0f;
+        public Dictionary<string, float> ResourceCosts = new Dictionary<string, float>();
+        public float PenaltyRate = 0.1f;
+    }
+
+    [Serializable]
+    public class StrategyRewards
+    {
+        public int ExperiencePoints = 0;
+        public float ScoreMultiplier = 1.0f;
+        public List<string> UnlockedAchievements = new List<string>();
+        public Dictionary<string, float> BonusRewards = new Dictionary<string, float>();
+    }
+
+    [Serializable]
     public class IPMBattleData
     {
         public string BattleId = Guid.NewGuid().ToString();
@@ -488,6 +549,25 @@ namespace ProjectChimera.Systems.Gaming.IPM
         Expert,
         Master,
         Adaptive
+    }
+
+    public enum PestBattleDifficulty
+    {
+        Tutorial,
+        Easy,
+        Normal,
+        Hard,
+        Expert,
+        Nightmare
+    }
+
+    public enum StrategyDifficulty
+    {
+        Beginner,
+        Intermediate,
+        Advanced,
+        Expert,
+        Master
     }
 
     #endregion
