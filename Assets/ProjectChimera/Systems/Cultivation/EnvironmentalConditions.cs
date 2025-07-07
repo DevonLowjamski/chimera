@@ -197,6 +197,16 @@ namespace ProjectChimera.Systems.Cultivation
         }
         
         /// <summary>
+        /// Checks if the environmental conditions have been initialized (not default/empty).
+        /// Added for compatibility with Data.Cultivation.EnvironmentalConditions.
+        /// </summary>
+        public bool IsInitialized()
+        {
+            // Check if any non-zero values are present (indicating it's not just default struct)
+            return Temperature != 0f || Humidity != 0f || CO2Level != 0f || LightIntensity != 0f;
+        }
+        
+        /// <summary>
         /// Creates a copy of these environmental conditions.
         /// </summary>
         public EnvironmentalConditions Clone()

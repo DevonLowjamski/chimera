@@ -5,6 +5,10 @@ using ProjectChimera.Data.Environment;
 using System;
 using System.Collections.Generic;
 
+// Explicit aliases to resolve EnvironmentalConditions namespace conflicts
+using EnvironmentalConditions = ProjectChimera.Data.Cultivation.EnvironmentalConditions;
+using EnvironmentEnvironmentalConditions = ProjectChimera.Data.Environment.EnvironmentalConditions;
+
 namespace ProjectChimera.Systems.Cultivation
 {
     /// <summary>

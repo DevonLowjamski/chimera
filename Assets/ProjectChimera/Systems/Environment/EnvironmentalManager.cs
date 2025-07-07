@@ -602,6 +602,53 @@ namespace ProjectChimera.Systems.Environment
         /// <summary>
         /// Get current environmental conditions (general)
         /// </summary>
+        public EnvironmentalConditions GetCurrentConditions()
+        {
+            return GetCurrentConditions(null);
+        }
+        
+        /// <summary>
+        /// Get cultivation-specific environmental conditions for PlantInstance compatibility.
+        /// Returns ProjectChimera.Data.Cultivation.EnvironmentalConditions.
+        /// </summary>
+        public ProjectChimera.Data.Cultivation.EnvironmentalConditions GetCultivationConditions()
+        {
+            var envConditions = GetCurrentConditions();
+            return ConvertToCultivationConditions(envConditions);
+        }
+        
+        /// <summary>
+        /// Get cultivation-specific environmental conditions at a specific position.
+        /// Returns ProjectChimera.Data.Cultivation.EnvironmentalConditions.
+        /// </summary>
+        public ProjectChimera.Data.Cultivation.EnvironmentalConditions GetCultivationConditions(Vector3 position)
+        {
+            var envConditions = GetConditionsAtPosition(position);
+            return ConvertToCultivationConditions(envConditions);
+        }
+        
+        /// <summary>
+        /// Convert from Data.Environment.EnvironmentalConditions to Data.Cultivation.EnvironmentalConditions.
+        /// </summary>
+        private ProjectChimera.Data.Cultivation.EnvironmentalConditions ConvertToCultivationConditions(EnvironmentalConditions envConditions)
+        {
+            var cultivationConditions = new ProjectChimera.Data.Cultivation.EnvironmentalConditions();
+            
+            // Map properties from Environment version to Cultivation version
+            cultivationConditions.Temperature = envConditions.Temperature;
+            cultivationConditions.Humidity = envConditions.Humidity;
+            cultivationConditions.LightIntensity = envConditions.LightIntensity;
+            cultivationConditions.CO2Level = envConditions.CO2Level;
+            cultivationConditions.AirFlow = envConditions.AirVelocity; // Map AirVelocity to AirFlow
+            cultivationConditions.ElectricalConductivity = 1.2f; // Default value since Environment version doesn't have this
+            cultivationConditions.VPD = envConditions.VaporPressureDeficit; // Map VaporPressureDeficit to VPD
+            cultivationConditions.pH = 6.5f; // Default value since Environment version doesn't have this
+            
+            // Calculate derived values
+            cultivationConditions.CalculateDerivedValues();
+            
+            return cultivationConditions;
+        }
     }
     
     // Supporting data structures for the environmental system

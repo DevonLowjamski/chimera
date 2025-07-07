@@ -3,6 +3,10 @@ using ProjectChimera.Data.Environment;
 using ProjectChimera.Data.Genetics;
 using System.Collections.Generic;
 
+// Explicit aliases to resolve EnvironmentalConditions namespace conflicts
+using EnvironmentalConditions = ProjectChimera.Data.Cultivation.EnvironmentalConditions;
+using EnvironmentEnvironmentalConditions = ProjectChimera.Data.Environment.EnvironmentalConditions;
+
 namespace ProjectChimera.Systems.Cultivation
 {
     /// <summary>
@@ -29,6 +33,80 @@ namespace ProjectChimera.Systems.Cultivation
                 return;
             
             plant.UpdatePlant(deltaTime, globalGrowthModifier);
+        }
+
+        /// <summary>
+        /// Converts Systems.Cultivation.EnvironmentalConditions to Data.Cultivation.EnvironmentalConditions.
+        /// </summary>
+        private ProjectChimera.Data.Cultivation.EnvironmentalConditions ConvertToDataCultivationConditions(ProjectChimera.Systems.Cultivation.EnvironmentalConditions systemsConditions)
+        
+        /// <summary>
+        /// Converts Data.Cultivation.EnvironmentalConditions to Systems.Cultivation.EnvironmentalConditions.
+        /// </summary>
+        private ProjectChimera.Systems.Cultivation.EnvironmentalConditions ConvertToSystemsCultivationConditions(ProjectChimera.Data.Cultivation.EnvironmentalConditions dataConditions)
+        {
+            // Create a new Data.Cultivation.EnvironmentalConditions struct using the CreateIndoorDefault method
+            var dataConditions = ProjectChimera.Data.Cultivation.EnvironmentalConditions.CreateIndoorDefault();
+            
+            // Map basic environmental parameters
+            dataConditions.Temperature = systemsConditions.Temperature;
+            dataConditions.Humidity = systemsConditions.Humidity;
+            dataConditions.CO2Level = systemsConditions.CO2Level;
+            dataConditions.LightIntensity = systemsConditions.LightIntensity;
+            dataConditions.pH = systemsConditions.pH;
+            dataConditions.WaterAvailability = systemsConditions.MoisureLevel;
+            
+            // Map advanced parameters
+            dataConditions.PhotoperiodHours = systemsConditions.PhotoperiodHours;
+            dataConditions.AirVelocity = systemsConditions.AirVelocity;
+            
+            // Map electrical conductivity (Systems uses EC, Data uses ElectricalConductivity)
+            dataConditions.ElectricalConductivity = systemsConditions.EC;
+            
+            // Map nutrient levels
+            dataConditions.WaterTemperature = systemsConditions.Temperature; // Approximate water temp as air temp
+            
+            return dataConditions;
+        }
+        
+        /// <summary>
+        /// Converts Data.Cultivation.EnvironmentalConditions to Systems.Cultivation.EnvironmentalConditions.
+        /// </summary>
+        private ProjectChimera.Systems.Cultivation.EnvironmentalConditions ConvertToSystemsCultivationConditions(ProjectChimera.Data.Cultivation.EnvironmentalConditions dataConditions)
+        {
+            // Create a new Systems.Cultivation.EnvironmentalConditions
+            var systemsConditions = new ProjectChimera.Systems.Cultivation.EnvironmentalConditions
+            {
+                Temperature = dataConditions.Temperature,
+                Humidity = dataConditions.Humidity,
+                CO2Level = dataConditions.CO2Level,
+                LightIntensity = dataConditions.LightIntensity,
+                pH = dataConditions.pH,
+                MoisureLevel = dataConditions.WaterAvailability,
+                PhotoperiodHours = dataConditions.PhotoperiodHours,
+                AirVelocity = dataConditions.AirVelocity,
+                EC = dataConditions.ElectricalConductivity
+            };
+            
+            return systemsConditions;
+        }
+        
+
+
+        /// <summary>
+        /// Gets environmental conditions for a plant, ensuring proper type conversion.
+        /// </summary>
+        private ProjectChimera.Data.Cultivation.EnvironmentalConditions GetPlantEnvironmentalConditions(PlantInstance plant)
+        {
+            // PlantInstance.CurrentEnvironment is already of type Data.Cultivation.EnvironmentalConditions
+            // due to the alias in PlantInstance.cs, so we can return it directly
+            if (plant?.CurrentEnvironment != null)
+            {
+                return plant.CurrentEnvironment;
+            }
+            
+            // Fallback to default indoor conditions if no environment is set
+            return ProjectChimera.Data.Cultivation.EnvironmentalConditions.CreateIndoorDefault();
         }
     }
     
@@ -198,6 +276,45 @@ namespace ProjectChimera.Systems.Cultivation
             curve.AddKey(1f, 1f);
             
             return curve;
+        }
+
+        /// <summary>
+        /// Converts Environment.EnvironmentalConditions to Cultivation.EnvironmentalConditions
+        /// </summary>
+        private ProjectChimera.Data.Cultivation.EnvironmentalConditions ConvertEnvironmentToCultivationConditions(
+            ProjectChimera.Data.Environment.EnvironmentalConditions envConditions)
+        {
+            return new ProjectChimera.Data.Cultivation.EnvironmentalConditions
+            {
+                Temperature = envConditions.Temperature,
+                Humidity = envConditions.Humidity,
+                CO2Level = envConditions.CO2Level,
+                LightIntensity = envConditions.LightIntensity,
+                AirFlow = envConditions.AirFlow,
+                WaterAvailability = envConditions.WaterAvailability,
+                VPD = envConditions.VPD,
+                ElectricalConductivity = envConditions.ElectricalConductivity
+            };
+        }
+
+        /// <summary>
+        /// Gets environmental conditions for a plant, with proper type conversion
+        /// </summary>
+        private ProjectChimera.Data.Cultivation.EnvironmentalConditions GetPlantEnvironmentalConditions(PlantInstance plant)
+        {
+            // Try to get environmental conditions from the environmental manager
+            var environmentalManager = GameManager.Instance?.GetManager<EnvironmentalManager>();
+            if (environmentalManager != null)
+            {
+                var environmentConditions = environmentalManager.GetCurrentConditions();
+                if (environmentConditions != null)
+                {
+                    return ConvertEnvironmentToCultivationConditions(environmentConditions);
+                }
+            }
+            
+            // Final fallback to default indoor conditions
+            return ProjectChimera.Data.Cultivation.EnvironmentalConditions.CreateIndoorDefault();
         }
     }
     
